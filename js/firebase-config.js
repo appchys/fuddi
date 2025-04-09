@@ -7,7 +7,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyAAAFDJ_utlimCezUR-_i8Y2yUare9yZ1k",
   authDomain: "multitienda-69778.firebaseapp.com",
   projectId: "multitienda-69778",
-  storageBucket: "multitienda-69778.appspot.com",
+  storageBucket: "multitienda-69778.firebasestorage.app", // Actualizado aquí
   messagingSenderId: "939925630795",
   appId: "1:939925630795:web:713aca499392bfa36482ce"
 };
