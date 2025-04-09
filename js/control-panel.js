@@ -48,7 +48,6 @@ window.loginWithGoogle = async function () {
             alert(`¡Bienvenido, ${user.displayName}! Ya estás registrado como ${userCheck.type}.`);
         } else {
             // Si no existe, redirigir a register.html
-            alert('No estás registrado. Por favor, completa tu registro.');
             window.location.href = 'register.html';
         }
     } catch (error) {
@@ -84,6 +83,63 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.text())
             .then(html => {
                 container.innerHTML = html;
+
+                // Ahora que el HTML está cargado, selecciona el contenedor userInfo y el botón de Google
+                const userInfoContainer = document.getElementById('userInfo');
+                const googleLoginButton = document.getElementById('googleLoginButton');
+
+                if (!userInfoContainer) {
+                    console.error('El contenedor userInfo no existe en el DOM.');
+                    return;
+                }
+
+                // Escuchar cambios en el estado de autenticación
+                auth.onAuthStateChanged((user) => {
+                    console.log('Estado de autenticación:', user); // Depuración
+                    if (user) {
+                        const { displayName, email, photoURL } = user;
+
+                        // Mostrar información del usuario
+                        userInfoContainer.innerHTML = `
+                            <img src="${photoURL || 'https://via.placeholder.com/60'}" alt="Foto de perfil">
+                            <div class="user-details">
+                                <div class="user-name">${displayName || 'Usuario'}</div>
+                                <div class="user-email">${email || 'Correo no disponible'}</div>
+                            </div>
+                            <button class="logout-btn" id="logoutButton" title="Cerrar sesión">
+                                <i class="bi bi-power"></i>
+                            </button>
+                        `;
+
+                        // Ocultar el botón de "Iniciar sesión con Google"
+                        if (googleLoginButton) {
+                            googleLoginButton.style.display = 'none';
+                        }
+
+                        // Agregar funcionalidad al botón de cerrar sesión
+                        const logoutButton = document.getElementById('logoutButton');
+                        logoutButton.addEventListener('click', () => {
+                            auth.signOut()
+                                .then(() => {
+                                    alert('Has cerrado sesión.');
+                                    window.location.reload(); // Recargar la página después de cerrar sesión
+                                })
+                                .catch((error) => {
+                                    console.error('Error al cerrar sesión:', error.message);
+                                });
+                        });
+                    } else {
+                        // Mostrar el botón de "Iniciar sesión con Google" si no hay usuario logueado
+                        if (googleLoginButton) {
+                            googleLoginButton.style.display = 'block';
+                        }
+
+                        // Mostrar mensaje de no autenticado
+                        userInfoContainer.innerHTML = `
+                            <p>No has iniciado sesión</p>
+                        `;
+                    }
+                });
             })
             .catch(error => console.error('Error al cargar la sidebar:', error));
     }

@@ -13,12 +13,25 @@ import { getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.10/fireba
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('registerForm');
-    const accountTypeSelect = document.getElementById('accountType');
+    const clientButton = document.getElementById('clientButton');
+    const storeButton = document.getElementById('storeButton');
+    const accountTypeInput = document.getElementById('accountType');
     const storeFields = document.getElementById('storeFields');
 
-    // Mostrar/ocultar campos de tienda según selección
-    accountTypeSelect.addEventListener('change', (e) => {
-        storeFields.style.display = e.target.value === 'store' ? 'block' : 'none';
+    // Manejar clic en el botón "Cliente"
+    clientButton.addEventListener('click', () => {
+        accountTypeInput.value = 'client';
+        storeFields.style.display = 'none'; // Ocultar campos de tienda
+        clientButton.classList.add('selected');
+        storeButton.classList.remove('selected');
+    });
+
+    // Manejar clic en el botón "Tienda"
+    storeButton.addEventListener('click', () => {
+        accountTypeInput.value = 'store';
+        storeFields.style.display = 'block'; // Mostrar campos de tienda
+        storeButton.classList.add('selected');
+        clientButton.classList.remove('selected');
     });
 
     form.addEventListener('submit', async (e) => {
@@ -31,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const accountType = accountTypeSelect.value;
+        const accountType = accountTypeInput.value; // Obtener el tipo de cuenta seleccionado
         const name = document.getElementById('name').value;
         const phone = document.getElementById('phone').value;
         const description = document.getElementById('description').value;
@@ -49,13 +62,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('¡Registro como cliente exitoso!');
                 window.location.href = 'dashboard-client.html'; // Dashboard de cliente
             } else if (accountType === 'store') {
-                const storeId = document.getElementById('storeId').value.trim(); // Captura el storeId ingresado por el usuario
+                const storeId = document.getElementById('storeId').value.trim();
                 if (!storeId) {
                     alert('Por favor, ingrese un ID único para la tienda.');
                     return;
                 }
 
-                // Verifica si el storeId ya existe
                 const storeDoc = await getDoc(doc(db, 'stores', storeId));
                 if (storeDoc.exists()) {
                     alert('El ID de la tienda ya está en uso. Por favor, elija otro.');
@@ -89,9 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     coverUrl,
                     imageUrl,
                 };
-                await setDoc(doc(db, 'stores', storeId), storeData); // Usa el storeId personalizado
+                await setDoc(doc(db, 'stores', storeId), storeData);
                 alert('¡Registro como tienda exitoso!');
-                window.location.href = `dashboard-store.html?storeId=${storeId}`; // Redirige con el storeId
+                window.location.href = `store.html?storeId=${storeId}`;
             }
         } catch (error) {
             console.error('Error al registrar:', error.message);

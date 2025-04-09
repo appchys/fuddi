@@ -1,3 +1,5 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
 <div class="control-panel" id="controlPanel">
     <button class="close-btn" onclick="toggleControlPanel()">×</button>
     <h2>Panel de Control</h2>
@@ -5,9 +7,13 @@
         <li><a href="index.html">Explorar</a></li>
         <li><a href="#settings">Configuración</a></li>
         <li><a href="#analytics">Analíticas</a></li>
-        <li><a href="#logout">Cerrar Sesión</a></li>
-        <li><button class="google-login-btn" onclick="loginWithGoogle()">Iniciar sesión con Google</button></li>
+        <li><button class="google-login-btn" id="googleLoginButton" onclick="loginWithGoogle()">Iniciar sesión con Google</button></li>
     </ul>
+
+    <!-- Contenedor para los datos del usuario -->
+    <div class="user-info" id="userInfo">
+        <!-- Los datos del usuario y el botón de cerrar sesión se cargarán dinámicamente -->
+    </div>
 </div>
 
 <script type="module" src="./js/control-panel.js"></script>

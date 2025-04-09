@@ -106,3 +106,72 @@
 .login-btn:hover {
     background-color: #218838; /* Verde más oscuro */
 }
+
+/* Estilo para el contenedor de los datos del usuario */
+.user-info {
+    display: flex;
+    align-items: center; /* Alinea verticalmente los elementos */
+    padding: 10px;
+    border-top: 1px solid #e0e0e0; /* Línea separadora */
+    background-color: #f9f9f9;
+    gap: 10px; /* Espaciado entre la foto y el texto */
+    text-align: left; /* Alinea el texto a la izquierda */
+    overflow: hidden; /* Evita que el contenido se desborde */
+}
+
+/* Estilo para la foto de perfil */
+.user-info img {
+    width: 50px; /* Reduce el tamaño de la imagen */
+    height: 50px;
+    border-radius: 50%; /* Hace la imagen circular */
+    border: 2px solid #ddd; /* Borde alrededor de la imagen */
+}
+
+/* Contenedor para el texto (nombre y correo) */
+.user-info .user-details {
+    display: flex;
+    flex-direction: column; /* Coloca el nombre y el correo en columna */
+    overflow: hidden; /* Evita que el contenido se desborde */
+    white-space: nowrap; /* Evita que el texto haga saltos de línea */
+    text-overflow: ellipsis; /* Agrega "..." si el texto es muy largo */
+}
+
+/* Estilo para el nombre del usuario */
+.user-info .user-name {
+    font-size: 14px; /* Reduce el tamaño del texto */
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 3px;
+    overflow: hidden; /* Evita que el contenido se desborde */
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Estilo para el correo del usuario */
+.user-info .user-email {
+    font-size: 12px; /* Reduce el tamaño del texto */
+    color: #666;
+    overflow: hidden; /* Evita que el contenido se desborde */
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Estilo para el botón de cerrar sesión */
+.logout-btn {
+    background: none; /* Sin fondo */
+    border: none; /* Sin borde */
+    color: #333; /* Color del ícono */
+    font-size: 20px; /* Tamaño del ícono */
+    cursor: pointer; /* Cursor de pointer al pasar el mouse */
+    margin-left: auto; /* Alinea el botón a la derecha */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+}
+
+/* Hover para el botón de cerrar sesión */
+.logout-btn:hover {
+    color: #ff6f91; /* Cambia el color al pasar el mouse */
+}
+

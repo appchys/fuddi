@@ -115,6 +115,46 @@ body {
     background-color: #e65b7a;
 }
 
+
+/* Estilo para el contenedor de los botones de acción */
+.register-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 0px 0;
+}
+
+/* Estilo para los botones de Cliente y Tienda */
+.register-actions button {
+    background-color: #ffffff; /* Fondo blanco */
+    border: 1px solid #e0e0e0; /* Borde gris claro */
+    border-radius: 10px; /* Esquinas redondeadas */
+    padding: 10px; /* Espaciado interno */
+    width: 80px; /* Ancho fijo para que sean cuadrados */
+    height: 80px; /* Alto fijo para que sean cuadrados */
+    display: flex;
+    flex-direction: column; /* Icono y texto en columna */
+    align-items: center; /* Centrar contenido horizontalmente */
+    justify-content: center; /* Centrar contenido verticalmente */
+    font-size: 14px; /* Tamaño de fuente */
+    font-weight: 500; /* Peso de la fuente */
+    color: #333; /* Color del texto */
+    cursor: pointer; /* Cursor de pointer al pasar el mouse */
+    transition: background-color 0.3s ease; /* Transición suave para hover */
+}
+
+/* Efecto hover para los botones */
+.register-actions button:hover {
+    background-color: #f5f5f5; /* Fondo gris claro al pasar el mouse */
+}
+
+/* Botón seleccionado */
+.register-actions button.selected {
+    background-color: #007bff; /* Fondo azul */
+    color: white; /* Texto blanco */
+    border-color: #007bff; /* Borde azul */
+}
+
 /* Responsive design */
 @media (max-width: 480px) {
     .register-container {
