@@ -6,7 +6,8 @@ import {
     setDoc, 
     storage, 
     ref, 
-    uploadBytes 
+    uploadBytes, 
+    getDoc 
 } from './firebase-config.js';
 import { getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js";
 
@@ -48,19 +49,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('¡Registro como cliente exitoso!');
                 window.location.href = 'dashboard-client.html'; // Dashboard de cliente
             } else if (accountType === 'store') {
+                const storeId = document.getElementById('storeId').value.trim(); // Captura el storeId ingresado por el usuario
+                if (!storeId) {
+                    alert('Por favor, ingrese un ID único para la tienda.');
+                    return;
+                }
+
+                // Verifica si el storeId ya existe
+                const storeDoc = await getDoc(doc(db, 'stores', storeId));
+                if (storeDoc.exists()) {
+                    alert('El ID de la tienda ya está en uso. Por favor, elija otro.');
+                    return;
+                }
+
                 const coverImageFile = document.getElementById('coverImage').files[0];
                 const imageUrlFile = document.getElementById('imageUrl').files[0];
-                let coverURL = ''; // Cambiado de coverImageUrl a coverURL
+                let coverUrl = '';
                 let imageUrl = '';
 
                 if (coverImageFile) {
-                    const coverRef = ref(storage, `stores/${user.uid}/cover_${Date.now()}`);
+                    const coverRef = ref(storage, `stores/${storeId}/cover_${Date.now()}`);
                     await uploadBytes(coverRef, coverImageFile);
-                    coverURL = await getDownloadURL(coverRef); // Cambiado de coverImageUrl a coverURL
+                    coverUrl = await getDownloadURL(coverRef);
                 }
 
                 if (imageUrlFile) {
-                    const imageRef = ref(storage, `stores/${user.uid}/profile_${Date.now()}`);
+                    const imageRef = ref(storage, `stores/${storeId}/profile_${Date.now()}`);
                     await uploadBytes(imageRef, imageUrlFile);
                     imageUrl = await getDownloadURL(imageRef);
                 }
@@ -72,12 +86,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: user.email,
                     owner: user.uid,
                     createdAt: new Date().toISOString(),
-                    coverURL, // Cambiado de coverImageUrl a coverURL
+                    coverUrl,
                     imageUrl,
                 };
-                await setDoc(doc(db, 'stores', user.uid), storeData);
+                await setDoc(doc(db, 'stores', storeId), storeData); // Usa el storeId personalizado
                 alert('¡Registro como tienda exitoso!');
-                window.location.href = 'dashboard-store.html'; // Dashboard de tienda
+                window.location.href = `dashboard-store.html?storeId=${storeId}`; // Redirige con el storeId
             }
         } catch (error) {
             console.error('Error al registrar:', error.message);
