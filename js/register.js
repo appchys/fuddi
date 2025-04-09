@@ -50,13 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (accountType === 'store') {
                 const coverImageFile = document.getElementById('coverImage').files[0];
                 const imageUrlFile = document.getElementById('imageUrl').files[0];
-                let coverImageUrl = '';
+                let coverURL = ''; // Cambiado de coverImageUrl a coverURL
                 let imageUrl = '';
 
                 if (coverImageFile) {
                     const coverRef = ref(storage, `stores/${user.uid}/cover_${Date.now()}`);
                     await uploadBytes(coverRef, coverImageFile);
-                    coverImageUrl = await getDownloadURL(coverRef);
+                    coverURL = await getDownloadURL(coverRef); // Cambiado de coverImageUrl a coverURL
                 }
 
                 if (imageUrlFile) {
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: user.email,
                     owner: user.uid,
                     createdAt: new Date().toISOString(),
-                    coverImageUrl,
+                    coverURL, // Cambiado de coverImageUrl a coverURL
                     imageUrl,
                 };
                 await setDoc(doc(db, 'stores', user.uid), storeData);
