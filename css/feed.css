@@ -1,0 +1,68 @@
+
+/* Estilo para la cuadrícula de productos */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Cuadrícula responsiva */
+    gap: 20px; /* Espacio entre los productos */
+    padding: 10px;
+}
+
+/* Estilo para cada producto */
+.product {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease;
+}
+
+/* Efecto hover para los productos */
+.product:hover {
+    transform: scale(1.03);
+}
+
+/* Contenedor para la imagen del producto */
+.product-image-container {
+    width: 100%;
+    padding-top: 100%; /* Esto fuerza un aspecto 1:1 (cuadrado) */
+    position: relative; /* Para posicionar la imagen dentro */
+    border-radius: 10px 10px 0 0; /* Bordes redondeados solo en la parte superior */
+    overflow: hidden;
+}
+
+/* Estilo para la imagen del producto */
+.product-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Asegura que la imagen se ajuste sin distorsionarse */
+    cursor: pointer;
+}
+
+/* Estilo para el contenido del producto */
+.product h3 {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px;
+    color: #333;
+}
+
+/* Estilo para la descripción del producto */
+.product p {
+    font-size: 14px;
+    color: #666;
+    margin: 0 10px 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limita a 2 líneas */
+    line-clamp: 2; /* Estándar para limitar a 2 líneas */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Añade puntos suspensivos si el texto se corta */
+}
+
+/* Estilo para el precio */
+.product p strong {
+    color: #ff6f91; /* Color rosado para el precio */
+}

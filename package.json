@@ -1,0 +1,19 @@
+{
+  "name": "allimarket",
+  "version": "1.0.0",
+  "description": "All I Market is a web application designed to showcase various stores and their products. Users can explore different store profiles, view product listings, and interact with the store owners.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "firebase": "^11.6.0"
+  },
+  "devDependencies": {
+    "vite": "^6.2.5"
+  }
+}

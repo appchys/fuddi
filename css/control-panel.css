@@ -1,0 +1,108 @@
+/* Estilo para la sidebar del Panel de Control */
+.control-panel {
+    position: fixed;
+    top: 0;
+    left: -300px; /* Oculta la sidebar inicialmente */
+    width: 300px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease;
+    padding: 20px;
+    overflow-y: auto;
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+
+/* Clase para mostrar la sidebar */
+.control-panel.visible {
+    left: 0;
+}
+
+/* Estilo para el botón de cerrar */
+.control-panel .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Estilo para los elementos del Panel de Control */
+.control-panel h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.control-panel ul {
+    list-style: none;
+    padding: 0;
+}
+
+.control-panel ul li {
+    margin-bottom: 15px;
+}
+
+.control-panel ul li a {
+    text-decoration: none;
+    color: #007bff;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.control-panel ul li a:hover {
+    color: #0056b3;
+}
+
+/* Botón tipo hamburguesa flotante */
+.hamburger-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: transparent; /* Fondo transparente */
+    color: #ffffff; /* Color del ícono */
+    border: none;
+    border-radius: 50%; /* Forma circular */
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none; /* Sin sombra */
+    cursor: pointer;
+    z-index: 1100; /* Asegura que esté por encima de otros elementos */
+    transition: opacity 0.3s ease; /* Transición para mostrar/ocultar */
+}
+
+/* Efecto hover para el botón */
+.hamburger-btn:hover {
+    color: #555; /* Cambia el color del ícono al pasar el mouse */
+}
+
+/* Estilo para el ícono */
+.hamburger-btn i {
+    font-size: 24px; /* Tamaño del ícono */
+}
+
+/* Botón de Iniciar sesión */
+.login-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #28a745; /* Color verde */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover para el botón de Iniciar sesión */
+.login-btn:hover {
+    background-color: #218838; /* Verde más oscuro */
+}
