@@ -1,0 +1,46 @@
+<!-- register.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <link rel="stylesheet" href="css/styles.css"> <!-- Añade tus estilos -->
+    <link rel="stylesheet" href="css/register.css">
+</head>
+<body>
+    <div class="register-container">
+        <h2>Completa tu registro</h2>
+        <form id="registerForm">
+            <label for="accountType">Tipo de cuenta:</label>
+            <select id="accountType" name="accountType" required>
+                <option value="" disabled selected>Selecciona una opción</option>
+                <option value="client">Cliente</option>
+                <option value="store">Tienda</option>
+            </select>
+
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="phone">Teléfono:</label>
+            <input type="tel" id="phone" name="phone" required>
+
+            <label for="description">Descripción:</label>
+            <textarea id="description" name="description" required></textarea>
+
+            <!-- Campos adicionales para tiendas -->
+            <div id="storeFields" style="display: none;">
+                <label for="coverImage">Imagen de portada:</label>
+                <input type="file" id="coverImage" name="coverImage" accept="image/*">
+
+                <label for="imageUrl">Imagen de perfil:</label>
+                <input type="file" id="imageUrl" name="imageUrl" accept="image/*">
+            </div>
+
+            <button type="submit">Registrarse</button>
+        </form>
+    </div>
+
+    <script type="module" src="./js/register.js"></script>
+</body>
+</html>
