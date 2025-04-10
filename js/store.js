@@ -355,6 +355,33 @@ document.getElementById('cart-button').addEventListener('click', () => {
     showCart();
 });
 
+// Función para establecer la imagen Open Graph
+async function setOpenGraphImage() {
+    if (!storeId) {
+        console.error("No se proporcionó un storeId en la URL.");
+        return;
+    }
+
+    const productsSnapshot = await getDocs(collection(db, `stores/${storeId}/products`));
+    const productImages = [];
+
+    productsSnapshot.forEach(productDoc => {
+        const product = productDoc.data();
+        if (product.imageUrl) {
+            productImages.push(product.imageUrl);
+        }
+    });
+
+    if (productImages.length > 0) {
+        const randomImage = productImages[Math.floor(Math.random() * productImages.length)];
+        const ogImageMetaTag = document.querySelector('meta[property="og:image"]');
+        if (ogImageMetaTag) {
+            ogImageMetaTag.setAttribute('content', randomImage);
+        }
+    }
+}
+
 // Cargar los datos de la tienda y sus productos
 loadStore();
 loadProducts();
+setOpenGraphImage();
