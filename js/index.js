@@ -92,6 +92,36 @@ async function fetchProducts() {
     }
 }
 
+// Set a random cover
+async function setRandomCover() {
+    try {
+        const storesSnapshot = await withRetry(() => getDocs(collection(db, "stores")));
+        const productImages = [];
+
+        // Itera sobre cada tienda para obtener las imágenes de los productos
+        for (const storeDoc of storesSnapshot.docs) {
+            const storeId = storeDoc.id;
+            const productsSnapshot = await withRetry(() => getDocs(collection(db, `stores/${storeId}/products`)));
+
+            productsSnapshot.forEach(productDoc => {
+                const product = productDoc.data();
+                if (product.imageUrl) {
+                    productImages.push(product.imageUrl); // Agrega la URL de la imagen del producto
+                }
+            });
+        }
+
+        if (productImages.length > 0) {
+            const randomImage = productImages[Math.floor(Math.random() * productImages.length)]; // Selecciona una imagen aleatoria
+            const randomCoverElement = document.getElementById('random-cover');
+            randomCoverElement.style.backgroundImage = `url(${randomImage})`; // Establece la imagen de fondo
+        }
+    } catch (error) {
+        console.error("Error al cargar la portada aleatoria:", error);
+    }
+}
+
 // Load data on page load
 fetchStores();
 fetchProducts();
+setRandomCover();
