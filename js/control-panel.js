@@ -1,4 +1,5 @@
-import { auth, googleProvider, signInWithPopup, db, doc, getDoc } from './firebase-config.js';
+// js/control-panel.js
+import { auth, googleProvider, signInWithPopup, db, doc, getDoc, collection, query, where, getDocs } from './firebase-config.js';
 
 // Hacer toggleControlPanel global
 window.toggleControlPanel = function () {
@@ -94,22 +95,70 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Escuchar cambios en el estado de autenticación
-                auth.onAuthStateChanged((user) => {
+                auth.onAuthStateChanged(async (user) => {
                     console.log('Estado de autenticación:', user); // Depuración
                     if (user) {
-                        const { displayName, email, photoURL } = user;
+                        let storeInfo = '';
+                        try {
+                            const storeDoc = doc(db, 'stores', user.uid); // Si el uid del usuario es la clave primaria en 'stores'
+                            const storeSnapshot = await getDoc(storeDoc);
 
-                        // Mostrar información del usuario
+                            if (storeSnapshot.exists()) {
+                                const storeData = storeSnapshot.data();
+                                storeInfo = `
+                                    <div class="store-info" style="display: flex; align-items: center; gap: 10px;">
+                                        <img src="${storeData.imageUrl || 'https://via.placeholder.com/60'}" alt="Foto de la tienda" style="max-width: 60px; border-radius: 50%;">
+                                        <div>
+                                            <a href="store.html?storeId=${user.uid}" class="store-name" style="font-size: 1.2em; font-weight: bold; text-decoration: none; color: inherit;" title="Ir al perfil de la tienda">
+                                                ${storeData.name || 'Sin nombre'}
+                                            </a>
+                                            <button class="edit-store-btn" id="editStoreButton" title="Editar Tienda" style="margin-top: 5px;">Editar</button>
+                                        </div>
+                                    </div>
+                                `;
+                            } else {
+                                // Buscar tienda por el campo 'owner' si el uid no es la clave primaria
+                                const storesQuery = query(collection(db, 'stores'), where('owner', '==', user.uid));
+                                const querySnapshot = await getDocs(storesQuery);
+                                if (!querySnapshot.empty) {
+                                    const storeData = querySnapshot.docs[0].data();
+                                    const storeId = querySnapshot.docs[0].id; // Obtener el ID del documento
+                                    storeInfo = `
+                                        <div class="store-info" style="display: flex; align-items: center; gap: 10px;">
+                                            <img src="${storeData.imageUrl || 'https://via.placeholder.com/60'}" alt="Foto de la tienda" style="max-width: 60px; border-radius: 50%;">
+                                            <div>
+                                                <a href="store.html?storeId=${storeId}" class="store-name" style="font-size: 1.2em; font-weight: bold; text-decoration: none; color: inherit;" title="Ir al perfil de la tienda">
+                                                    ${storeData.name || 'Sin nombre'}
+                                                </a>
+                                                <button class="edit-store-btn" id="editStoreButton" title="Editar Tienda" style="margin-top: 5px;">Editar</button>
+                                            </div>
+                                        </div>
+                                    `;
+                                } else {
+                                    storeInfo = `<p>No tienes una tienda registrada.</p>`;
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error al obtener datos de la tienda:', error);
+                            storeInfo = `<p>Error al cargar la información de la tienda.</p>`;
+                        }
+
+                        // Mostrar solo la información de la tienda
                         userInfoContainer.innerHTML = `
-                            <img src="${photoURL || 'https://via.placeholder.com/60'}" alt="Foto de perfil">
-                            <div class="user-details">
-                                <div class="user-name">${displayName || 'Usuario'}</div>
-                                <div class="user-email">${email || 'Correo no disponible'}</div>
-                            </div>
+                            ${storeInfo}
                             <button class="logout-btn" id="logoutButton" title="Cerrar sesión">
                                 <i class="bi bi-power"></i>
                             </button>
                         `;
+
+                        // Agregar funcionalidad al botón "Editar"
+                        const editStoreButton = document.getElementById('editStoreButton');
+                        if (editStoreButton) {
+                            editStoreButton.addEventListener('click', () => {
+                                alert('Funcionalidad de edición de tienda aún no implementada.');
+                                // Aquí puedes redirigir a una página de edición o abrir un modal
+                            });
+                        }
 
                         // Ocultar el botón de "Iniciar sesión con Google"
                         if (googleLoginButton) {
