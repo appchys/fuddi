@@ -157,7 +157,7 @@ main {
 .sidebar {
     position: fixed;
     top: 0;
-    right: -300px;
+    right: -300px; /* Oculta la sidebar por defecto */
     width: 300px;
     height: 100%;
     background-color: #fff;
@@ -168,11 +168,21 @@ main {
 }
 
 .sidebar.hidden {
-    right: -300px;
+    right: -300px; /* PC */
 }
 
 .sidebar.visible {
-    right: 0;
+    right: 0; /* Muestra la sidebar */
+}
+
+/* En dispositivos móviles, asegúrate de que el ancho sea 100% */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+    }
+    .sidebar.hidden {
+        right: -100%; /* Móvil: oculta completamente */
+    }
 }
 
 /* Estilo para el botón de cerrar el sidebar */

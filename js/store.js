@@ -157,6 +157,7 @@ async function showProductDetails(productId) {
 document.getElementById('close-sidebar').addEventListener('click', () => {
     const sidebar = document.getElementById('product-sidebar');
     sidebar.classList.remove('visible');
+    sidebar.classList.add('hidden'); // Agregar esta línea
 });
 
 // Función para manejar la acción de añadir al carrito
