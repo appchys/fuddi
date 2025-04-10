@@ -39,6 +39,13 @@ async function loadStore() {
         document.getElementById('store-name').textContent = store.name;
         document.getElementById('store-description').textContent = store.description;
 
+        // Actualizar el título dinámico
+        document.title = `${store.name} - Catálogo`;
+        document.getElementById('og-title').setAttribute('content', `${store.name} - Catálogo`);
+
+        // Actualizar la descripción dinámica
+        document.getElementById('og-description').setAttribute('content', store.description);
+
         // Mostrar la foto de perfil de la tienda
         if (store.imageUrl) {
             const profileImage = document.getElementById('store-profile-image');

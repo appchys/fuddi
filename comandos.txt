@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Mejoras en inicio"
+git commit -m "Vista previa enlace compartido"
 git push -u origin main
