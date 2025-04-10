@@ -13,9 +13,18 @@
         <h1>All I Market</h1>
         <nav>
             <ul>
-                <li><a href="store.html">Perfil de Tienda</a></li>
-                <li><a href="#stores">Tiendas</a></li>
-                <li><a href="#products">Productos</a></li>
+                <li>
+                    <button onclick="document.getElementById('stores').scrollIntoView({ behavior: 'smooth' });">
+                        <i class="bi bi-shop"></i> <!-- Ícono de tienda -->
+                        Tiendas
+                    </button>
+                </li>
+                <li>
+                    <button onclick="document.getElementById('products').scrollIntoView({ behavior: 'smooth' });">
+                        <i class="bi bi-box-seam"></i> <!-- Ícono de productos -->
+                        Productos
+                    </button>
+                </li>
             </ul>
         </nav>
     </header>

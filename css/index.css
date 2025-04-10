@@ -16,6 +16,7 @@ body {
 .store p {
     display: -webkit-box;
     -webkit-line-clamp: 2; /* Limitar a 2 líneas */
+    line-clamp: 2; /* Standard property for compatibility */
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -114,8 +115,63 @@ body {
     line-height: 1.2;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2; /* Standard property for compatibility */
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Estilo para el contenedor de los botones en el header */
+header nav ul {
+    display: flex; /* Alinea los botones horizontalmente */
+    justify-content: center; /* Centra los botones horizontalmente */
+    align-items: center; /* Centra los botones verticalmente */
+    list-style: none; /* Elimina los puntos de la lista */
+    padding: 0; /* Elimina el padding */
+    margin: 20px 0 0; /* Agrega un margen superior de 20px */
+    gap: 10px; /* Espaciado entre los botones */
+}
+
+/* Estilo para los elementos de la lista */
+header nav ul li {
+    display: inline-block; /* Asegura que los botones se comporten como elementos en línea */
+}
+
+/* Estilo para los botones del menú en el header */
+header nav ul li button {
+    background-color: #ffffff; /* Fondo blanco */
+    border: 1px solid #e0e0e0; /* Borde gris claro */
+    border-radius: 10px; /* Esquinas redondeadas */
+    padding: 10px; /* Espaciado interno */
+    width: 80px; /* Ancho fijo */
+    height: 80px; /* Alto fijo */
+    display: flex;
+    flex-direction: column; /* Ícono y texto en columna */
+    align-items: center; /* Centrar contenido horizontalmente */
+    justify-content: center; /* Centrar contenido verticalmente */
+    font-size: 14px; /* Tamaño de fuente */
+    font-weight: 500; /* Peso de la fuente */
+    color: #333; /* Color del texto */
+    cursor: pointer; /* Cursor de pointer al pasar el mouse */
+    transition: background-color 0.3s ease; /* Transición suave para hover */
+}
+
+/* Estilo para el ícono dentro del botón */
+header nav ul li button i {
+    font-size: 24px; /* Tamaño del ícono */
+    color: #28a745; /* Color verde para el ícono */
+    margin-bottom: 5px; /* Espacio entre el ícono y el texto */
+}
+
+/* Efecto hover para los botones */
+header nav ul li button:hover {
+    background-color: #f5f5f5; /* Fondo gris claro al pasar el mouse */
+}
+
+/* Estilo para los encabezados h2 */
+h2 {
+    margin-top: 20px; /* Ajusta este valor según el espacio que desees */
+    font-size: 1.5rem; /* Tamaño de fuente (opcional) */
+    text-align: center; /* Centrado del texto (opcional) */
 }
 
 /* Media query para pantallas más grandes (opcional) */
@@ -148,3 +204,4 @@ body {
         font-size: 0.8rem;
     }
 }
+
