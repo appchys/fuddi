@@ -1,12 +1,29 @@
 // En store.js
-import { app, auth, googleProvider, signInWithPopup } from './firebase-config.js';import { getFirestore, doc, getDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-
+import { app, auth, googleProvider, signInWithPopup } from './firebase-config.js';
+import { getFirestore, doc, getDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 // Initialize Firestore
 const db = getFirestore(app);
 
 // Obtener el storeId de la URL
 const params = new URLSearchParams(window.location.search);
 const storeId = params.get('storeId');
+
+
+// Función auxiliar para reintentar una promesa
+async function withRetry(fn, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await fn();
+        } catch (error) {
+            if (i === retries - 1) {
+                console.error("Todos los intentos fallaron:", error);
+                throw error;
+            }
+            console.warn(`Intento ${i + 1} falló, reintentando en ${delay}ms...`, error);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+}
 
 // Cargar los datos de la tienda
 async function loadStore() {
