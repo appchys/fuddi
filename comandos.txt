@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Novedades"
+git commit -m "Sidebar en movil"
 git push -u origin main

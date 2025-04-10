@@ -2,7 +2,7 @@
 /* Estilo para la cuadrícula de productos */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Cuadrícula responsiva */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Cuadrícula responsiva */
     gap: 20px; /* Espacio entre los productos */
     padding: 10px;
 }
