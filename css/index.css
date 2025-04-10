@@ -23,7 +23,7 @@ body {
 /* Estilos para el contenedor de tiendas */
 #stores-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 1rem;
     padding: 0.5rem;
 }
@@ -31,7 +31,7 @@ body {
 /* Estilos para cada tarjeta de tienda */
 .store {
     background: white;
-    border-radius: 6px;
+    border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -51,7 +51,7 @@ body {
 /* Encabezado de la tienda (portada + perfil) */
 .store-header {
     position: relative;
-    height: 75px;
+    height: 90px;
 }
 
 /* Portada de la tienda */
@@ -60,7 +60,6 @@ body {
     height: 100%;
     background-size: cover;
     background-position: center;
-    position: relative;
 }
 
 .store-cover-img {
@@ -72,12 +71,12 @@ body {
 /* Contenedor de la imagen de perfil */
 .store-profile-container {
     position: absolute;
-    bottom: -25px;
+    bottom: -30px;
     left: 10px;
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    border: 2px solid white;
+    border: 3px solid white;
     background: white;
     overflow: hidden;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
@@ -92,13 +91,16 @@ body {
 
 /* Detalles de la tienda (nombre + descripción) */
 .store-details {
-    padding: 30px 10px 10px 10px;
+    padding: 35px 10px 10px 10px;
 }
 
 .store-name {
     margin: 0;
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .store-name a:hover {
@@ -108,10 +110,41 @@ body {
 .store-description {
     margin: 5px 0 0;
     color: #666;
-    font-size: 0.45rem;
+    font-size: 0.7rem;
     line-height: 1.2;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Media query para pantallas más grandes (opcional) */
+@media (min-width: 768px) {
+    #stores-container {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .store-header {
+        height: 120px;
+    }
+    
+    .store-profile-container {
+        bottom: -40px;
+        left: 15px;
+        width: 80px;
+        height: 80px;
+    }
+    
+    .store-details {
+        padding: 50px 15px 15px 15px;
+    }
+    
+    .store-name {
+        font-size: 1.1rem;
+    }
+    
+    .store-description {
+        font-size: 0.8rem;
+    }
 }
