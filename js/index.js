@@ -22,6 +22,7 @@ async function withRetry(fn, retries = 3, delay = 1000) {
 }
 
 // Fetch and display stores
+// Fetch and display stores
 async function fetchStores() {
     const storesContainer = document.getElementById('stores-container');
     
@@ -29,16 +30,28 @@ async function fetchStores() {
         const storesSnapshot = await withRetry(() => getDocs(collection(db, "stores")));
         storesSnapshot.forEach(doc => {
             const store = doc.data();
-            const storeId = doc.id; // Obtener el ID de la tienda
+            const storeId = doc.id;
             const storeElement = document.createElement('div');
             storeElement.classList.add('store');
             storeElement.innerHTML = `
-                <h3>
-                    <a href="store.html?storeId=${storeId}" style="text-decoration: none; color: inherit;">
-                        ${store.name}
-                    </a>
-                </h3>
-                <p>${store.description}</p>
+                <div class="store-container">
+                    <div class="store-header">
+                        <div class="store-cover" style="background-color: ${store.coverUrl ? 'transparent' : '#ccc'};">
+                            ${store.coverUrl ? `<img src="${store.coverUrl}" alt="Portada de ${store.name}" class="store-cover-img">` : ''}
+                        </div>
+                        <div class="store-profile-container">
+                            <img src="${store.imageUrl || 'default-profile.png'}" alt="Perfil de ${store.name}" class="store-profile-img">
+                        </div>
+                    </div>
+                    <div class="store-details">
+                        <h3 class="store-name">
+                            <a href="store.html?storeId=${storeId}" style="text-decoration: none; color: inherit;">
+                                ${store.name}
+                            </a>
+                        </h3>
+                        <p class="store-description">${store.description}</p>
+                    </div>
+                </div>
             `;
             storesContainer.appendChild(storeElement);
         });

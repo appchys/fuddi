@@ -1,0 +1,117 @@
+/* Reset básico para eliminar márgenes y padding por defecto */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Estilo general del cuerpo */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+/* Limitar la descripción a 2 líneas */
+.store p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limitar a 2 líneas */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* Estilos para el contenedor de tiendas */
+#stores-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+/* Estilos para cada tarjeta de tienda */
+.store {
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.store:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Contenedor principal de la tienda */
+.store-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Encabezado de la tienda (portada + perfil) */
+.store-header {
+    position: relative;
+    height: 75px;
+}
+
+/* Portada de la tienda */
+.store-cover {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.store-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Contenedor de la imagen de perfil */
+.store-profile-container {
+    position: absolute;
+    bottom: -25px;
+    left: 10px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background: white;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Imagen de perfil */
+.store-profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Detalles de la tienda (nombre + descripción) */
+.store-details {
+    padding: 30px 10px 10px 10px;
+}
+
+.store-name {
+    margin: 0;
+    font-size: 0.7rem;
+    color: #333;
+}
+
+.store-name a:hover {
+    color: #0066cc;
+}
+
+.store-description {
+    margin: 5px 0 0;
+    color: #666;
+    font-size: 0.45rem;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
