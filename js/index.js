@@ -22,7 +22,7 @@ async function withRetry(fn, retries = 3, delay = 1000) {
 }
 
 // Fetch and display stores
-// Fetch and display stores
+
 async function fetchStores() {
     const storesContainer = document.getElementById('stores-container');
     
