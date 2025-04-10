@@ -72,7 +72,7 @@
     justify-content: center;
     box-shadow: none; /* Sin sombra */
     cursor: pointer;
-    z-index: 1100; /* Asegura que esté por encima de otros elementos */
+    z-index: 10; /* Asegura que esté por encima de otros elementos */
     transition: opacity 0.3s ease; /* Transición para mostrar/ocultar */
 }
 

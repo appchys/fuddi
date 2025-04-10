@@ -8,7 +8,6 @@ const db = getFirestore(app);
 const params = new URLSearchParams(window.location.search);
 const storeId = params.get('storeId');
 
-
 // Función auxiliar para reintentar una promesa
 async function withRetry(fn, retries = 3, delay = 1000) {
     for (let i = 0; i < retries; i++) {
@@ -203,7 +202,7 @@ function addToCart(productId) {
 }
 
 // Función para mostrar el carrito
-function showCart() {
+async function showCart() {
     if (!storeId) {
         console.error("No se proporcionó un storeId en la URL.");
         return;
@@ -219,25 +218,109 @@ function showCart() {
     if (cart.length === 0) {
         cartDetails.innerHTML = '<p>El carrito está vacío.</p>';
     } else {
-        cart.forEach(item => {
-            const cartItem = document.createElement('div');
-            cartItem.classList.add('cart-item');
-            cartItem.innerHTML = `
-                <p>Producto ID: ${item.productId}</p>
-                <p>Cantidad: ${item.quantity}</p>
-            `;
-            cartDetails.appendChild(cartItem);
-        });
+        let totalGeneral = 0;
 
+        for (const item of cart) {
+            const productDoc = await getDoc(doc(db, `stores/${storeId}/products`, item.productId));
+            if (productDoc.exists()) {
+                const product = productDoc.data();
+                const subtotal = product.price * item.quantity;
+                totalGeneral += subtotal;
+
+                const cartItem = document.createElement('div');
+                cartItem.classList.add('cart-item');
+                cartItem.innerHTML = `
+                    <div class="cart-item-image">
+                        <img src="${product.imageUrl}" alt="${product.name}">
+                    </div>
+                    <div class="cart-item-details">
+                        <p class="cart-item-name"><strong>${product.name}</strong></p>
+                        <p class="cart-item-quantity">
+                            Cantidad: ${item.quantity}
+                            <button class="increment-quantity" data-product-id="${item.productId}" title="Incrementar cantidad">
+                                <i class="bi bi-plus-circle"></i>
+                            </button>
+                        </p>
+                        <p class="cart-item-subtotal">Subtotal: $${subtotal.toFixed(2)}</p>
+                    </div>
+                    <button class="remove-from-cart" data-product-id="${item.productId}" title="Eliminar del carrito">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                `;
+                cartDetails.appendChild(cartItem);
+            }
+        }
+
+        // Mostrar el total general
+        const totalElement = document.createElement('div');
+        totalElement.classList.add('cart-total');
+        totalElement.innerHTML = `
+            <p><strong>Total General:</strong> $${totalGeneral.toFixed(2)}</p>
+        `;
+        cartDetails.appendChild(totalElement);
+
+        // Botón de checkout
         const checkoutButton = document.createElement('button');
         checkoutButton.textContent = 'Checkout';
         checkoutButton.classList.add('checkout-btn');
         checkoutButton.addEventListener('click', checkout);
         cartDetails.appendChild(checkoutButton);
+
+        // Agregar eventos a los botones de eliminar
+        const removeButtons = document.querySelectorAll('.remove-from-cart');
+        removeButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const productId = event.target.closest('button').getAttribute('data-product-id');
+                removeFromCart(productId);
+            });
+        });
+
+        // Agregar eventos a los botones de incrementar cantidad
+        const incrementButtons = document.querySelectorAll('.increment-quantity');
+        incrementButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const productId = event.target.closest('button').getAttribute('data-product-id');
+                incrementQuantity(productId);
+            });
+        });
     }
 
     cartSidebar.classList.remove('hidden');
     cartSidebar.classList.add('visible');
+}
+
+// Función para incrementar la cantidad de un producto en el carrito
+function incrementQuantity(productId) {
+    const cartKey = `cart_${storeId}`;
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+    cart = cart.map(item => {
+        if (item.productId === productId) {
+            item.quantity += 1;
+        }
+        return item;
+    });
+
+    // Guardar el carrito actualizado
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+
+    // Actualizar la vista del carrito
+    showCart();
+}
+
+// Función para eliminar un producto del carrito
+function removeFromCart(productId) {
+    const cartKey = `cart_${storeId}`;
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+    // Filtrar el producto a eliminar
+    cart = cart.filter(item => item.productId !== productId);
+
+    // Guardar el carrito actualizado
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+
+    // Actualizar la vista del carrito
+    showCart();
 }
 
 // Cerrar la sidebar del carrito
