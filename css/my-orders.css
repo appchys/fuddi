@@ -1,0 +1,35 @@
+/* Estilo para los pedidos */
+.order-item {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+}
+
+.order-item h3 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.order-item p {
+    font-size: 14px;
+    color: #666;
+    margin: 5px 0;
+}
+
+.view-details-btn {
+    background-color: #ff6f91;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.view-details-btn:hover {
+    background-color: #e65b7a;
+}
