@@ -307,9 +307,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             alert('¡Pedido confirmado! Gracias por tu compra.');
 
-            // Limpiar el carrito y redirigir
+            // Limpiar el carrito y redirigir a Mis pedidos
             localStorage.removeItem(cartKey); // Limpia el carrito
-            window.location.href = '/thank-you.html'; // Redirige a una página de agradecimiento
+            window.location.href = '/my-orders.html'; // Redirige a la página de Mis pedidos
         } catch (error) {
             console.error('Error al guardar la orden:', error);
             alert('Hubo un error al confirmar tu pedido. Por favor, inténtalo de nuevo.');
