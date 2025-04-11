@@ -40,6 +40,26 @@
                 </form>
             </div>
         </section>
+
+        <!-- Sección de Pago -->
+        <section id="payment-method">
+            <h2>Método de Pago</h2>
+            <div class="payment-options">
+                <label>
+                    <input type="radio" name="payment" value="cash" checked>
+                    <span>Efectivo</span>
+                </label>
+                <label>
+                    <input type="radio" name="payment" value="transfer">
+                    <span>Transferencia</span>
+                </label>
+            </div>
+        </section>
+
+        <!-- Botón de Confirmar -->
+        <section id="confirm-order">
+            <button id="confirm-btn" class="btn confirm-btn">Confirmar Pedido</button>
+        </section>
     </main>
     <script type="module" src="./js/checkout.js"></script>
 </body>

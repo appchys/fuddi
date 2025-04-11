@@ -215,3 +215,61 @@ main h2 {
     color: #666;
     margin-bottom: 10px;
 }
+
+/* Estilo para la sección de pago */
+#payment-method {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+#payment-method h2 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #ff6f91;
+    padding-bottom: 5px;
+}
+
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.payment-options label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+}
+
+.payment-options input[type="radio"] {
+    accent-color: #ff6f91; /* Color del botón de selección */
+    cursor: pointer;
+}
+
+/* Botón de Confirmar */
+.confirm-btn {
+    background-color: #28a745; /* Verde */
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.confirm-btn:hover {
+    background-color: #218838; /* Verde más oscuro */
+}

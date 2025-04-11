@@ -254,7 +254,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             btn.addEventListener('click', (e) => {
                                 const index = e.target.dataset.index;
                                 selectedAddress = addresses[index];
-                                alert(`Dirección seleccionada: ${selectedAddress.reference}`);
                                 window.location.reload(); // Recargar para reflejar la dirección seleccionada
                             });
                         });
@@ -270,4 +269,49 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Llamar a la función para cargar direcciones
     loadSavedAddresses();
+
+    const confirmBtn = document.getElementById('confirm-btn');
+
+    confirmBtn.addEventListener('click', async () => {
+        if (!selectedAddress) {
+            alert('Por favor, selecciona una dirección de entrega.');
+            return;
+        }
+    
+        const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked');
+        if (!selectedPaymentMethod) {
+            alert('Por favor, selecciona un método de pago.');
+            return;
+        }
+    
+        if (cart.length === 0) {
+            alert('El carrito está vacío. Agrega productos antes de confirmar el pedido.');
+            return;
+        }
+    
+        try {
+            // Crear la estructura de la orden
+            const orderData = {
+                userId: auth.currentUser.uid,
+                items: cart,
+                total: cart.reduce((sum, item) => sum + item.quantity * item.price, 0),
+                address: selectedAddress,
+                paymentMethod: selectedPaymentMethod.value,
+                createdAt: new Date().toISOString(),
+            };
+    
+            // Guardar la orden en Firestore
+            const ordersRef = doc(db, 'orders', `${auth.currentUser.uid}_${Date.now()}`);
+            await setDoc(ordersRef, orderData);
+    
+            alert('¡Pedido confirmado! Gracias por tu compra.');
+    
+            // Limpiar el carrito y redirigir
+            localStorage.removeItem(cartKey); // Limpia el carrito
+            window.location.href = '/thank-you.html'; // Redirige a una página de agradecimiento
+        } catch (error) {
+            console.error('Error al guardar la orden:', error);
+            alert('Hubo un error al confirmar tu pedido. Por favor, inténtalo de nuevo.');
+        }
+    });
 });
