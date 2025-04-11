@@ -24,6 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
         storeFields.style.display = 'none'; // Ocultar campos de tienda
         clientButton.classList.add('selected');
         storeButton.classList.remove('selected');
+
+        // Eliminar el atributo "required" de los campos de tienda
+        document.getElementById('description').removeAttribute('required');
+        document.getElementById('storeId').removeAttribute('required');
+        document.getElementById('imageUrl').removeAttribute('required');
+        document.getElementById('coverImage').removeAttribute('required');
     });
 
     // Manejar clic en el botón "Tienda"
@@ -32,6 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
         storeFields.style.display = 'block'; // Mostrar campos de tienda
         storeButton.classList.add('selected');
         clientButton.classList.remove('selected');
+
+        // Agregar el atributo "required" a los campos de tienda
+        document.getElementById('description').setAttribute('required', 'true');
+        document.getElementById('storeId').setAttribute('required', 'true');
+        document.getElementById('imageUrl').setAttribute('required', 'true');
+        document.getElementById('coverImage').setAttribute('required', 'true');
     });
 
     form.addEventListener('submit', async (e) => {
@@ -60,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 await setDoc(doc(db, 'users', user.uid), userData);
                 alert('¡Registro como cliente exitoso!');
-                window.location.href = 'dashboard-client.html'; // Dashboard de cliente
+                window.location.href = 'index.html'; // Redirigir a inicio
             } else if (accountType === 'store') {
                 const storeId = document.getElementById('storeId').value.trim();
                 if (!storeId) {
@@ -98,8 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: user.email,
                     owner: user.uid,
                     createdAt: new Date().toISOString(),
-                    coverUrl,
-                    imageUrl,
+                    coverUrl, // Puede ser una cadena vacía si no se subió imagen
+                    imageUrl, // Puede ser una cadena vacía si no se subió imagen
                 };
                 await setDoc(doc(db, 'stores', storeId), storeData);
                 alert('¡Registro como tienda exitoso!');
