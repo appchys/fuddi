@@ -1,59 +1,77 @@
 import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { app, auth } from './firebase-config.js';
+import { app, auth } from './firebase-config.js'; // Asegúrate de que este archivo exporte la instancia de Firebase y auth
 
+// Inicializa Firestore
 const db = getFirestore(app);
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const ordersList = document.getElementById('orders-list');
+    const ordersContainer = document.getElementById('store-orders-container'); // Contenedor donde se mostrarán las órdenes
 
+    // Verificar si el usuario está autenticado
     auth.onAuthStateChanged(async (user) => {
         if (user) {
+            console.log('Usuario autenticado:', user.uid); // Log para verificar el usuario autenticado
             try {
-                // Recuperar el storeId desde el almacenamiento local
-                const storeId = localStorage.getItem('storeId');
+                // Buscar la tienda asociada al usuario autenticado
+                const storeQuery = query(collection(db, 'stores'), where('owner', '==', user.uid));
+                const storeSnapshot = await getDocs(storeQuery);
 
-                if (!storeId) {
-                    ordersList.innerHTML = '<p>No se encontró un ID de tienda. Por favor, inicia sesión nuevamente.</p>';
+                if (storeSnapshot.empty) {
+                    console.log('No se encontró una tienda asociada al usuario:', user.uid);
+                    ordersContainer.innerHTML = '<p>No tienes una tienda registrada.</p>';
                     return;
                 }
 
-                // Consultar los pedidos realizados a la tienda
+                // Asumimos que el usuario tiene una sola tienda
+                const storeDoc = storeSnapshot.docs[0];
+                const storeDocId = storeDoc.id; // Usar el ID del documento como identificador interno
+                console.log('Store Document ID obtenido:', storeDocId);
+
+                // Consultar las órdenes de la tienda
                 const ordersRef = collection(db, 'orders');
-                const q = query(ordersRef, where('storeId', '==', storeId));
+                const q = query(ordersRef, where('storeDocId', '==', storeDocId));
+                console.log('Consulta de Firestore creada:', q); // Log para verificar la consulta
+
                 const querySnapshot = await getDocs(q);
+                console.log('Resultados de la consulta:', querySnapshot); // Log para verificar los resultados de la consulta
 
                 if (querySnapshot.empty) {
-                    ordersList.innerHTML = '<p>No hay pedidos para esta tienda.</p>';
+                    console.log('No se encontraron pedidos para la tienda con storeDocId:', storeDocId); // Log si no hay pedidos
+                    ordersContainer.innerHTML = '<p>No hay pedidos para esta tienda.</p>';
                     return;
                 }
 
+                // Renderizar las órdenes
                 querySnapshot.forEach((doc) => {
                     const order = doc.data();
+                    console.log('Pedido encontrado:', order); // Log para verificar cada pedido
+
                     const orderElement = document.createElement('div');
                     orderElement.classList.add('order-item');
                     orderElement.innerHTML = `
                         <h3>Pedido #${doc.id}</h3>
-                        <p><strong>Cliente:</strong> ${order.userId}</p>
+                        <p><strong>Cliente:</strong> ${order.clientName}</p>
+                        <p><strong>Total:</strong> $${order.total.toFixed(2)}</p>
+                        <p><strong>Dirección:</strong> ${order.address.reference}</p>
+                        <p><strong>Método de Pago:</strong> ${order.paymentMethod}</p>
                         <p><strong>Fecha:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
-                        <p><strong>Total:</strong> $${isNaN(order.total) ? 'No disponible' : order.total.toFixed(2)}</p>
-                        <p><strong>Método de Pago:</strong> ${order.paymentMethod === 'cash' ? 'Efectivo' : 'Transferencia'}</p>
-                        <button class="view-details-btn" data-id="${doc.id}">Ver Detalles</button>
+                        <h4>Productos:</h4>
+                        <ul>
+                            ${order.items.map(item => `
+                                <li>${item.quantity} x ${item.name} - $${(item.quantity * item.price).toFixed(2)}</li>
+                            `).join('')}
+                        </ul>
                     `;
-                    ordersList.appendChild(orderElement);
-                });
-
-                document.querySelectorAll('.view-details-btn').forEach((btn) => {
-                    btn.addEventListener('click', (e) => {
-                        const orderId = e.target.dataset.id;
-                        alert(`Detalles del pedido: ${orderId}`);
-                    });
+                    ordersContainer.appendChild(orderElement);
                 });
             } catch (error) {
-                console.error('Error al cargar los pedidos:', error);
-                ordersList.innerHTML = '<p>Hubo un error al cargar los pedidos. Por favor, inténtalo de nuevo más tarde.</p>';
+                console.error('Error al cargar los pedidos de la tienda:', error); // Log para errores
+                ordersContainer.innerHTML = '<p>Hubo un error al cargar los pedidos. Por favor, inténtalo de nuevo más tarde.</p>';
             }
         } else {
-            alert('Por favor, inicia sesión para ver los pedidos.');
+            console.warn('Usuario no autenticado'); // Log si no hay usuario autenticado
+            // Redirigir al inicio de sesión si no está autenticado
+            alert('Por favor, inicia sesión para ver los pedidos de tu tienda.');
             window.location.href = '/login.html';
         }
     });

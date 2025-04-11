@@ -1,4 +1,4 @@
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { app, auth } from './firebase-config.js'; // Asegúrate de que este archivo exporte la instancia de Firebase y auth
 
 // Inicializa Firestore
@@ -290,20 +290,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
+            // Obtener el nombre del cliente desde Firestore
+            const userDoc = doc(db, 'users', auth.currentUser.uid);
+            const userSnapshot = await getDoc(userDoc);
+
+            if (!userSnapshot.exists()) {
+                alert('No se pudo obtener la información del cliente. Por favor, completa tu perfil.');
+                return;
+            }
+
+            const userData = userSnapshot.data();
+            const clientName = userData.name || 'Sin nombre';
+
             // Crear la estructura de la orden
             const orderData = {
-                userId: auth.currentUser.uid,
-                storeId: storeId, // Agregar el storeId a la orden
+                userId: auth.currentUser.uid, // ID del usuario que realiza la orden
+                storeDocId: storeId, // ID del documento de la tienda
                 items: cart,
                 total: cart.reduce((sum, item) => sum + item.quantity * item.price, 0),
                 address: selectedAddress,
                 paymentMethod: selectedPaymentMethod.value,
+                clientName: clientName,
                 createdAt: new Date().toISOString(),
             };
 
             // Guardar la orden en Firestore
-            const ordersRef = doc(db, 'orders', `${auth.currentUser.uid}_${Date.now()}`);
-            await setDoc(ordersRef, orderData);
+            await addDoc(collection(db, 'orders'), orderData);
 
             alert('¡Pedido confirmado! Gracias por tu compra.');
 
