@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout</title>
     <link rel="stylesheet" href="./css/checkout.css"> <!-- Ruta correcta para styles.css -->
-    <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
     <header>
         <h1>Checkout</h1>
     </header>
     <main>
+        <!-- Datos del cliente -->
+        <div id="user-info-container"></div>
+
+        <!-- Carrito -->
         <section id="cart-items">
             <h2>Tu Carrito</h2>
             <div id="cart-details">
@@ -19,6 +22,7 @@
             </div>
         </section>
         
+        <!-- Dirección de entrega -->
         <section id="delivery-address">
             <h2>Dirección de Entrega</h2>
             <div id="saved-addresses">
@@ -36,7 +40,6 @@
                 </form>
             </div>
         </section>
-        <div id="user-info-container"></div>
     </main>
     <script type="module" src="./js/checkout.js"></script>
 </body>

@@ -207,8 +207,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const addresses = userData.addresses || [];
 
                     if (addresses.length > 0) {
-                        savedAddressesContainer.innerHTML = '<h3>Direcciones Guardadas</h3>';
-                        addresses.forEach((address, index) => {
+                        // Mostrar la última dirección como seleccionada
+                        const lastAddress = addresses[addresses.length - 1];
+                        selectedAddress = lastAddress;
+
+                        savedAddressesContainer.innerHTML = `
+                            <div class="selected-address">
+                                <p><strong>Dirección seleccionada:</strong></p>
+                                <p><strong>Referencia:</strong> ${lastAddress.reference}</p>
+                                <p><strong>Coordenadas:</strong> ${lastAddress.latitude}, ${lastAddress.longitude}</p>
+                                <button id="toggle-addresses-btn" class="btn">▼ Mostrar otras direcciones</button>
+                            </div>
+                            <div id="other-addresses" style="display: none;">
+                                <!-- Aquí se mostrarán las demás direcciones -->
+                            </div>
+                        `;
+
+                        // Mostrar otras direcciones al hacer clic en el botón
+                        const toggleAddressesBtn = document.getElementById('toggle-addresses-btn');
+                        const otherAddressesContainer = document.getElementById('other-addresses');
+
+                        toggleAddressesBtn.addEventListener('click', () => {
+                            if (otherAddressesContainer.style.display === 'none') {
+                                otherAddressesContainer.style.display = 'block';
+                                toggleAddressesBtn.textContent = '▲ Ocultar otras direcciones';
+                            } else {
+                                otherAddressesContainer.style.display = 'none';
+                                toggleAddressesBtn.textContent = '▼ Mostrar otras direcciones';
+                            }
+                        });
+
+                        // Renderizar las demás direcciones
+                        addresses.slice(0, -1).forEach((address, index) => {
                             const addressElement = document.createElement('div');
                             addressElement.classList.add('address-item');
                             addressElement.innerHTML = `
@@ -216,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <p><strong>Coordenadas:</strong> ${address.latitude}, ${address.longitude}</p>
                                 <button class="select-address-btn" data-index="${index}">Seleccionar</button>
                             `;
-                            savedAddressesContainer.appendChild(addressElement);
+                            otherAddressesContainer.appendChild(addressElement);
                         });
 
                         // Manejar selección de dirección
@@ -225,6 +255,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 const index = e.target.dataset.index;
                                 selectedAddress = addresses[index];
                                 alert(`Dirección seleccionada: ${selectedAddress.reference}`);
+                                window.location.reload(); // Recargar para reflejar la dirección seleccionada
                             });
                         });
                     } else {

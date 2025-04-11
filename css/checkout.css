@@ -1,16 +1,217 @@
-.cart-item {
-    border-bottom: 1px solid #eee;
-    padding: 10px 0;
-    font-size: 14px;
+/* Estilo general para el contenedor principal */
+main {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 20px auto;
+    font-family: 'Arial', sans-serif;
 }
 
-.cart-item p {
+/* Títulos de las secciones */
+main h2 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #ff6f91;
+    padding-bottom: 5px;
+}
+
+/* Estilo para los datos del cliente */
+.client-info {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+}
+
+.client-info h3 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.client-info p {
+    font-size: 14px;
+    color: #666;
     margin: 5px 0;
 }
 
+/* Estilo para el carrito */
+#cart-items {
+    margin-bottom: 20px;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
 .cart-total {
-    margin-top: 20px;
+    margin-top: 10px;
     font-size: 16px;
     font-weight: bold;
     text-align: right;
+    color: #ff6f91;
+}
+
+/* Botón de checkout */
+.checkout-btn {
+    background-color: #ff6f91;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.checkout-btn:hover {
+    background-color: #e65b7a;
+}
+
+/* Estilo para la sección de direcciones */
+#delivery-address {
+    margin-bottom: 20px;
+}
+
+#saved-addresses {
+    margin-top: 10px;
+}
+
+.address-item {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+}
+
+.address-item p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.address-item button {
+    background-color: #ff6f91;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.address-item button:hover {
+    background-color: #e65b7a;
+}
+
+/* Dirección seleccionada */
+.selected-address {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+}
+
+/* Botón para mostrar/ocultar direcciones */
+#toggle-addresses-btn {
+    background-color: #ff6f91;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+#toggle-addresses-btn:hover {
+    background-color: #e65b7a;
+}
+
+/* Formulario para agregar nueva dirección */
+#new-address-form {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin-top: 10px;
+}
+
+#new-address-form h3 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+#new-address-form label {
+    font-size: 14px;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+}
+
+#new-address-form input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+#new-address-form button {
+    background-color: #ff6f91;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#new-address-form button:hover {
+    background-color: #e65b7a;
+}
+
+/* Botón para obtener ubicación */
+#get-location-btn {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+#get-location-btn:hover {
+    background-color: #218838;
+}
+
+/* Coordenadas */
+#coordinates {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
 }
