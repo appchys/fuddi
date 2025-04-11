@@ -212,3 +212,34 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Error al cargar la sidebar:', error));
     }
 });
+
+document.addEventListener('DOMContentLoaded', async () => {
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            try {
+                // Obtener el storeId del usuario autenticado
+                const storeQuery = query(collection(db, 'stores'), where('owner', '==', user.uid));
+                const storeSnapshot = await getDocs(storeQuery);
+
+                if (!storeSnapshot.empty) {
+                    // Si existe una tienda, obtener el ID del primer documento
+                    const storeId = storeSnapshot.docs[0].id;
+
+                    // Guardar el storeId en el almacenamiento local
+                    localStorage.setItem('storeId', storeId);
+
+                    // Reemplazar STORE_ID en los enlaces
+                    document.querySelectorAll('a[href*="STORE_ID"]').forEach((link) => {
+                        link.href = link.href.replace('STORE_ID', storeId);
+                    });
+                } else {
+                    console.error('No se encontró una tienda asociada al usuario.');
+                }
+            } catch (error) {
+                console.error('Error al obtener el storeId:', error);
+            }
+        } else {
+            console.log('Usuario no autenticado.');
+        }
+    });
+});

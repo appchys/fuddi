@@ -277,35 +277,36 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('Por favor, selecciona una dirección de entrega.');
             return;
         }
-    
+
         const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked');
         if (!selectedPaymentMethod) {
             alert('Por favor, selecciona un método de pago.');
             return;
         }
-    
+
         if (cart.length === 0) {
             alert('El carrito está vacío. Agrega productos antes de confirmar el pedido.');
             return;
         }
-    
+
         try {
             // Crear la estructura de la orden
             const orderData = {
                 userId: auth.currentUser.uid,
+                storeId: storeId, // Agregar el storeId a la orden
                 items: cart,
                 total: cart.reduce((sum, item) => sum + item.quantity * item.price, 0),
                 address: selectedAddress,
                 paymentMethod: selectedPaymentMethod.value,
                 createdAt: new Date().toISOString(),
             };
-    
+
             // Guardar la orden en Firestore
             const ordersRef = doc(db, 'orders', `${auth.currentUser.uid}_${Date.now()}`);
             await setDoc(ordersRef, orderData);
-    
+
             alert('¡Pedido confirmado! Gracias por tu compra.');
-    
+
             // Limpiar el carrito y redirigir
             localStorage.removeItem(cartKey); // Limpia el carrito
             window.location.href = '/thank-you.html'; // Redirige a una página de agradecimiento
