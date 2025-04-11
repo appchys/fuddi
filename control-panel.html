@@ -3,18 +3,14 @@
 <div class="control-panel" id="controlPanel">
     <button class="close-btn" onclick="toggleControlPanel()">×</button>
     <h2>Panel de Control</h2>
-    <ul>
-        <li><a href="index.html">Explorar</a></li>
-        <li><a href="my-orders.html">Mis pedidos</a></li>
-        <li><a href="store-orders.html">Pedidos recibidos</a></li>
-        <li><a href="store-products.html?storeId=STORE_ID">Mis productos</a></li> <!-- Nueva opción -->
-        <li><button class="google-login-btn" id="googleLoginButton" onclick="loginWithGoogle()">Iniciar sesión con Google</button></li>
-    </ul>
 
     <!-- Contenedor para los datos del usuario -->
     <div class="user-info" id="userInfo">
-        <!-- Los datos del usuario y el botón de cerrar sesión se cargarán dinámicamente -->
+        <!-- Los datos del usuario se cargarán dinámicamente -->
     </div>
+
+    <!-- Botón de iniciar sesión con Google (se muestra si no hay usuario logueado) -->
+    <button class="google-login-btn" id="googleLoginButton" onclick="loginWithGoogle()">Iniciar sesión con Google</button>
 </div>
 
 <script type="module" src="./js/control-panel.js"></script>

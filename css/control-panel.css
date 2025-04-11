@@ -2,7 +2,7 @@
 .control-panel {
     position: fixed;
     top: 0;
-    left: -300px; /* Oculta la sidebar inicialmente */
+    left: -300px;
     width: 300px;
     height: 100%;
     background-color: #fff;
@@ -10,15 +10,13 @@
     transition: left 0.3s ease;
     padding: 20px;
     overflow-y: auto;
-    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+    z-index: 1000;
 }
 
-/* Clase para mostrar la sidebar */
 .control-panel.visible {
     left: 0;
 }
 
-/* Estilo para el botón de cerrar */
 .control-panel .close-btn {
     position: absolute;
     top: 10px;
@@ -29,31 +27,135 @@
     cursor: pointer;
 }
 
-/* Estilo para los elementos del Panel de Control */
 .control-panel h2 {
     font-size: 20px;
     margin-bottom: 20px;
     color: #333;
 }
 
-.control-panel ul {
-    list-style: none;
-    padding: 0;
+/* Estilo para el contenedor de información del usuario */
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-.control-panel ul li {
+/* Estilo para las secciones de Tienda y Perfil */
+.client-info, .store-info {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.client-info h3, .store-info h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+/* Contenedor para la foto y el nombre */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin-bottom: 15px;
 }
 
-.control-panel ul li a {
+.profile-header img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    object-fit: cover;
+}
+
+/* Círculo gris por defecto si no hay foto */
+.profile-header .default-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #ccc;
+    border: 2px solid #ddd;
+}
+
+.profile-header .name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Estilo para los enlaces dentro de las secciones */
+.section-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.section-links li {
+    margin-bottom: 10px;
+}
+
+.section-links li a {
     text-decoration: none;
     color: #007bff;
     font-size: 16px;
     transition: color 0.3s ease;
 }
 
-.control-panel ul li a:hover {
+.section-links li a:hover {
     color: #0056b3;
+}
+
+/* Botón de crear perfil/tienda */
+.create-btn {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.create-btn:hover {
+    background-color: #218838;
+}
+
+/* Botón de cerrar sesión */
+.logout-btn {
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 20px;
+    cursor: pointer;
+    align-self: flex-end;
+    transition: color 0.3s ease;
+}
+
+.logout-btn:hover {
+    color: #ff6f91;
+}
+
+/* Botón de Iniciar sesión con Google */
+.google-login-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #4285f4;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.google-login-btn:hover {
+    background-color: #357ae8;
 }
 
 /* Botón tipo hamburguesa flotante */
@@ -85,93 +187,3 @@
 .hamburger-btn i {
     font-size: 24px; /* Tamaño del ícono */
 }
-
-/* Botón de Iniciar sesión */
-.login-btn {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin-top: 20px;
-    background-color: #28a745; /* Color verde */
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    text-align: center;
-    transition: background-color 0.3s ease;
-}
-
-/* Hover para el botón de Iniciar sesión */
-.login-btn:hover {
-    background-color: #218838; /* Verde más oscuro */
-}
-
-/* Estilo para el contenedor de los datos del usuario */
-.user-info {
-    display: flex;
-    align-items: center; /* Alinea verticalmente los elementos */
-    padding: 10px;
-    border-top: 1px solid #e0e0e0; /* Línea separadora */
-    background-color: #f9f9f9;
-    gap: 10px; /* Espaciado entre la foto y el texto */
-    text-align: left; /* Alinea el texto a la izquierda */
-    overflow: hidden; /* Evita que el contenido se desborde */
-}
-
-/* Estilo para la foto de perfil */
-.user-info img {
-    width: 50px; /* Reduce el tamaño de la imagen */
-    height: 50px;
-    border-radius: 50%; /* Hace la imagen circular */
-    border: 2px solid #ddd; /* Borde alrededor de la imagen */
-}
-
-/* Contenedor para el texto (nombre y correo) */
-.user-info .user-details {
-    display: flex;
-    flex-direction: column; /* Coloca el nombre y el correo en columna */
-    overflow: hidden; /* Evita que el contenido se desborde */
-    white-space: nowrap; /* Evita que el texto haga saltos de línea */
-    text-overflow: ellipsis; /* Agrega "..." si el texto es muy largo */
-}
-
-/* Estilo para el nombre del usuario */
-.user-info .user-name {
-    font-size: 14px; /* Reduce el tamaño del texto */
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 3px;
-    overflow: hidden; /* Evita que el contenido se desborde */
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-/* Estilo para el correo del usuario */
-.user-info .user-email {
-    font-size: 12px; /* Reduce el tamaño del texto */
-    color: #666;
-    overflow: hidden; /* Evita que el contenido se desborde */
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-/* Estilo para el botón de cerrar sesión */
-.logout-btn {
-    background: none; /* Sin fondo */
-    border: none; /* Sin borde */
-    color: #333; /* Color del ícono */
-    font-size: 20px; /* Tamaño del ícono */
-    cursor: pointer; /* Cursor de pointer al pasar el mouse */
-    margin-left: auto; /* Alinea el botón a la derecha */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.3s ease;
-}
-
-/* Hover para el botón de cerrar sesión */
-.logout-btn:hover {
-    color: #ff6f91; /* Cambia el color al pasar el mouse */
-}
-

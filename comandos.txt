@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Mejoras en checkout"
+git commit -m "Mejoras en el panel de control"
 git push -u origin main
