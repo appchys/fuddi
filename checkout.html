@@ -18,10 +18,25 @@
                 <!-- Los elementos del carrito se cargarán aquí dinámicamente -->
             </div>
         </section>
-        <section id="account-section">
-            <h2>¿No tienes cuenta?</h2>
-            <button id="create-account-btn" class="btn">Crear cuenta</button>
+        
+        <section id="delivery-address">
+            <h2>Dirección de Entrega</h2>
+            <div id="saved-addresses">
+                <!-- Las direcciones guardadas se cargarán aquí dinámicamente -->
+            </div>
+            <button id="add-address-btn" class="btn">Agregar Nueva Dirección</button>
+            <div id="new-address-form" style="display: none;">
+                <h3>Registrar Nueva Dirección</h3>
+                <form id="addressForm">
+                    <label for="reference">Referencias:</label>
+                    <input type="text" id="reference" name="reference" required>
+                    <button type="button" id="get-location-btn">Obtener Ubicación Actual</button>
+                    <p id="coordinates">Coordenadas: <span id="latitude"></span>, <span id="longitude"></span></p>
+                    <button type="submit">Guardar Dirección</button>
+                </form>
+            </div>
         </section>
+        <div id="user-info-container"></div>
     </main>
     <script type="module" src="./js/checkout.js"></script>
 </body>

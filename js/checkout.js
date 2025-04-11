@@ -1,5 +1,5 @@
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { app } from './firebase-config.js'; // Asegúrate de que este archivo exporte la instancia de Firebase
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { app, auth } from './firebase-config.js'; // Asegúrate de que este archivo exporte la instancia de Firebase y auth
 
 // Inicializa Firestore
 const db = getFirestore(app);
@@ -16,8 +16,75 @@ document.addEventListener('DOMContentLoaded', async () => {
     const cartKey = `cart_${storeId}`;
     const cart = JSON.parse(localStorage.getItem(cartKey)) || [];
     const cartDetails = document.getElementById('cart-details');
+    const userInfoContainer = document.getElementById('user-info-container'); // Contenedor para mostrar datos del cliente o formulario
 
     cartDetails.innerHTML = ''; // Limpia el contenido previo
+
+    // Verificar si el usuario está autenticado
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            try {
+                // Verificar si el usuario tiene un perfil de cliente
+                const userDoc = doc(db, 'users', user.uid);
+                const userSnapshot = await getDoc(userDoc);
+
+                if (userSnapshot.exists()) {
+                    // Mostrar los datos del cliente
+                    const userData = userSnapshot.data();
+                    userInfoContainer.innerHTML = `
+                        <div class="client-info">
+                            <h3>Perfil de Cliente</h3>
+                            <p><strong>Nombre:</strong> ${userData.name || 'Sin nombre'}</p>
+                            <p><strong>Teléfono:</strong> ${userData.phone || 'Sin teléfono'}</p>
+                        </div>
+                    `;
+                } else {
+                    // Mostrar formulario de registro como cliente
+                    userInfoContainer.innerHTML = `
+                        <div class="register-client">
+                            <h3>Completa tu perfil de cliente</h3>
+                            <form id="registerClientForm">
+                                <label for="name">Nombre:</label>
+                                <input type="text" id="name" name="name" required>
+                                <label for="phone">Teléfono:</label>
+                                <input type="tel" id="phone" name="phone" required>
+                                <button type="submit">Guardar Perfil</button>
+                            </form>
+                        </div>
+                    `;
+
+                    // Manejar el envío del formulario
+                    const registerClientForm = document.getElementById('registerClientForm');
+                    registerClientForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const name = document.getElementById('name').value;
+                        const phone = document.getElementById('phone').value;
+
+                        try {
+                            const userData = {
+                                name,
+                                phone,
+                                createdAt: new Date().toISOString(),
+                                email: user.email,
+                            };
+                            await setDoc(doc(db, 'users', user.uid), userData);
+                            alert('¡Perfil de cliente creado exitosamente!');
+                            window.location.reload(); // Recargar la página para mostrar los datos del cliente
+                        } catch (error) {
+                            console.error('Error al guardar el perfil de cliente:', error);
+                            alert('Error al guardar el perfil de cliente.');
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error al verificar el perfil de cliente:', error);
+            }
+        } else {
+            // Redirigir al inicio de sesión si no está autenticado
+            alert('Por favor, inicia sesión para continuar.');
+            window.location.href = '/login.html';
+        }
+    });
 
     if (cart.length === 0) {
         cartDetails.innerHTML = '<p>El carrito está vacío.</p>';
@@ -57,9 +124,119 @@ document.addEventListener('DOMContentLoaded', async () => {
         cartDetails.appendChild(totalElement);
     }
 
-    // Manejar el botón "Crear cuenta"
-    const createAccountBtn = document.getElementById('create-account-btn');
-    createAccountBtn.addEventListener('click', () => {
-        window.location.href = '/register.html'; // Redirigir a la página de registro
+    const savedAddressesContainer = document.getElementById('saved-addresses');
+    const addAddressBtn = document.getElementById('add-address-btn');
+    const newAddressForm = document.getElementById('new-address-form');
+    const addressForm = document.getElementById('addressForm');
+    const getLocationBtn = document.getElementById('get-location-btn');
+    const latitudeSpan = document.getElementById('latitude');
+    const longitudeSpan = document.getElementById('longitude');
+
+    let selectedAddress = null;
+
+    // Mostrar formulario para agregar nueva dirección
+    addAddressBtn.addEventListener('click', () => {
+        newAddressForm.style.display = 'block';
     });
+
+    // Obtener ubicación actual del usuario
+    getLocationBtn.addEventListener('click', () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const { latitude, longitude } = position.coords;
+                latitudeSpan.textContent = latitude.toFixed(6);
+                longitudeSpan.textContent = longitude.toFixed(6);
+            }, (error) => {
+                console.error('Error al obtener la ubicación:', error);
+                alert('No se pudo obtener la ubicación. Por favor, verifica los permisos.');
+            });
+        } else {
+            alert('La geolocalización no es compatible con este navegador.');
+        }
+    });
+
+    // Guardar nueva dirección
+    addressForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const reference = document.getElementById('reference').value;
+        const latitude = latitudeSpan.textContent;
+        const longitude = longitudeSpan.textContent;
+
+        if (!latitude || !longitude) {
+            alert('Por favor, obtén las coordenadas antes de guardar la dirección.');
+            return;
+        }
+
+        try {
+            const addressData = {
+                reference,
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude),
+                createdAt: new Date().toISOString(),
+            };
+
+            // Guardar dirección en Firestore
+            const user = auth.currentUser;
+            if (user) {
+                const addressesRef = doc(db, 'users', user.uid);
+                const userSnapshot = await getDoc(addressesRef);
+                const userData = userSnapshot.exists() ? userSnapshot.data() : {};
+                const addresses = userData.addresses || [];
+                addresses.push(addressData);
+
+                await setDoc(addressesRef, { ...userData, addresses }, { merge: true });
+                alert('¡Dirección guardada exitosamente!');
+                window.location.reload(); // Recargar para mostrar las direcciones actualizadas
+            }
+        } catch (error) {
+            console.error('Error al guardar la dirección:', error);
+            alert('Error al guardar la dirección.');
+        }
+    });
+
+    // Cargar direcciones guardadas
+    const loadSavedAddresses = async () => {
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const addressesRef = doc(db, 'users', user.uid);
+                const userSnapshot = await getDoc(addressesRef);
+
+                if (userSnapshot.exists()) {
+                    const userData = userSnapshot.data();
+                    const addresses = userData.addresses || [];
+
+                    if (addresses.length > 0) {
+                        savedAddressesContainer.innerHTML = '<h3>Direcciones Guardadas</h3>';
+                        addresses.forEach((address, index) => {
+                            const addressElement = document.createElement('div');
+                            addressElement.classList.add('address-item');
+                            addressElement.innerHTML = `
+                                <p><strong>Referencia:</strong> ${address.reference}</p>
+                                <p><strong>Coordenadas:</strong> ${address.latitude}, ${address.longitude}</p>
+                                <button class="select-address-btn" data-index="${index}">Seleccionar</button>
+                            `;
+                            savedAddressesContainer.appendChild(addressElement);
+                        });
+
+                        // Manejar selección de dirección
+                        document.querySelectorAll('.select-address-btn').forEach((btn) => {
+                            btn.addEventListener('click', (e) => {
+                                const index = e.target.dataset.index;
+                                selectedAddress = addresses[index];
+                                alert(`Dirección seleccionada: ${selectedAddress.reference}`);
+                            });
+                        });
+                    } else {
+                        savedAddressesContainer.innerHTML = '<p>No tienes direcciones guardadas.</p>';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error al cargar las direcciones guardadas:', error);
+        }
+    };
+
+    // Llamar a la función para cargar direcciones
+    loadSavedAddresses();
 });
