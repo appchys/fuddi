@@ -156,8 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // Mostrar las secciones
                         userInfoContainer.innerHTML = `
+                            ${storeInfo}    
                             ${clientInfo}
-                            ${storeInfo}
+                            
                             <button class="logout-btn" id="logoutButton" title="Cerrar sesión">
                                 <i class="bi bi-power"></i>
                             </button>

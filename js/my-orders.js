@@ -1,4 +1,4 @@
-import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { app, auth } from './firebase-config.js'; // Asegúrate de que este archivo exporte la instancia de Firebase y auth
 
 // Inicializa Firestore
@@ -11,9 +11,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             try {
-                // Consultar los pedidos del usuario en Firestore
+                // Consultar los pedidos del usuario en Firestore y ordenarlos por fecha descendente
                 const ordersRef = collection(db, 'orders');
-                const q = query(ordersRef, where('userId', '==', user.uid));
+                const q = query(ordersRef, where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
