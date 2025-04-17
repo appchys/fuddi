@@ -7,9 +7,7 @@ import {
     storage, 
     ref, 
     uploadBytes, 
-    getDoc, 
-    addDoc, 
-    collection 
+    getDoc 
 } from './firebase-config.js';
 import { getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js";
 
@@ -62,10 +60,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.getElementById('name').value;
         const phone = document.getElementById('phone').value;
         const description = document.getElementById('description').value;
-        const storeId = document.getElementById('storeId').value.trim(); // ID único ingresado por el usuario
 
         try {
-            if (accountType === 'store') {
+            if (accountType === 'client') {
+                const userData = {
+                    name,
+                    phone,
+                    description,
+                    createdAt: new Date().toISOString(),
+                    email: user.email,
+                };
+                await setDoc(doc(db, 'users', user.uid), userData);
+                alert('¡Registro como cliente exitoso!');
+                window.location.href = 'index.html'; // Redirigir a inicio
+            } else if (accountType === 'store') {
+                const storeId = document.getElementById('storeId').value.trim();
+                if (!storeId) {
+                    alert('Por favor, ingrese un ID único para la tienda.');
+                    return;
+                }
+
+                const storeDoc = await getDoc(doc(db, 'stores', storeId));
+                if (storeDoc.exists()) {
+                    alert('El ID de la tienda ya está en uso. Por favor, elija otro.');
+                    return;
+                }
+
                 const coverImageFile = document.getElementById('coverImage').files[0];
                 const imageUrlFile = document.getElementById('imageUrl').files[0];
                 let coverUrl = '';
@@ -84,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const storeData = {
-                    storeId, // Guardar el storeId ingresado por el usuario como un campo
+                    storeId, // Guardar el storeId explícitamente como un campo
                     name,
                     phone,
                     description,
@@ -94,14 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     coverUrl, // Puede ser una cadena vacía si no se subió imagen
                     imageUrl, // Puede ser una cadena vacía si no se subió imagen
                 };
-
-                // Generar automáticamente el ID del documento
-                const storeRef = await addDoc(collection(db, 'stores'), storeData);
-                const generatedStoreDocId = storeRef.id; // ID único generado por Firestore
-                console.log('Tienda registrada con ID:', generatedStoreDocId);
-
+                await setDoc(doc(db, 'stores', storeId), storeData);
                 alert('¡Registro como tienda exitoso!');
-                window.location.href = `store.html?storeDocId=${generatedStoreDocId}`;
+                window.location.href = `store.html?storeId=${storeId}`;
             }
         } catch (error) {
             console.error('Error al registrar:', error.message);

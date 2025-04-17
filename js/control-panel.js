@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const createClientProfileButton = document.getElementById('createClientProfileButton');
                         if (createClientProfileButton) {
                             createClientProfileButton.addEventListener('click', () => {
-                                window.location.href = 'create-client-profile.html';
+                                window.location.href = 'register.html';
                             });
                         }
 
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const createStoreButton = document.getElementById('createStoreButton');
                         if (createStoreButton) {
                             createStoreButton.addEventListener('click', () => {
-                                window.location.href = 'create-store.html';
+                                window.location.href = 'register.html';
                             });
                         }
 

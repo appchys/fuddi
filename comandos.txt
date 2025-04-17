@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Panel mejorado"
+git commit -m "Mejoras en relaciones de tablas"
 git push -u origin main
