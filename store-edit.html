@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Tienda</title>
+    <script type="module" src="js/store-edit.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            color: #3b82f6;
+            text-decoration: none;
+            margin-bottom: 1rem;
+        }
+        .back-button:hover {
+            text-decoration: underline;
+        }
+        .bank-account-entry {
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .bank-account-entry .delete-btn {
+            background: #ef4444;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .bank-account-entry .delete-btn:hover {
+            background: #dc2626;
+        }
+        .bank-account-display {
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bank-account-display p {
+            margin: 0.25rem 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="form-container">
+        <a href="index.html" class="back-button">← Volver al panel</a>
+        <h2 class="text-2xl font-bold mb-6 text-center">Editar Tienda</h2>
+        <form id="editStoreForm" class="space-y-4">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Nombre de la tienda</label>
+                <input type="text" id="name" name="name" required
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700">Usuario</label>
+                <input type="text" id="username" name="username"
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                <input type="tel" id="phone" name="phone"
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700">Descripción</label>
+                <textarea id="description" name="description" required rows="4"
+                          class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></textarea>
+            </div>
+            <div>
+                <label for="shippingFee" class="block text-sm font-medium text-gray-700">Tarifa de envío (USD)</label>
+                <input type="number" id="shippingFee" name="shippingFee" step="0.01" min="0"
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Datos bancarios</label>
+                <div id="bankAccountsContainer" class="space-y-2"></div>
+                <button type="button" id="addBankAccount" class="mt-2 bg-green-600 text-white p-2 rounded-md hover:bg-green-700">
+                    Añadir cuenta bancaria
+                </button>
+            </div>
+            <div>
+                <label for="imageUrl" class="block text-sm font-medium text-gray-700">Foto de perfil</label>
+                <input type="file" id="imageUrl" name="imageUrl" accept="image/*"
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                <img id="currentImage" class="mt-2 max-w-xs hidden" alt="Foto actual de la tienda">
+            </div>
+            <div>
+                <label for="coverImage" class="block text-sm font-medium text-gray-700">Foto de portada</label>
+                <input type="file" id="coverImage" name="coverImage" accept="image/*"
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                <img id="currentCoverImage" class="mt-2 max-w-xs hidden" alt="Foto actual de portada">
+            </div>
+            <button type="submit"
+                    class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+                Guardar Cambios
+            </button>
+        </form>
+    </div>
+</body>
+</html>

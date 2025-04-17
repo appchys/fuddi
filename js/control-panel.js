@@ -128,20 +128,19 @@ document.addEventListener('DOMContentLoaded', () => {
                                 storeId = storeSnapshot.docs[0].id;
                                 const storePic = storeData.imageUrl || '';
                                 storeInfo = `
-                                    <div class="store-info">
-                                        <h3>Tienda</h3>
-                                        <div class="profile-header">
-                                            ${storePic ? 
-                                                `<img src="${storePic}" alt="Foto de la tienda">` : 
-                                                `<div class="default-avatar"></div>`}
-                                            <span class="name">${storeData.name || 'Sin nombre'}</span>
-                                        </div>
-                                        <ul class="section-links">
-                                            <li><a href="store-orders.html">Pedidos recibidos</a></li>
-                                            <li><a href="store-products.html?storeId=${storeId}">Mis productos</a></li>
-                                        </ul>
-                                    </div>
-                                `;
+    <div class="store-info">
+        <h3>Tienda</h3>
+        <div class="profile-header">
+            ${storePic ? `<img src="${storePic}" alt="Foto de tienda">` : `<div class="default-avatar"></div>`}
+            <span class="name">${storeData.name || 'Sin nombre'}</span>
+        </div>
+        <ul class="section-links">
+            <li><a href="store-orders.html">Pedidos recibidos</a></li>
+            <li><a href="store-products.html?storeId=${storeId}">Mis productos</a></li>
+            <li><a href="store-edit.html?storeId=${storeId}">Editar tienda</a></li>
+        </ul>
+    </div>
+`;
                             } else {
                                 storeInfo = `
                                     <div class="store-info">
