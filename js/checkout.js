@@ -1,7 +1,6 @@
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { app, auth } from './firebase-config.js'; // Asegúrate de que este archivo exporte la instancia de Firebase y auth
+import { app, auth } from './firebase-config.js';
 
-// Inicializa Firestore
 const db = getFirestore(app);
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -9,27 +8,72 @@ document.addEventListener('DOMContentLoaded', async () => {
     const storeId = params.get('storeId');
 
     if (!storeId) {
-        console.error("No se proporcionó un storeId en la URL.");
+        alert('No se proporcionó un ID de tienda válido.');
         return;
     }
 
     const cartKey = `cart_${storeId}`;
     const cart = JSON.parse(localStorage.getItem(cartKey)) || [];
     const cartDetails = document.getElementById('cart-details');
-    const userInfoContainer = document.getElementById('user-info-container'); // Contenedor para mostrar datos del cliente o formulario
+    const userInfoContainer = document.getElementById('user-info-container');
+    const bankDetailsContainer = document.getElementById('bank-details');
+    const bankAccountsList = document.getElementById('bank-accounts-list');
 
-    cartDetails.innerHTML = ''; // Limpia el contenido previo
+    cartDetails.innerHTML = '';
 
-    // Verificar si el usuario está autenticado
+    // Cargar datos bancarios de la tienda
+    async function loadBankAccounts() {
+        try {
+            const storeRef = doc(db, 'stores', storeId);
+            const storeDoc = await getDoc(storeRef);
+
+            if (storeDoc.exists()) {
+                const storeData = storeDoc.data();
+                const bankAccounts = storeData.bankAccounts || [];
+
+                bankAccountsList.innerHTML = '';
+                if (bankAccounts.length > 0) {
+                    bankAccounts.forEach(({ bank, accountNumber, holder }) => {
+                        const accountElement = document.createElement('div');
+                        accountElement.className = 'border border-gray-200 p-4 rounded-md';
+                        accountElement.innerHTML = `
+                            <p><strong>Banco:</strong> ${bank || 'No especificado'}</p>
+                            <p><strong>Número de cuenta:</strong> ${accountNumber || 'No especificado'}</p>
+                            <p><strong>Titular:</strong> ${holder || 'No especificado'}</p>
+                        `;
+                        bankAccountsList.appendChild(accountElement);
+                    });
+                } else {
+                    bankAccountsList.innerHTML = '<p>No hay datos bancarios disponibles.</p>';
+                }
+            } else {
+                bankAccountsList.innerHTML = '<p>Tienda no encontrada.</p>';
+            }
+        } catch (error) {
+            bankAccountsList.innerHTML = '<p>Error al cargar los datos bancarios.</p>';
+        }
+    }
+
+    // Manejar cambio en método de pago
+    document.querySelectorAll('input[name="payment"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            if (radio.value === 'transfer') {
+                bankDetailsContainer.classList.remove('hidden');
+                loadBankAccounts();
+            } else {
+                bankDetailsContainer.classList.add('hidden');
+                bankAccountsList.innerHTML = '';
+            }
+        });
+    });
+
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             try {
-                // Verificar si el usuario tiene un perfil de cliente
                 const userDoc = doc(db, 'users', user.uid);
                 const userSnapshot = await getDoc(userDoc);
 
                 if (userSnapshot.exists()) {
-                    // Mostrar los datos del cliente
                     const userData = userSnapshot.data();
                     userInfoContainer.innerHTML = `
                         <div class="client-info">
@@ -39,7 +83,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     `;
                 } else {
-                    // Mostrar formulario de registro como cliente
                     userInfoContainer.innerHTML = `
                         <div class="register-client">
                             <h3>Completa tu perfil de cliente</h3>
@@ -53,7 +96,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     `;
 
-                    // Manejar el envío del formulario
                     const registerClientForm = document.getElementById('registerClientForm');
                     registerClientForm.addEventListener('submit', async (e) => {
                         e.preventDefault();
@@ -69,18 +111,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                             };
                             await setDoc(doc(db, 'users', user.uid), userData);
                             alert('¡Perfil de cliente creado exitosamente!');
-                            window.location.reload(); // Recargar la página para mostrar los datos del cliente
+                            window.location.reload();
                         } catch (error) {
-                            console.error('Error al guardar el perfil de cliente:', error);
                             alert('Error al guardar el perfil de cliente.');
                         }
                     });
                 }
             } catch (error) {
-                console.error('Error al verificar el perfil de cliente:', error);
+                alert('Error al verificar el perfil de cliente.');
             }
         } else {
-            // Redirigir al inicio de sesión si no está autenticado
             alert('Por favor, inicia sesión para continuar.');
             window.location.href = '/login.html';
         }
@@ -93,14 +133,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         for (const item of cart) {
             try {
-                // Obtén los datos del producto desde Firebase
                 const productDoc = await getDoc(doc(db, `stores/${storeId}/products`, item.productId));
                 if (productDoc.exists()) {
                     const product = productDoc.data();
                     const subtotal = product.price * item.quantity;
                     totalGeneral += subtotal;
 
-                    // Crear el elemento del carrito
                     const cartItem = document.createElement('div');
                     cartItem.classList.add('cart-item');
                     cartItem.innerHTML = `
@@ -111,11 +149,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     cartDetails.appendChild(cartItem);
                 }
             } catch (error) {
-                console.error("Error al obtener los datos del producto:", error);
+                alert('Error al obtener los datos del producto.');
             }
         }
 
-        // Mostrar el total general
         const totalElement = document.createElement('div');
         totalElement.classList.add('cart-total');
         totalElement.innerHTML = `
@@ -134,12 +171,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let selectedAddress = null;
 
-    // Mostrar formulario para agregar nueva dirección
     addAddressBtn.addEventListener('click', () => {
         newAddressForm.style.display = 'block';
     });
 
-    // Obtener ubicación actual del usuario
     getLocationBtn.addEventListener('click', () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((position) => {
@@ -147,7 +182,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 latitudeSpan.textContent = latitude.toFixed(6);
                 longitudeSpan.textContent = longitude.toFixed(6);
             }, (error) => {
-                console.error('Error al obtener la ubicación:', error);
                 alert('No se pudo obtener la ubicación. Por favor, verifica los permisos.');
             });
         } else {
@@ -155,7 +189,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Guardar nueva dirección
     addressForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const reference = document.getElementById('reference').value;
@@ -175,7 +208,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 createdAt: new Date().toISOString(),
             };
 
-            // Guardar dirección en Firestore
             const user = auth.currentUser;
             if (user) {
                 const addressesRef = doc(db, 'users', user.uid);
@@ -186,15 +218,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 await setDoc(addressesRef, { ...userData, addresses }, { merge: true });
                 alert('¡Dirección guardada exitosamente!');
-                window.location.reload(); // Recargar para mostrar las direcciones actualizadas
+                window.location.reload();
             }
         } catch (error) {
-            console.error('Error al guardar la dirección:', error);
             alert('Error al guardar la dirección.');
         }
     });
 
-    // Cargar direcciones guardadas
     const loadSavedAddresses = async () => {
         try {
             const user = auth.currentUser;
@@ -207,7 +237,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const addresses = userData.addresses || [];
 
                     if (addresses.length > 0) {
-                        // Mostrar la última dirección como seleccionada
                         const lastAddress = addresses[addresses.length - 1];
                         selectedAddress = lastAddress;
 
@@ -223,7 +252,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                         `;
 
-                        // Mostrar otras direcciones al hacer clic en el botón
                         const toggleAddressesBtn = document.getElementById('toggle-addresses-btn');
                         const otherAddressesContainer = document.getElementById('other-addresses');
 
@@ -237,7 +265,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                         });
 
-                        // Renderizar las demás direcciones
                         addresses.slice(0, -1).forEach((address, index) => {
                             const addressElement = document.createElement('div');
                             addressElement.classList.add('address-item');
@@ -249,12 +276,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                             otherAddressesContainer.appendChild(addressElement);
                         });
 
-                        // Manejar selección de dirección
                         document.querySelectorAll('.select-address-btn').forEach((btn) => {
                             btn.addEventListener('click', (e) => {
                                 const index = e.target.dataset.index;
                                 selectedAddress = addresses[index];
-                                window.location.reload(); // Recargar para reflejar la dirección seleccionada
+                                window.location.reload();
                             });
                         });
                     } else {
@@ -263,11 +289,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         } catch (error) {
-            console.error('Error al cargar las direcciones guardadas:', error);
+            alert('Error al cargar las direcciones guardadas.');
         }
     };
 
-    // Llamar a la función para cargar direcciones
     loadSavedAddresses();
 
     const confirmBtn = document.getElementById('confirm-btn');
@@ -290,7 +315,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            // Obtener el nombre del cliente desde Firestore
             const userDoc = doc(db, 'users', auth.currentUser.uid);
             const userSnapshot = await getDoc(userDoc);
 
@@ -302,10 +326,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const userData = userSnapshot.data();
             const clientName = userData.name || 'Sin nombre';
 
-            // Crear la estructura de la orden
             const orderData = {
-                userId: auth.currentUser.uid, // ID del usuario que realiza la orden
-                storeDocId: storeId, // ID del documento de la tienda
+                userId: auth.currentUser.uid,
+                storeDocId: storeId,
                 items: cart,
                 total: cart.reduce((sum, item) => sum + item.quantity * item.price, 0),
                 address: selectedAddress,
@@ -314,16 +337,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 createdAt: new Date().toISOString(),
             };
 
-            // Guardar la orden en Firestore
             await addDoc(collection(db, 'orders'), orderData);
 
             alert('¡Pedido confirmado! Gracias por tu compra.');
 
-            // Limpiar el carrito y redirigir a Mis pedidos
-            localStorage.removeItem(cartKey); // Limpia el carrito
-            window.location.href = '/my-orders.html'; // Redirige a la página de Mis pedidos
+            localStorage.removeItem(cartKey);
+            window.location.href = '/my-orders.html';
         } catch (error) {
-            console.error('Error al guardar la orden:', error);
             alert('Hubo un error al confirmar tu pedido. Por favor, inténtalo de nuevo.');
         }
     });
