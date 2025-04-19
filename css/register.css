@@ -115,7 +115,6 @@ body {
     background-color: #e65b7a;
 }
 
-
 /* Estilo para el contenedor de los botones de acción */
 .register-actions {
     display: flex;
@@ -153,6 +152,39 @@ body {
     background-color: #007bff; /* Fondo azul */
     color: white; /* Texto blanco */
     border-color: #007bff; /* Borde azul */
+}
+
+/* Clase para ocultar el contenido del formulario */
+.hidden-content {
+    display: none;
+}
+
+/* Estilo para el botón de Google */
+.btn-google {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 12px 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.btn-google:hover {
+    background-color: #f8f9fa;
+    border-color: #ccc;
+}
+
+.btn-google i {
+    color: #4285F4;
 }
 
 /* Responsive design */

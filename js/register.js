@@ -7,11 +7,88 @@ import {
     storage, 
     ref, 
     uploadBytes, 
-    getDoc 
+    getDoc,
+    googleProvider,
+    signInWithPopup
 } from './firebase-config.js';
 import { getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js";
 
+// Función para verificar si el usuario existe en Firestore
+async function checkUserExists(userId) {
+    const userDoc = doc(db, 'users', userId);
+    const userSnapshot = await getDoc(userDoc);
+    if (userSnapshot.exists()) {
+        return { exists: true, type: 'client', data: userSnapshot.data() };
+    }
+
+    const storeDoc = doc(db, 'stores', userId);
+    const storeSnapshot = await getDoc(storeDoc);
+    if (storeSnapshot.exists()) {
+        return { exists: true, type: 'store', data: storeSnapshot.data() };
+    }
+
+    return { exists: false };
+}
+
+// Función para iniciar sesión con Google
+window.loginWithGoogle = async function () {
+    try {
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+
+        // Verificar si el usuario ya existe usando la función checkUserExists
+        const userCheck = await checkUserExists(user.uid);
+        
+        if (!userCheck.exists) {
+            // Mostrar el formulario si el usuario no existe
+            showRegisterForm();
+        } else {
+            alert('¡Bienvenido de nuevo, ' + user.displayName + '!');
+            window.location.href = 'index.html';
+        }
+    } catch (error) {
+        console.error('Error al iniciar sesión con Google:', error.message);
+        alert('Error al iniciar sesión: ' + error.message);
+    }
+};
+
+// Función para mostrar el formulario de registro
+function showRegisterForm() {
+    const registerContainer = document.querySelector('.register-container');
+    const formContent = document.getElementById('registerForm');
+    
+    // Asegurarse de que el formulario esté en el DOM
+    if (formContent) {
+        formContent.classList.remove('hidden-content');
+        
+        // Restaurar el botón de Google a su estado original
+        const googleButton = document.querySelector('.btn-google');
+        if (googleButton) {
+            googleButton.style.display = 'none';
+        }
+    }
+}
+
+// Event listener para cuando el DOM esté cargado
 document.addEventListener('DOMContentLoaded', () => {
+    // Ocultar el formulario inicialmente
+    const formContent = document.getElementById('registerForm');
+    if (formContent) {
+        formContent.classList.add('hidden-content');
+    }
+
+    // Verificar si ya hay un usuario autenticado
+    const user = auth.currentUser;
+    if (user) {
+        checkUserExists(user.uid).then(userCheck => {
+            if (!userCheck.exists) {
+                showRegisterForm();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+    }
+
     const form = document.getElementById('registerForm');
     const clientButton = document.getElementById('clientButton');
     const storeButton = document.getElementById('storeButton');

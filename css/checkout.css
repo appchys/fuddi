@@ -263,6 +263,42 @@ body {
     background-color: #219653;
 }
 
+/* Estilo para el botón de Google */
+.google-login-section {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.google-login-section.hidden {
+    display: none;
+}
+
+.btn-google {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 12px 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+}
+
+.btn-google:hover {
+    background-color: #f8f9fa;
+    border-color: #ccc;
+}
+
+.btn-google i {
+    color: #4285F4;
+}
+
 /* Utilidades */
 .hidden {
     display: none !important;
