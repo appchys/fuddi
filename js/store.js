@@ -313,7 +313,7 @@ async function showCart() {
 
         // Botón de checkout
         const checkoutButton = document.createElement('button');
-        checkoutButton.textContent = 'Checkout';
+        checkoutButton.textContent = 'Continuar';
         checkoutButton.classList.add('checkout-btn');
         checkoutButton.addEventListener('click', checkout);
         cartDetails.appendChild(checkoutButton);

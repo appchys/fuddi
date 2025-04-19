@@ -3,69 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout</title>
+    <title>Finalizar Compra | Tienda</title>
     <link rel="stylesheet" href="./css/checkout.css">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
-    <header>
-        <h1>Checkout</h1>
-    </header>
-    <main>
-        <!-- Datos del cliente -->
-        <div id="user-info-container"></div>
+    <div class="checkout-container">
+        <header class="checkout-header">
+            <h1><i class="bi bi-bag-check"></i> Finalizar Compra</h1>
+        </header>
 
-        <!-- Carrito -->
-        <section id="cart-items">
-            <h2>Tu Carrito</h2>
-            <div id="cart-details">
-                <!-- Los elementos del carrito se cargarán aquí dinámicamente -->
-            </div>
-        </section>
-        
-        <!-- Dirección de entrega -->
-        <section id="delivery-address">
-            <h2>Dirección de Entrega</h2>
-            <div id="saved-addresses">
-                <!-- Las direcciones guardadas se cargarán aquí dinámicamente -->
-            </div>
-            <button id="add-address-btn" class="btn">Agregar Nueva Dirección</button>
-            <div id="new-address-form" style="display: none;">
-                <h3>Registrar Nueva Dirección</h3>
-                <form id="addressForm">
-                    <label for="reference">Referencias:</label>
-                    <input type="text" id="reference" name="reference" required>
-                    <button type="button" id="get-location-btn">Obtener Ubicación Actual</button>
-                    <p id="coordinates">Coordenadas: <span id="latitude"></span>, <span id="longitude"></span></p>
-                    <button type="submit">Guardar Dirección</button>
-                </form>
-            </div>
-        </section>
+        <main class="checkout-main">
+            <!-- Resumen del Pedido -->
+            <section class="checkout-section cart-summary">
+                <h2><i class="bi bi-cart3"></i> Resumen del Pedido</h2>
+                <div id="cart-details" class="cart-items">
+                    <!-- Productos cargados dinámicamente -->
+                </div>
+                <div class="order-total">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">$0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Envío:</span>
+                        <span id="shipping">$0.00</span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span>Total:</span>
+                        <span id="total">$0.00</span>
+                    </div>
+                </div>
+            </section>
 
-        <!-- Sección de Pago -->
-        <section id="payment-method">
-            <h2>Método de Pago</h2>
-            <div class="payment-options">
-                <label>
-                    <input type="radio" name="payment" value="cash" checked>
-                    <span>Efectivo</span>
-                </label>
-                <label>
-                    <input type="radio" name="payment" value="transfer">
-                    <span>Transferencia</span>
-                </label>
-            </div>
-            <div id="bank-details" class="mt-4 hidden">
-                <h3>Datos bancarios de la tienda</h3>
-                <div id="bank-accounts-list" class="space-y-2"></div>
-            </div>
-        </section>
+            <!-- Información del Cliente -->
+            <section class="checkout-section customer-info">
+                <h2><i class="bi bi-person-circle"></i> Información</h2>
+                <div id="user-info-container" class="user-info">
+                    <!-- Información cargada dinámicamente -->
+                </div>
+            </section>
 
-        <!-- Botón de Confirmar -->
-        <section id="confirm-order">
-            <button id="confirm-btn" class="btn confirm-btn">Confirmar Pedido</button>
-        </section>
-    </main>
+            <!-- Dirección de Entrega -->
+            <section class="checkout-section delivery-address">
+                <h2><i class="bi bi-geo-alt"></i> Dirección de Entrega</h2>
+                <div id="saved-addresses" class="address-list">
+                    <!-- Direcciones cargadas dinámicamente -->
+                </div>
+                <button id="add-address-btn" class="btn secondary">
+                    <i class="bi bi-plus-circle"></i> Agregar Dirección
+                </button>
+                <div id="new-address-form" class="address-form hidden">
+                    <h3><i class="bi bi-pencil-square"></i> Nueva Dirección</h3>
+                    <form id="addressForm">
+                        <div class="form-group">
+                            <label for="reference">Referencia (Ej: Casa, Oficina)</label>
+                            <input type="text" id="reference" name="reference" placeholder="Ej: Frente al parque" required>
+                        </div>
+                        <button type="button" id="get-location-btn" class="btn secondary">
+                            <i class="bi bi-geo-alt-fill"></i> Usar mi ubicación actual
+                        </button>
+                        <div class="coordinates">
+                            <span>Coordenadas:</span>
+                            <span id="coordinates"><span id="latitude">0.0000</span>, <span id="longitude">0.0000</span></span>
+                        </div>
+                        <button type="submit" class="btn primary">
+                            <i class="bi bi-save2"></i> Guardar Dirección
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Método de Pago -->
+            <section class="checkout-section payment-method">
+                <h2><i class="bi bi-credit-card"></i> Método de Pago</h2>
+                <div class="payment-options">
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="cash" checked>
+                        <div class="option-content">
+                            <i class="bi bi-cash-coin"></i>
+                            <span>Efectivo</span>
+                        </div>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="transfer">
+                        <div class="option-content">
+                            <i class="bi bi-bank"></i>
+                            <span>Transferencia</span>
+                        </div>
+                    </label>
+                </div>
+                <div id="bank-details" class="bank-info hidden">
+                    <h3><i class="bi bi-building"></i> Datos Bancarios</h3>
+                    <div id="bank-accounts-list" class="accounts-list"></div>
+                </div>
+            </section>
+
+            <!-- Confirmación -->
+            <section class="checkout-confirm">
+                <button id="confirm-btn" class="btn confirm-btn">
+                    <i class="bi bi-check-circle-fill"></i> Confirmar Pedido
+                </button>
+                <p class="secure-checkout">
+                    <i class="bi bi-lock-fill"></i> Compra segura - Tus datos están protegidos
+                </p>
+            </section>
+        </main>
+    </div>
     <script type="module" src="./js/checkout.js"></script>
 </body>
 </html>

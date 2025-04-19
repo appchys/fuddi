@@ -146,25 +146,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                     `;
                 } else {
                     userInfoContainer.innerHTML = `
-                        <div style="background-color: #fff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 8px; padding: 24px;">
-                            <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Completa tu perfil de cliente</h3>
-                            <form id="registerClientForm" style="display: flex; flex-direction: column; gap: 16px;">
-                                <div>
-                                    <label for="name" style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151;">Nombre:</label>
-                                    <input type="text" id="name" name="name" required 
-                                           style="margin-top: 4px; width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); outline: none; transition: border-color 0.2s;">
-                                </div>
-                                <div>
-                                    <label for="phone" style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151;">Teléfono:</label>
-                                    <input type="tel" id="phone" name="phone" required 
-                                           style="margin-top: 4px; width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); outline: none; transition: border-color 0.2s;">
-                                </div>
-                                <button type="submit" 
-                                        style="width: 200px; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; transition: background-color 0.2s;">
-                                    Guardar Perfil
-                                </button>
-                            </form>
-                        </div>
+                        <div class="profile-box">
+    <h3 class="profile-title">Completa tu perfil de cliente</h3>
+    <form id="registerClientForm" class="profile-form">
+        <div class="form-group">
+            <label for="name" class="form-label">Nombre:</label>
+            <input type="text" id="name" name="name" required class="form-input">
+        </div>
+        <div class="form-group">
+            <label for="phone" class="form-label">Teléfono:</label>
+            <input type="tel" id="phone" name="phone" required class="form-input">
+        </div>
+        <button type="submit" class="btn">
+            <i class="bi bi-save2"></i> Guardar Perfil
+        </button>
+    </form>
+</div>
+
                     `;
 
                     const registerClientForm = document.getElementById('registerClientForm');
