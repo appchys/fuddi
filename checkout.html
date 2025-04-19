@@ -6,10 +6,15 @@
     <title>Finalizar Compra | Tienda</title>
     <link rel="stylesheet" href="./css/checkout.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Incluir Toastify CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 </head>
 <body>
     <div class="checkout-container">
         <header class="checkout-header">
+            <a href="javascript:history.back()" class="back-link" style="font-size: 1rem; color: #374151; text-decoration: none; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                <i class="bi bi-arrow-left"></i> Volver atrás
+            </a>
             <h1><i class="bi bi-bag-check"></i> Finalizar Compra</h1>
         </header>
 
@@ -79,14 +84,14 @@
                 <h2><i class="bi bi-credit-card"></i> Método de Pago</h2>
                 <div class="payment-options">
                     <label class="payment-option">
-                        <input type="radio" name="payment" value="cash" checked>
+                        <input type="radio" name="payment" value="Efectivo" checked>
                         <div class="option-content">
                             <i class="bi bi-cash-coin"></i>
                             <span>Efectivo</span>
                         </div>
                     </label>
                     <label class="payment-option">
-                        <input type="radio" name="payment" value="transfer">
+                        <input type="radio" name="payment" value="Transferencia">
                         <div class="option-content">
                             <i class="bi bi-bank"></i>
                             <span>Transferencia</span>
@@ -110,6 +115,8 @@
             </section>
         </main>
     </div>
+    <!-- Incluir Toastify JS -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script type="module" src="./js/checkout.js"></script>
 </body>
 </html>

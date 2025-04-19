@@ -242,10 +242,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Mostrar los productos en el carrito
     async function displayCartProducts() {
         const productsData = await loadCartProducts();
+        const params = new URLSearchParams(window.location.search);
+        const storeId = params.get('storeId');
+
+        console.log('ID de tienda:', storeId); // Log 1: Verificar si obtenemos el ID de tienda
 
         cartDetails.innerHTML = '';
 
+        // Obtener los datos de la tienda
+        const storeRef = doc(db, 'stores', storeId);
+        const storeDoc = await getDoc(storeRef);
+        
+        if (!storeDoc.exists()) {
+            console.error('No se encontró la tienda:', storeId);
+            return;
+        }
+
+        const storeData = storeDoc.data();
+        console.log('Datos de la tienda:', storeData); // Log 2: Verificar los datos completos de la tienda
+
+        const shipping = storeData.shippingFee || 0; // Usar shippingFee en lugar de shipping
+        console.log('Valor de envío:', shipping); // Log 3: Verificar el valor de envío
+
+        // Calcular el subtotal total
+        let subtotalTotal = 0;
+
         productsData.forEach(product => {
+            const productSubtotal = product.price * product.quantity;
+            subtotalTotal += productSubtotal;
+
             const productElement = document.createElement('div');
             productElement.className = 'cart-item';
             productElement.innerHTML = `
@@ -255,23 +280,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <p>Cantidad: ${product.quantity}</p>
                 </div>
                 <div class="subtotal">
-                    <p>Subtotal: $${(product.price * product.quantity).toFixed(2)}</p>
+                    <p>$${productSubtotal.toFixed(2)}</p>
                 </div>
             `;
             cartDetails.appendChild(productElement);
         });
 
-        // Calcular y mostrar el total
-        const total = productsData.reduce((sum, product) =>
-            sum + (product.price * product.quantity), 0
-        );
+        // Actualizar los valores en el HTML
+        const subtotalElement = document.getElementById('subtotal');
+        if (subtotalElement) {
+            subtotalElement.textContent = `$${subtotalTotal.toFixed(2)}`;
+            console.log('Subtotal actualizado:', subtotalTotal); // Log 4: Verificar el subtotal
+        }
 
-        const totalElement = document.createElement('div');
-        totalElement.className = 'cart-total';
-        totalElement.innerHTML = `
-            <h3>Total: $${total.toFixed(2)}</h3>
-        `;
-        cartDetails.appendChild(totalElement);
+        const shippingElement = document.getElementById('shipping');
+        if (shippingElement) {
+            shippingElement.textContent = `$${shipping.toFixed(2)}`;
+            console.log('Elemento de envío:', shippingElement, 'Valor:', shipping); // Log 5: Verificar el elemento y valor
+        }
+
+        const totalElement = document.getElementById('total');
+        if (totalElement) {
+            const total = subtotalTotal + shipping;
+            totalElement.textContent = `$${total.toFixed(2)}`;
+            console.log('Total actualizado:', total); // Log 6: Verificar el total
+        }
     }
 
     // Inicializar la vista del carrito
