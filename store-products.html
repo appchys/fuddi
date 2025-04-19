@@ -4,43 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Productos</title>
-    <link rel="stylesheet" href="./css/store-products..css"> <!-- Reutilizamos estilos existentes -->
+    <link rel="stylesheet" href="./css/store-products.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 </head>
 <body>
     <header>
-        <h1>Gestión de Productos</h1>
+        <a href="/dashboard.html" class="back-link">
+            <i class="bi bi-arrow-left"></i> Volver atrás
+        </a>
     </header>
+
     <main>
         <section id="products-section">
-            <h2>Lista de Productos</h2>
-            <div id="products-list">
-                <!-- Los productos se cargarán aquí dinámicamente -->
+            <div class="section-header">
+                <h2><i class="bi bi-list-ul"></i> Lista de Productos</h2>
+                <button id="add-product-btn" class="btn">
+                    <i class="bi bi-plus-lg"></i> Agregar Producto
+                </button>
             </div>
-            <button id="add-product-btn" class="btn">Agregar Producto</button>
-        </section>
-
-        <!-- Formulario para agregar un nuevo producto -->
-        <section id="add-product-form" style="display: none;">
-            <h2>Agregar Producto</h2>
-            <form id="productForm">
-                <label for="productName">Nombre del Producto:</label>
-                <input type="text" id="productName" name="productName" required>
-                
-                <label for="productPrice">Precio:</label>
-                <input type="number" id="productPrice" name="productPrice" required>
-                
-                <label for="productDescription">Descripción:</label>
-                <textarea id="productDescription" name="productDescription" required></textarea>
-                
-                <label for="productImage">Imagen:</label>
-                <input type="file" id="productImage" name="productImage" accept="image/*" required>
-                
-                <button type="submit" class="btn">Guardar Producto</button>
-                <button type="button" id="cancel-add-product" class="btn">Cancelar</button>
-            </form>
+            
+            <div id="products-list">
+                <div class="empty-state">
+                    <i class="bi bi-box-seam"></i>
+                    <p>No hay productos registrados</p>
+                </div>
+            </div>
         </section>
     </main>
+
+    <!-- Modal para agregar/editar producto -->
+    <div id="product-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"><i class="bi bi-box-seam"></i> <span id="modal-title-text">Nuevo Producto</span></h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="productName">Nombre del Producto</label>
+                        <input type="text" id="productName" class="form-control" placeholder="Ej. Camiseta de algodón" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productPrice">Precio</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="productPrice" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productDescription">Descripción</label>
+                        <textarea id="productDescription" class="form-control" rows="4" placeholder="Describe las características del producto..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productImage">Imagen del Producto</label>
+                        <div class="file-input-container">
+                            <div class="file-input-button">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                                <span id="file-input-label">Seleccionar imagen</span>
+                            </div>
+                            <input type="file" id="productImage" accept="image/*" required>
+                            <span id="file-input-name" class="file-input-name"></span>
+                        </div>
+                        <small class="form-text">Formatos aceptados: JPG, PNG, WEBP (Max. 2MB)</small>
+                        <div class="image-preview-container" id="imagePreviewContainer">
+                            <img id="imagePreview" class="image-preview" src="" alt="Vista previa">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="cancel-add-product" class="btn btn-secondary">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <button type="submit" form="productForm" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Guardar Producto
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="./js/store-products.js"></script>
 </body>
 </html>
