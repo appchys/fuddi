@@ -212,6 +212,9 @@ async function addToCart(productId) {
 
     localStorage.setItem(cartKey, JSON.stringify(cart));
     console.log(`Producto añadido al carrito de la tienda ${storeId}:`, productId);
+
+    // Mostrar el carrito después de añadir el producto
+    showCart();
 }
 
 // Función para incrementar la cantidad de un producto en el carrito

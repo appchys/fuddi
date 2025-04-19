@@ -1,7 +1,9 @@
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { app, auth } from './firebase-config.js';
 
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
@@ -21,8 +23,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     cartDetails.innerHTML = '';
 
+    let selectedFile = null; // Almacenar el archivo seleccionado
+
     // Cargar datos bancarios de la tienda
-    async function loadBankAccounts() {
+    async function loadBankAccounts(selectedBank = null) {
         try {
             const storeRef = doc(db, 'stores', storeId);
             const storeDoc = await getDoc(storeRef);
@@ -32,25 +36,80 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const bankAccounts = storeData.bankAccounts || [];
 
                 bankAccountsList.innerHTML = '';
+
                 if (bankAccounts.length > 0) {
-                    bankAccounts.forEach(({ bank, accountNumber, holder }) => {
+                    // Crear un <select> con los bancos
+                    const select = document.createElement('select');
+                    select.id = 'bank-select';
+                    select.style = 'width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 16px;';
+                    select.innerHTML = '<option value="">Selecciona un banco</option>';
+
+                    bankAccounts.forEach((account, index) => {
+                        const option = document.createElement('option');
+                        option.value = index;
+                        option.textContent = account.bank || 'Banco no especificado';
+                        if (selectedBank === index.toString()) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+
+                    bankAccountsList.appendChild(select);
+
+                    // Mostrar detalles del banco seleccionado (si hay uno)
+                    if (selectedBank !== null && bankAccounts[selectedBank]) {
+                        const account = bankAccounts[selectedBank];
                         const accountElement = document.createElement('div');
-                        accountElement.className = 'border border-gray-200 p-4 rounded-md';
+                        accountElement.style = 'border: 1px solid #e5e7eb; padding: 16px; border-radius: 6px; margin-bottom: 16px;';
                         accountElement.innerHTML = `
-                            <p><strong>Banco:</strong> ${bank || 'No especificado'}</p>
-                            <p><strong>Número de cuenta:</strong> ${accountNumber || 'No especificado'}</p>
-                            <p><strong>Titular:</strong> ${holder || 'No especificado'}</p>
+                            <p><strong>Banco:</strong> ${account.bank || 'No especificado'}</p>
+                            <p><strong>Número de cuenta:</strong> ${account.accountNumber || 'No especificado'}</p>
+                            <p><strong>Titular:</strong> ${account.holder || 'No especificado'}</p>
                         `;
                         bankAccountsList.appendChild(accountElement);
+                    }
+
+                    // Añadir input para subir comprobante
+                    const fileInputContainer = document.createElement('div');
+                    fileInputContainer.style = 'margin-top: 16px;';
+                    fileInputContainer.innerHTML = `
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 8px;">Subir comprobante de pago:</label>
+                        <input type="file" id="payment-proof" accept="image/*,application/pdf" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <p id="file-status" style="margin-top: 8px; color: #374151;"></p>
+                    `;
+                    bankAccountsList.appendChild(fileInputContainer);
+
+                    // Añadir evento change al select
+                    select.addEventListener('change', () => {
+                        const selectedIndex = select.value;
+                        loadBankAccounts(selectedIndex);
+                    });
+
+                    // Añadir evento change al input de archivo
+                    const fileInput = document.getElementById('payment-proof');
+                    fileInput.addEventListener('change', (e) => {
+                        selectedFile = e.target.files[0];
+                        const fileStatus = document.getElementById('file-status');
+                        if (selectedFile) {
+                            fileStatus.textContent = `Archivo seleccionado: ${selectedFile.name}`;
+                            document.getElementById('confirm-btn').disabled = false;
+                        } else {
+                            fileStatus.textContent = 'No se ha seleccionado ningún archivo.';
+                            document.getElementById('confirm-btn').disabled = true;
+                        }
                     });
                 } else {
-                    bankAccountsList.innerHTML = '<p>No hay datos bancarios disponibles.</p>';
+                    bankAccountsList.innerHTML = '<p style="color: #374151;">No hay datos bancarios disponibles.</p>';
+                    document.getElementById('confirm-btn').disabled = true;
                 }
             } else {
-                bankAccountsList.innerHTML = '<p>Tienda no encontrada.</p>';
+                bankAccountsList.innerHTML = '<p style="color: #374151;">Tienda no encontrada.</p>';
+                document.getElementById('confirm-btn').disabled = true;
             }
         } catch (error) {
-            bankAccountsList.innerHTML = '<p>Error al cargar los datos bancarios.</p>';
+            console.error('Error al cargar los datos bancarios:', error);
+            bankAccountsList.innerHTML = '<p style="color: #b91c1c;">Error al cargar los datos bancarios.</p>';
+            document.getElementById('confirm-btn').disabled = true;
         }
     }
 
@@ -59,10 +118,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         radio.addEventListener('change', () => {
             if (radio.value === 'transfer') {
                 bankDetailsContainer.classList.remove('hidden');
-                loadBankAccounts();
+                loadBankAccounts(); // Cargar bancos sin selección inicial
+                document.getElementById('confirm-btn').disabled = true; // Deshabilitar hasta que se suba un archivo
             } else {
                 bankDetailsContainer.classList.add('hidden');
                 bankAccountsList.innerHTML = '';
+                selectedFile = null; // Limpiar archivo seleccionado
+                document.getElementById('confirm-btn').disabled = false; // Habilitar para otros métodos
             }
         });
     });
@@ -76,22 +138,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (userSnapshot.exists()) {
                     const userData = userSnapshot.data();
                     userInfoContainer.innerHTML = `
-                        <div class="client-info">
-                            <h3>Perfil de Cliente</h3>
+                        <div style="padding: 16px;">
+                            <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 12px;">Perfil de Cliente</h3>
                             <p><strong>Nombre:</strong> ${userData.name || 'Sin nombre'}</p>
                             <p><strong>Teléfono:</strong> ${userData.phone || 'Sin teléfono'}</p>
                         </div>
                     `;
                 } else {
                     userInfoContainer.innerHTML = `
-                        <div class="register-client">
-                            <h3>Completa tu perfil de cliente</h3>
-                            <form id="registerClientForm">
-                                <label for="name">Nombre:</label>
-                                <input type="text" id="name" name="name" required>
-                                <label for="phone">Teléfono:</label>
-                                <input type="tel" id="phone" name="phone" required>
-                                <button type="submit">Guardar Perfil</button>
+                        <div style="background-color: #fff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 8px; padding: 24px;">
+                            <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Completa tu perfil de cliente</h3>
+                            <form id="registerClientForm" style="display: flex; flex-direction: column; gap: 16px;">
+                                <div>
+                                    <label for="name" style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151;">Nombre:</label>
+                                    <input type="text" id="name" name="name" required 
+                                           style="margin-top: 4px; width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); outline: none; transition: border-color 0.2s;">
+                                </div>
+                                <div>
+                                    <label for="phone" style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151;">Teléfono:</label>
+                                    <input type="tel" id="phone" name="phone" required 
+                                           style="margin-top: 4px; width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); outline: none; transition: border-color 0.2s;">
+                                </div>
+                                <button type="submit" 
+                                        style="width: 200px; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; transition: background-color 0.2s;">
+                                    Guardar Perfil
+                                </button>
                             </form>
                         </div>
                     `;
@@ -99,8 +170,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const registerClientForm = document.getElementById('registerClientForm');
                     registerClientForm.addEventListener('submit', async (e) => {
                         e.preventDefault();
-                        const name = document.getElementById('name').value;
-                        const phone = document.getElementById('phone').value;
+                        const name = document.getElementById('name').value.trim();
+                        const phone = document.getElementById('phone').value.trim();
+                        const submitButton = registerClientForm.querySelector('button[type="submit"]');
+
+                        if (!name || name.length < 2) {
+                            alert('Por favor, ingresa un nombre válido (mínimo 2 caracteres).');
+                            return;
+                        }
+
+                        const phoneRegex = /^\d{7,15}$/;
+                        if (!phoneRegex.test(phone)) {
+                            alert('Por favor, ingresa un número de teléfono válido (7-15 dígitos, solo números).');
+                            return;
+                        }
+
+                        submitButton.disabled = true;
+                        submitButton.textContent = 'Guardando...';
 
                         try {
                             const userData = {
@@ -113,12 +199,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                             alert('¡Perfil de cliente creado exitosamente!');
                             window.location.reload();
                         } catch (error) {
-                            alert('Error al guardar el perfil de cliente.');
+                            console.error('Error al guardar el perfil de cliente:', error);
+                            alert(`Error al guardar el perfil: ${error.message}`);
+                        } finally {
+                            submitButton.disabled = false;
+                            submitButton.textContent = 'Guardar Perfil';
                         }
                     });
                 }
             } catch (error) {
-                alert('Error al verificar el perfil de cliente.');
+                console.error('Error al verificar el perfil de cliente:', error);
+                alert(`Error al verificar el perfil: ${error.message}`);
             }
         } else {
             alert('Por favor, inicia sesión para continuar.');
@@ -133,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const productRef = doc(db, `stores/${storeId}/products`, item.productId);
                 const productDoc = await getDoc(productRef);
-                
+
                 if (productDoc.exists()) {
                     const productData = productDoc.data();
                     productsData.push({
@@ -153,7 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Mostrar los productos en el carrito
     async function displayCartProducts() {
         const productsData = await loadCartProducts();
-        
+
         cartDetails.innerHTML = '';
 
         productsData.forEach(product => {
@@ -173,10 +264,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // Calcular y mostrar el total
-        const total = productsData.reduce((sum, product) => 
+        const total = productsData.reduce((sum, product) =>
             sum + (product.price * product.quantity), 0
         );
-        
+
         const totalElement = document.createElement('div');
         totalElement.className = 'cart-total';
         totalElement.innerHTML = `
@@ -213,7 +304,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Función para actualizar la vista de la dirección seleccionada
     function updateSelectedAddressView(address) {
-        // Actualizar la vista de la dirección seleccionada
         const selectedAddressDiv = document.createElement('div');
         selectedAddressDiv.className = 'selected-address';
         selectedAddressDiv.innerHTML = `
@@ -222,13 +312,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             <p><strong>Coordenadas:</strong> ${address.latitude && address.longitude ? `${address.latitude}, ${address.longitude}` : 'No especificadas'}</p>
             <button id="toggle-addresses-btn" class="btn">▼ Mostrar otras direcciones</button>
         `;
-        
-        // Crear contenedor para otras direcciones
+
         const otherAddressesDiv = document.createElement('div');
         otherAddressesDiv.id = 'other-addresses';
         otherAddressesDiv.style.display = 'none';
 
-        // Limpiar y agregar nuevas direcciones
         otherAddressesDiv.innerHTML = '';
         addresses.forEach((addr, idx) => {
             if (addr !== address) {
@@ -236,21 +324,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // Actualizar el contenedor principal
         savedAddressesContainer.innerHTML = '';
         savedAddressesContainer.appendChild(selectedAddressDiv);
         savedAddressesContainer.appendChild(otherAddressesDiv);
 
-        // Configurar eventos
         setupAddressEvents();
 
-        // Actualizar el botón de confirmar
-        document.getElementById('confirm-btn').disabled = false;
+        document.getElementById('confirm-btn').disabled = selectedFile === null && document.querySelector('input[name="payment"]:checked')?.value === 'transfer';
     }
 
     // Configurar eventos de las direcciones
     function setupAddressEvents() {
-        // Evento para el botón de toggle
         const toggleBtn = document.getElementById('toggle-addresses-btn');
         if (toggleBtn) {
             toggleBtn.addEventListener('click', () => {
@@ -265,7 +349,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Evento delegado para los botones de selección
         savedAddressesContainer.addEventListener('click', (e) => {
             if (e.target.classList.contains('select-address-btn')) {
                 const index = parseInt(e.target.dataset.index);
@@ -287,16 +370,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     addresses = userData.addresses || [];
 
                     if (addresses.length > 0) {
-                        // Seleccionar la última dirección por defecto
                         selectedAddress = addresses[addresses.length - 1];
                         updateSelectedAddressView(selectedAddress);
                     } else {
-                        savedAddressesContainer.innerHTML = '<p>No tienes direcciones guardadas.</p>';
+                        savedAddressesContainer.innerHTML = '<p style="color: #374151;">No tienes direcciones guardadas.</p>';
                         document.getElementById('confirm-btn').disabled = true;
                     }
                 }
             }
         } catch (error) {
+            console.error('Error al cargar las direcciones guardadas:', error);
             alert('Error al cargar las direcciones guardadas.');
             document.getElementById('confirm-btn').disabled = true;
         }
@@ -332,7 +415,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 createdAt: new Date().toISOString(),
             };
 
-            // Include latitude and longitude only if they are available
             if (latitude && longitude) {
                 addressData.latitude = parseFloat(latitude);
                 addressData.longitude = parseFloat(longitude);
@@ -351,6 +433,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.location.reload();
             }
         } catch (error) {
+            console.error('Error al guardar la dirección:', error);
             alert('Error al guardar la dirección.');
         }
     });
@@ -371,6 +454,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        // Validar selección de banco y comprobante si el método es transferencia
+        if (selectedPaymentMethod.value === 'transfer') {
+            const bankSelect = document.getElementById('bank-select');
+            if (!bankSelect || bankSelect.value === '') {
+                alert('Por favor, selecciona un banco para la transferencia.');
+                return;
+            }
+            if (!selectedFile) {
+                alert('Por favor, sube un comprobante de pago para la transferencia.');
+                return;
+            }
+        }
+
         if (cart.length === 0) {
             alert('El carrito está vacío. Agrega productos antes de confirmar el pedido.');
             return;
@@ -388,6 +484,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const userData = userSnapshot.data();
             const clientName = userData.name || 'Sin nombre';
 
+            // Subir el comprobante a Firebase Storage si existe
+            let paymentProofUrl = null;
+            if (selectedPaymentMethod.value === 'transfer' && selectedFile) {
+                const storageRef = ref(storage, `comprobantes/${auth.currentUser.uid}/${Date.now()}_${selectedFile.name}`);
+                await uploadBytes(storageRef, selectedFile);
+                paymentProofUrl = await getDownloadURL(storageRef);
+            }
+
             const orderData = {
                 userId: auth.currentUser.uid,
                 storeDocId: storeId,
@@ -397,6 +501,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 paymentMethod: selectedPaymentMethod.value,
                 clientName: clientName,
                 createdAt: new Date().toISOString(),
+                status: 'pendiente',
+                paymentProofUrl: paymentProofUrl, // Incluir la URL del comprobante
+                bankIndex: selectedPaymentMethod.value === 'transfer' ? parseInt(document.getElementById('bank-select').value) : null,
             };
 
             await addDoc(collection(db, 'orders'), orderData);
@@ -406,7 +513,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             localStorage.removeItem(cartKey);
             window.location.href = '/my-orders.html';
         } catch (error) {
-            alert('Hubo un error al confirmar tu pedido. Por favor, inténtalo de nuevo.');
+            console.error('Error al confirmar el pedido:', error);
+            alert(`Hubo un error al confirmar tu pedido: ${error.message}`);
         }
     });
 });

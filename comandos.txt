@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Editar tienda"
+git commit -m "Mejora en diseño checkout"
 git push -u origin main

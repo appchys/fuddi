@@ -61,17 +61,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const items = Array.isArray(order.items) ? order.items : [];
                     const status = order.status || 'pendiente';
 
+                    // Determinar texto y estado del botón según el estado
+                    const buttonText = status === 'pendiente' ? 'Aceptar' : 'Enviado';
+                    const buttonClass = status === 'pendiente' ? 'accept-btn' : 'ship-btn';
+                    const isDisabled = status === 'enviado' ? 'disabled' : '';
+                    const buttonDisabledClass = status === 'enviado' ? 'disabled-btn' : '';
+
                     // Crear la tarjeta del pedido
                     const orderCard = document.createElement('div');
                     orderCard.className = 'order-card';
                     orderCard.innerHTML = `
-                        <h3 class="order-title">Pedido #${doc.id}</h3>
-                        <p><strong>Cliente:</strong> ${clientName}</p>
-                        <p><strong>Total:</strong> $${total}</p>
-                        <p><strong>Dirección:</strong> ${reference}</p>
-                        <p><strong>Método de Pago:</strong> ${paymentMethod}</p>
-                        <p><strong>Fecha:</strong> ${createdAt}</p>
-                        <p><strong>Estado:</strong> <span class="status-text ${status === 'aceptada' ? 'status-aceptada' : 'status-pendiente'}">${status}</span></p>
+                        <h3 class="order-title">${clientName}</h3>
                         <h4 class="products-title">Productos:</h4>
                         <ul class="products-list">
                             ${items.length > 0
@@ -88,13 +88,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 : '<li class="no-products">No hay productos en este pedido</li>'
                             }
                         </ul>
+                        <p><strong>Dirección:</strong> ${reference}</p>
+                        <p><strong>Total:</strong> $${total}</p>
+                        <p><strong>Método de Pago:</strong> ${paymentMethod}</p>
+                        <p><strong>Fecha:</strong> ${createdAt}</p>
+                        <p><strong>Estado:</strong> <span class="status-text ${status}">${status}</span></p>
                         <div class="actions-container">
-                            <button class="action-btn accept-btn ${status === 'aceptada' ? 'disabled-btn' : ''}" 
-                                    data-order-id="${doc.id}" ${status === 'aceptada' ? 'disabled' : ''}>
-                                Aceptar
-                            </button>
-                            <button class="action-btn details-btn" data-order-id="${doc.id}">
-                                Ver Detalles
+                            <button class="action-btn ${buttonClass} ${buttonDisabledClass}" 
+                                    data-order-id="${doc.id}" ${isDisabled}>
+                                ${buttonText}
                             </button>
                             <button class="action-btn delete-btn" data-order-id="${doc.id}">
                                 Eliminar
@@ -105,26 +107,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
                 // Añadir event listeners para los botones
-                document.querySelectorAll('.accept-btn').forEach(button => {
+                document.querySelectorAll('.accept-btn, .ship-btn').forEach(button => {
                     button.addEventListener('click', async (e) => {
                         const orderId = e.target.dataset.orderId;
+                        const currentStatus = e.target.classList.contains('accept-btn') ? 'pendiente' : 'en proceso';
+                        
                         try {
-                            await updateDoc(doc(db, 'orders', orderId), { status: 'aceptada' });
-                            alert('Orden aceptada exitosamente.');
+                            const newStatus = currentStatus === 'pendiente' ? 'en proceso' : 'enviado';
+                            await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
+                            alert(`Orden actualizada a "${newStatus}" exitosamente.`);
                             // Recargar la página para reflejar el cambio
                             location.reload();
                         } catch (error) {
-                            console.error('Error al aceptar la orden:', error);
-                            alert('Hubo un error al aceptar la orden.');
+                            console.error('Error al actualizar la orden:', error);
+                            alert('Hubo un error al actualizar la orden.');
                         }
-                    });
-                });
-
-                document.querySelectorAll('.details-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const orderId = e.target.dataset.orderId;
-                        // Redirigir a la página de detalles (ajusta la URL según tu aplicación)
-                        window.location.href = `/order-details.html?orderId=${orderId}`;
                     });
                 });
 
