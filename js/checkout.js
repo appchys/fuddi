@@ -126,40 +126,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    if (cart.length === 0) {
-        cartDetails.innerHTML = '<p>El carrito está vacío.</p>';
-    } else {
-        let totalGeneral = 0;
-
+    // Cargar datos del carrito y sus productos
+    async function loadCartProducts() {
+        const productsData = [];
         for (const item of cart) {
             try {
-                const productDoc = await getDoc(doc(db, `stores/${storeId}/products`, item.productId));
+                const productRef = doc(db, `stores/${storeId}/products`, item.productId);
+                const productDoc = await getDoc(productRef);
+                
                 if (productDoc.exists()) {
-                    const product = productDoc.data();
-                    const subtotal = product.price * item.quantity;
-                    totalGeneral += subtotal;
-
-                    const cartItem = document.createElement('div');
-                    cartItem.classList.add('cart-item');
-                    cartItem.innerHTML = `
-                        <p><strong>${product.name}</strong></p>
-                        <p>Cantidad: ${item.quantity}</p>
-                        <p>Subtotal: $${subtotal.toFixed(2)}</p>
-                    `;
-                    cartDetails.appendChild(cartItem);
+                    const productData = productDoc.data();
+                    productsData.push({
+                        productId: item.productId,
+                        name: productData.name,
+                        price: productData.price,
+                        quantity: item.quantity
+                    });
                 }
             } catch (error) {
-                alert('Error al obtener los datos del producto.');
+                console.error('Error al cargar el producto:', error);
             }
         }
+        return productsData;
+    }
 
+    // Mostrar los productos en el carrito
+    async function displayCartProducts() {
+        const productsData = await loadCartProducts();
+        
+        cartDetails.innerHTML = '';
+
+        productsData.forEach(product => {
+            const productElement = document.createElement('div');
+            productElement.className = 'cart-item';
+            productElement.innerHTML = `
+                <div class="product-info">
+                    <h3>${product.name}</h3>
+                    <p>Precio: $${product.price}</p>
+                    <p>Cantidad: ${product.quantity}</p>
+                </div>
+                <div class="subtotal">
+                    <p>Subtotal: $${(product.price * product.quantity).toFixed(2)}</p>
+                </div>
+            `;
+            cartDetails.appendChild(productElement);
+        });
+
+        // Calcular y mostrar el total
+        const total = productsData.reduce((sum, product) => 
+            sum + (product.price * product.quantity), 0
+        );
+        
         const totalElement = document.createElement('div');
-        totalElement.classList.add('cart-total');
+        totalElement.className = 'cart-total';
         totalElement.innerHTML = `
-            <p><strong>Total General:</strong> $${totalGeneral.toFixed(2)}</p>
+            <h3>Total: $${total.toFixed(2)}</h3>
         `;
         cartDetails.appendChild(totalElement);
     }
+
+    // Inicializar la vista del carrito
+    await displayCartProducts();
 
     const savedAddressesContainer = document.getElementById('saved-addresses');
     const addAddressBtn = document.getElementById('add-address-btn');
@@ -170,6 +197,110 @@ document.addEventListener('DOMContentLoaded', async () => {
     const longitudeSpan = document.getElementById('longitude');
 
     let selectedAddress = null;
+    let addresses = [];
+
+    // Función para crear un elemento de dirección
+    function createAddressElement(address, index) {
+        const addressElement = document.createElement('div');
+        addressElement.classList.add('address-item');
+        addressElement.innerHTML = `
+            <p><strong>Referencia:</strong> ${address.reference}</p>
+            <p><strong>Coordenadas:</strong> ${address.latitude && address.longitude ? `${address.latitude}, ${address.longitude}` : 'No especificadas'}</p>
+            <button class="select-address-btn" data-index="${index}">Seleccionar</button>
+        `;
+        return addressElement;
+    }
+
+    // Función para actualizar la vista de la dirección seleccionada
+    function updateSelectedAddressView(address) {
+        // Actualizar la vista de la dirección seleccionada
+        const selectedAddressDiv = document.createElement('div');
+        selectedAddressDiv.className = 'selected-address';
+        selectedAddressDiv.innerHTML = `
+            <p><strong>Dirección seleccionada:</strong></p>
+            <p><strong>Referencia:</strong> ${address.reference}</p>
+            <p><strong>Coordenadas:</strong> ${address.latitude && address.longitude ? `${address.latitude}, ${address.longitude}` : 'No especificadas'}</p>
+            <button id="toggle-addresses-btn" class="btn">▼ Mostrar otras direcciones</button>
+        `;
+        
+        // Crear contenedor para otras direcciones
+        const otherAddressesDiv = document.createElement('div');
+        otherAddressesDiv.id = 'other-addresses';
+        otherAddressesDiv.style.display = 'none';
+
+        // Limpiar y agregar nuevas direcciones
+        otherAddressesDiv.innerHTML = '';
+        addresses.forEach((addr, idx) => {
+            if (addr !== address) {
+                otherAddressesDiv.appendChild(createAddressElement(addr, idx));
+            }
+        });
+
+        // Actualizar el contenedor principal
+        savedAddressesContainer.innerHTML = '';
+        savedAddressesContainer.appendChild(selectedAddressDiv);
+        savedAddressesContainer.appendChild(otherAddressesDiv);
+
+        // Configurar eventos
+        setupAddressEvents();
+
+        // Actualizar el botón de confirmar
+        document.getElementById('confirm-btn').disabled = false;
+    }
+
+    // Configurar eventos de las direcciones
+    function setupAddressEvents() {
+        // Evento para el botón de toggle
+        const toggleBtn = document.getElementById('toggle-addresses-btn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                const otherAddressesDiv = document.getElementById('other-addresses');
+                if (otherAddressesDiv.style.display === 'none') {
+                    otherAddressesDiv.style.display = 'block';
+                    toggleBtn.textContent = '▲ Ocultar otras direcciones';
+                } else {
+                    otherAddressesDiv.style.display = 'none';
+                    toggleBtn.textContent = '▼ Mostrar otras direcciones';
+                }
+            });
+        }
+
+        // Evento delegado para los botones de selección
+        savedAddressesContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('select-address-btn')) {
+                const index = parseInt(e.target.dataset.index);
+                selectedAddress = addresses[index];
+                updateSelectedAddressView(selectedAddress);
+            }
+        });
+    }
+
+    const loadSavedAddresses = async () => {
+        try {
+            const user = auth.currentUser;
+            if (user) {
+                const addressesRef = doc(db, 'users', user.uid);
+                const userSnapshot = await getDoc(addressesRef);
+
+                if (userSnapshot.exists()) {
+                    const userData = userSnapshot.data();
+                    addresses = userData.addresses || [];
+
+                    if (addresses.length > 0) {
+                        // Seleccionar la última dirección por defecto
+                        selectedAddress = addresses[addresses.length - 1];
+                        updateSelectedAddressView(selectedAddress);
+                    } else {
+                        savedAddressesContainer.innerHTML = '<p>No tienes direcciones guardadas.</p>';
+                        document.getElementById('confirm-btn').disabled = true;
+                    }
+                }
+            }
+        } catch (error) {
+            alert('Error al cargar las direcciones guardadas.');
+            document.getElementById('confirm-btn').disabled = true;
+        }
+    };
 
     addAddressBtn.addEventListener('click', () => {
         newAddressForm.style.display = 'block';
@@ -195,18 +326,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         const latitude = latitudeSpan.textContent;
         const longitude = longitudeSpan.textContent;
 
-        if (!latitude || !longitude) {
-            alert('Por favor, obtén las coordenadas antes de guardar la dirección.');
-            return;
-        }
-
         try {
             const addressData = {
                 reference,
-                latitude: parseFloat(latitude),
-                longitude: parseFloat(longitude),
                 createdAt: new Date().toISOString(),
             };
+
+            // Include latitude and longitude only if they are available
+            if (latitude && longitude) {
+                addressData.latitude = parseFloat(latitude);
+                addressData.longitude = parseFloat(longitude);
+            }
 
             const user = auth.currentUser;
             if (user) {
@@ -224,74 +354,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('Error al guardar la dirección.');
         }
     });
-
-    const loadSavedAddresses = async () => {
-        try {
-            const user = auth.currentUser;
-            if (user) {
-                const addressesRef = doc(db, 'users', user.uid);
-                const userSnapshot = await getDoc(addressesRef);
-
-                if (userSnapshot.exists()) {
-                    const userData = userSnapshot.data();
-                    const addresses = userData.addresses || [];
-
-                    if (addresses.length > 0) {
-                        const lastAddress = addresses[addresses.length - 1];
-                        selectedAddress = lastAddress;
-
-                        savedAddressesContainer.innerHTML = `
-                            <div class="selected-address">
-                                <p><strong>Dirección seleccionada:</strong></p>
-                                <p><strong>Referencia:</strong> ${lastAddress.reference}</p>
-                                <p><strong>Coordenadas:</strong> ${lastAddress.latitude}, ${lastAddress.longitude}</p>
-                                <button id="toggle-addresses-btn" class="btn">▼ Mostrar otras direcciones</button>
-                            </div>
-                            <div id="other-addresses" style="display: none;">
-                                <!-- Aquí se mostrarán las demás direcciones -->
-                            </div>
-                        `;
-
-                        const toggleAddressesBtn = document.getElementById('toggle-addresses-btn');
-                        const otherAddressesContainer = document.getElementById('other-addresses');
-
-                        toggleAddressesBtn.addEventListener('click', () => {
-                            if (otherAddressesContainer.style.display === 'none') {
-                                otherAddressesContainer.style.display = 'block';
-                                toggleAddressesBtn.textContent = '▲ Ocultar otras direcciones';
-                            } else {
-                                otherAddressesContainer.style.display = 'none';
-                                toggleAddressesBtn.textContent = '▼ Mostrar otras direcciones';
-                            }
-                        });
-
-                        addresses.slice(0, -1).forEach((address, index) => {
-                            const addressElement = document.createElement('div');
-                            addressElement.classList.add('address-item');
-                            addressElement.innerHTML = `
-                                <p><strong>Referencia:</strong> ${address.reference}</p>
-                                <p><strong>Coordenadas:</strong> ${address.latitude}, ${address.longitude}</p>
-                                <button class="select-address-btn" data-index="${index}">Seleccionar</button>
-                            `;
-                            otherAddressesContainer.appendChild(addressElement);
-                        });
-
-                        document.querySelectorAll('.select-address-btn').forEach((btn) => {
-                            btn.addEventListener('click', (e) => {
-                                const index = e.target.dataset.index;
-                                selectedAddress = addresses[index];
-                                window.location.reload();
-                            });
-                        });
-                    } else {
-                        savedAddressesContainer.innerHTML = '<p>No tienes direcciones guardadas.</p>';
-                    }
-                }
-            }
-        } catch (error) {
-            alert('Error al cargar las direcciones guardadas.');
-        }
-    };
 
     loadSavedAddresses();
 

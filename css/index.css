@@ -43,6 +43,16 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+.store a {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.store img {
+    pointer-events: none;
+}
+
 /* Contenedor principal de la tienda */
 .store-container {
     display: flex;

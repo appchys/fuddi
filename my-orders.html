@@ -4,19 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Pedidos</title>
-    <link rel="stylesheet" href="./css/my-orders.css"> <!-- Reutilizamos estilos existentes -->
+    <link rel="stylesheet" href="./css/my-orders.css">
+    <!-- Añadir una fuente moderna desde Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
         <h1>Mis Pedidos</h1>
+        <button id="back-btn" class="back-btn">← Volver</button>
     </header>
     <main>
         <section id="orders-section">
             <h2>Pedidos Realizados</h2>
-            <div id="orders-container"></div>
-            
-                <!-- Los pedidos se cargarán aquí dinámicamente -->
+            <!-- Spinner de carga -->
+            <div id="loading-spinner" class="spinner" style="display: none;">
+                <div class="spinner-icon"></div>
             </div>
+            <div id="orders-container"></div>
         </section>
     </main>
     <script type="module" src="./js/my-orders.js"></script>

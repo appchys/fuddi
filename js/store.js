@@ -1,6 +1,6 @@
-// En store.js
 import { app, auth, googleProvider, signInWithPopup } from './firebase-config.js';
 import { getFirestore, doc, getDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 // Initialize Firestore
 const db = getFirestore(app);
 
@@ -173,22 +173,35 @@ async function showProductDetails(productId) {
 document.getElementById('close-sidebar').addEventListener('click', () => {
     const sidebar = document.getElementById('product-sidebar');
     sidebar.classList.remove('visible');
-    sidebar.classList.add('hidden'); // Agregar esta línea
+    sidebar.classList.add('hidden');
 });
 
 // Función para manejar la acción de añadir al carrito
-function addToCart(productId) {
+async function addToCart(productId) {
     if (!storeId) {
         console.error("No se proporcionó un storeId en la URL.");
         return;
     }
 
+    // Obtener los datos del producto desde Firestore
+    const productDoc = await getDoc(doc(db, `stores/${storeId}/products`, productId));
+    if (!productDoc.exists()) {
+        console.error(`Producto con ID ${productId} no encontrado.`);
+        return;
+    }
+
+    const product = productDoc.data();
     const cartKey = `cart_${storeId}`;
     const cart = JSON.parse(localStorage.getItem(cartKey)) || [];
 
     const productExists = cart.some(item => item.productId === productId);
     if (!productExists) {
-        cart.push({ productId, quantity: 1 });
+        cart.push({
+            productId,
+            quantity: 1,
+            name: product.name || 'Producto desconocido',
+            price: product.price || 0
+        });
     } else {
         cart.forEach(item => {
             if (item.productId === productId) {
@@ -199,6 +212,40 @@ function addToCart(productId) {
 
     localStorage.setItem(cartKey, JSON.stringify(cart));
     console.log(`Producto añadido al carrito de la tienda ${storeId}:`, productId);
+}
+
+// Función para incrementar la cantidad de un producto en el carrito
+function incrementQuantity(productId) {
+    const cartKey = `cart_${storeId}`;
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+    cart = cart.map(item => {
+        if (item.productId === productId) {
+            item.quantity += 1;
+        }
+        return item;
+    });
+
+    // Guardar el carrito actualizado
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+
+    // Actualizar la vista del carrito
+    showCart();
+}
+
+// Función para eliminar un producto del carrito
+function removeFromCart(productId) {
+    const cartKey = `cart_${storeId}`;
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+    // Filtrar el producto a eliminar
+    cart = cart.filter(item => item.productId !== productId);
+
+    // Guardar el carrito actualizado
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+
+    // Actualizar la vista del carrito
+    showCart();
 }
 
 // Función para mostrar el carrito
@@ -222,33 +269,35 @@ async function showCart() {
 
         for (const item of cart) {
             const productDoc = await getDoc(doc(db, `stores/${storeId}/products`, item.productId));
+            let product = item; // Usar datos del carrito por defecto
             if (productDoc.exists()) {
-                const product = productDoc.data();
-                const subtotal = product.price * item.quantity;
-                totalGeneral += subtotal;
-
-                const cartItem = document.createElement('div');
-                cartItem.classList.add('cart-item');
-                cartItem.innerHTML = `
-                    <div class="cart-item-image">
-                        <img src="${product.imageUrl}" alt="${product.name}">
-                    </div>
-                    <div class="cart-item-details">
-                        <p class="cart-item-name"><strong>${product.name}</strong></p>
-                        <p class="cart-item-quantity">
-                            Cantidad: ${item.quantity}
-                            <button class="increment-quantity" data-product-id="${item.productId}" title="Incrementar cantidad">
-                                <i class="bi bi-plus-circle"></i>
-                            </button>
-                        </p>
-                        <p class="cart-item-subtotal">Subtotal: $${subtotal.toFixed(2)}</p>
-                    </div>
-                    <button class="remove-from-cart" data-product-id="${item.productId}" title="Eliminar del carrito">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                `;
-                cartDetails.appendChild(cartItem);
+                product = { ...productDoc.data(), ...item }; // Combinar datos de Firestore y carrito
             }
+
+            const subtotal = product.price * item.quantity;
+            totalGeneral += subtotal;
+
+            const cartItem = document.createElement('div');
+            cartItem.classList.add('cart-item');
+            cartItem.innerHTML = `
+                <div class="cart-item-image">
+                    <img src="${product.imageUrl || ''}" alt="${product.name}">
+                </div>
+                <div class="cart-item-details">
+                    <p class="cart-item-name"><strong>${product.name}</strong></p>
+                    <p class="cart-item-quantity">
+                        Cantidad: ${item.quantity}
+                        <button class="increment-quantity" data-product-id="${item.productId}" title="Incrementar cantidad">
+                            <i class="bi bi-plus-circle"></i>
+                        </button>
+                    </p>
+                    <p class="cart-item-subtotal">Subtotal: $${subtotal.toFixed(2)}</p>
+                </div>
+                <button class="remove-from-cart" data-product-id="${item.productId}" title="Eliminar del carrito">
+                    <i class="bi bi-trash"></i>
+                </button>
+            `;
+            cartDetails.appendChild(cartItem);
         }
 
         // Mostrar el total general
@@ -287,40 +336,6 @@ async function showCart() {
 
     cartSidebar.classList.remove('hidden');
     cartSidebar.classList.add('visible');
-}
-
-// Función para incrementar la cantidad de un producto en el carrito
-function incrementQuantity(productId) {
-    const cartKey = `cart_${storeId}`;
-    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
-
-    cart = cart.map(item => {
-        if (item.productId === productId) {
-            item.quantity += 1;
-        }
-        return item;
-    });
-
-    // Guardar el carrito actualizado
-    localStorage.setItem(cartKey, JSON.stringify(cart));
-
-    // Actualizar la vista del carrito
-    showCart();
-}
-
-// Función para eliminar un producto del carrito
-function removeFromCart(productId) {
-    const cartKey = `cart_${storeId}`;
-    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
-
-    // Filtrar el producto a eliminar
-    cart = cart.filter(item => item.productId !== productId);
-
-    // Guardar el carrito actualizado
-    localStorage.setItem(cartKey, JSON.stringify(cart));
-
-    // Actualizar la vista del carrito
-    showCart();
 }
 
 // Cerrar la sidebar del carrito

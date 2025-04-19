@@ -1,5 +1,7 @@
 import { auth, googleProvider, signInWithPopup, db, doc, getDoc, collection, query, where, getDocs } from './firebase-config.js';
 
+
+
 // Hacer toggleControlPanel global
 window.toggleControlPanel = function () {
     const panel = document.getElementById('controlPanel');
@@ -33,7 +35,7 @@ window.loginWithGoogle = async function () {
         if (userCheck.exists) {
             alert(`¡Bienvenido, ${user.displayName}! Ya estás registrado como ${userCheck.type}.`);
         } else {
-            window.location.href = 'register.html';
+            window.location.href = 'index.html';
         }
     } catch (error) {
         console.error('Error al iniciar sesión con Google:', error.message);
@@ -58,6 +60,21 @@ window.addEventListener('scroll', () => {
         }
     }
     lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+});
+
+// Ocultar el panel al hacer clic fuera
+document.addEventListener('click', (event) => {
+    const panel = document.getElementById('controlPanel');
+    const hamburgerBtn = document.getElementById('control-panel-toggle');
+
+    if (panel && panel.classList.contains('visible')) {
+        const isClickInsidePanel = panel.contains(event.target);
+        const isClickOnHamburger = hamburgerBtn && hamburgerBtn.contains(event.target);
+
+        if (!isClickInsidePanel && !isClickOnHamburger) {
+            panel.classList.remove('visible');
+        }
+    }
 });
 
 // Cargar el panel de control dinámicamente

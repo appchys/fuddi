@@ -34,24 +34,22 @@ async function fetchStores() {
             const storeElement = document.createElement('div');
             storeElement.classList.add('store');
             storeElement.innerHTML = `
-                <div class="store-container">
-                    <div class="store-header">
-                        <div class="store-cover" style="background-color: ${store.coverUrl ? 'transparent' : '#ccc'};">
-                            ${store.coverUrl ? `<img src="${store.coverUrl}" alt="Portada de ${store.name}" class="store-cover-img">` : ''}
+                <a href="store.html?storeId=${storeId}" style="text-decoration: none; color: inherit; display: block;">
+                    <div class="store-container">
+                        <div class="store-header">
+                            <div class="store-cover" style="background-color: ${store.coverUrl ? 'transparent' : '#ccc'};">
+                                ${store.coverUrl ? `<img src="${store.coverUrl}" alt="Portada de la tienda ${store.name}" class="store-cover-img" loading="lazy">` : ''}
+                            </div>
+                            <div class="store-profile-container">
+                                <img src="${store.imageUrl || 'default-profile.png'}" alt="Imagen de perfil de la tienda ${store.name}" class="store-profile-img" loading="lazy">
+                            </div>
                         </div>
-                        <div class="store-profile-container">
-                            <img src="${store.imageUrl || 'default-profile.png'}" alt="Perfil de ${store.name}" class="store-profile-img">
+                        <div class="store-details">
+                            <h3 class="store-name">${store.name || 'Tienda sin nombre'}</h3>
+                            <p class="store-description">${store.description || 'Sin descripción'}</p>
                         </div>
                     </div>
-                    <div class="store-details">
-                        <h3 class="store-name">
-                            <a href="store.html?storeId=${storeId}" style="text-decoration: none; color: inherit;">
-                                ${store.name}
-                            </a>
-                        </h3>
-                        <p class="store-description">${store.description}</p>
-                    </div>
-                </div>
+                </a>
             `;
             storesContainer.appendChild(storeElement);
         });
@@ -78,10 +76,12 @@ async function fetchProducts() {
                 const productElement = document.createElement('div');
                 productElement.classList.add('product');
                 productElement.innerHTML = `
-                    <img src="${product.imageUrl}" alt="${product.name}" style="width: 100%; height: auto; border-radius: 8px;">
-                    <h3>${product.name}</h3>
-                    <p>${product.description}</p>
-                    <p><strong>Precio:</strong> $${product.price}</p>
+                    <a href="store.html?storeId=${storeId}" style="text-decoration: none; color: inherit; display: block;">
+                        <img src="${product.imageUrl || 'https://via.placeholder.com/150'}" alt="${product.name || 'Producto sin nombre'}" style="width: 100%; height: auto; border-radius: 8px;" loading="lazy">
+                        <h3>${product.name || 'Sin nombre'}</h3>
+                        <p>${product.description || 'Sin descripción'}</p>
+                        <p><strong>Precio:</strong> $${product.price || 'No disponible'}</p>
+                    </a>
                 `;
                 productsContainer.appendChild(productElement);
             });
