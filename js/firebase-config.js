@@ -12,7 +12,7 @@ import {
     getDocs, 
     addDoc 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAAAFDJ_utlimCezUR-_i8Y2yUare9yZ1k",
@@ -73,7 +73,8 @@ export {
     addDoc,
     storage, 
     ref, 
-    uploadBytes 
+    uploadBytes,
+    getDownloadURL
 };
 
 // Función para verificar si el usuario existe en Firestore
