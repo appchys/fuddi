@@ -8,6 +8,7 @@ import {
     ref, 
     uploadBytes, 
     getDoc,
+    getDownloadURL,
     googleProvider,
     signInWithPopup
 } from './firebase-config.js';
