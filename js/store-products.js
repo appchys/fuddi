@@ -146,6 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('productName').value = product.name;
                 document.getElementById('productPrice').value = product.price;
                 document.getElementById('productDescription').value = product.description;
+                document.getElementById('productCollection').value = product.collection;
                 
                 modalTitle.innerHTML = '<i class="bi bi-pencil-square"></i> Editar Producto';
                 openModal();
@@ -186,42 +187,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         const name = document.getElementById('productName').value;
         const price = parseFloat(document.getElementById('productPrice').value);
         const description = document.getElementById('productDescription').value;
+        const collection = document.getElementById('productCollection').value;
         const imageFile = document.getElementById('productImage').files[0];
 
-        if (!name || isNaN(price) || !description) {
+        if (!name || isNaN(price) || !description || !collection) {
             alert('Por favor complete todos los campos requeridos');
             return;
         }
 
         try {
-            let imageUrl = '';
+            let imageUrl;
             
-            // Si es modo edición y no se subió nueva imagen, mantener la existente
-            if (!(isEditMode && !imageFile)) {
-                if (!imageFile) {
-                    alert('Por favor seleccione una imagen');
-                    return;
-                }
-                
-                // Subir nueva imagen
-                const imageRef = ref(storage, `stores/${storeId}/products/${Date.now()}_${imageFile.name}`);
-                await uploadBytes(imageRef, imageFile);
-                imageUrl = await getDownloadURL(imageRef);
+            // Only upload image if a new one was selected
+            if (imageFile) {
+                const storageRef = ref(storage, `stores/${storeId}/products/${Date.now()}_${imageFile.name}`);
+                await uploadBytes(storageRef, imageFile);
+                imageUrl = await getDownloadURL(storageRef);
             }
 
             const productData = {
                 name,
                 price,
                 description,
-                ...(!(isEditMode && !imageFile) && { imageUrl }), // Solo actualiza imageUrl si no es modo edición o si se subió nueva imagen
+                collection,
+                ...(imageUrl && { imageUrl }), // Only update imageUrl if we have a new one
                 updatedAt: new Date().toISOString()
             };
 
             if (isEditMode) {
-                // Actualizar producto existente
+                // Update existing product
                 await updateDoc(doc(db, `stores/${storeId}/products`, currentProductId), productData);
             } else {
-                // Crear nuevo producto
+                // Create new product
                 productData.createdAt = new Date().toISOString();
                 await addDoc(collection(db, `stores/${storeId}/products`), productData);
             }
@@ -229,10 +226,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             closeModal();
             await loadProducts();
             alert(`Producto ${isEditMode ? 'actualizado' : 'agregado'} correctamente`);
-            
         } catch (error) {
-            console.error('Error al guardar producto:', error);
-            alert('Error al guardar el producto');
+            console.error('Error al guardar el producto:', error);
+            alert('Error al guardar el producto. Intente nuevamente.');
         }
     });
 });

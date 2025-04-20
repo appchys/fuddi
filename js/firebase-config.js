@@ -1,6 +1,6 @@
 // js/firebase-config.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { 
     getFirestore, 
     doc, 
@@ -10,7 +10,7 @@ import {
     query, 
     where, 
     getDocs, 
-    addDoc // Importar addDoc
+    addDoc 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
@@ -30,6 +30,25 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
+// Configurar el proveedor de Google con opciones adicionales
+const providerConfig = {
+    client_id: "939925630795-465139776876784716441.apps.googleusercontent.com", // Tu client_id de Google
+    hosted_domain: "gmail.com", // Forzar a usar Gmail
+    request_visible_actions: "http://schemas.google.com/AddActivity",
+    scope: [
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/userinfo.profile'
+    ].join(' '),
+    prompt: 'select_account'
+};
+
+// Aplicar la configuración al proveedor
+Object.keys(providerConfig).forEach(key => {
+    googleProvider.setCustomParameters({
+        [key]: providerConfig[key]
+    });
+});
+
 // Inicializa Firestore
 const db = getFirestore(app);
 
@@ -37,22 +56,24 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 export { 
-  app, 
-  auth, 
-  googleProvider, 
-  signInWithPopup, 
-  db, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  addDoc, // Exportar addDoc
-  storage, 
-  ref, 
-  uploadBytes 
+    app, 
+    auth, 
+    googleProvider, 
+    signInWithPopup, 
+    signInWithRedirect,
+    getRedirectResult,
+    db, 
+    doc, 
+    getDoc, 
+    setDoc, 
+    collection, 
+    query, 
+    where, 
+    getDocs, 
+    addDoc,
+    storage, 
+    ref, 
+    uploadBytes 
 };
 
 // Función para verificar si el usuario existe en Firestore

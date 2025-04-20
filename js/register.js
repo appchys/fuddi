@@ -11,83 +11,138 @@ import {
     googleProvider,
     signInWithPopup
 } from './firebase-config.js';
-import { getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js";
+
+console.log('Firebase auth:', auth);
+console.log('Google provider:', googleProvider);
 
 // Función para verificar si el usuario existe en Firestore
 async function checkUserExists(userId) {
+    console.log('Verificando si el usuario existe:', userId);
     const userDoc = doc(db, 'users', userId);
     const userSnapshot = await getDoc(userDoc);
     if (userSnapshot.exists()) {
+        console.log('Usuario encontrado en colección users');
         return { exists: true, type: 'client', data: userSnapshot.data() };
     }
 
     const storeDoc = doc(db, 'stores', userId);
     const storeSnapshot = await getDoc(storeDoc);
     if (storeSnapshot.exists()) {
+        console.log('Usuario encontrado en colección stores');
         return { exists: true, type: 'store', data: storeSnapshot.data() };
     }
 
+    console.log('Usuario no encontrado');
     return { exists: false };
 }
 
-// Función para iniciar sesión con Google
-window.loginWithGoogle = async function () {
-    try {
-        const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
-
-        // Verificar si el usuario ya existe usando la función checkUserExists
-        const userCheck = await checkUserExists(user.uid);
-        
-        if (!userCheck.exists) {
-            // Mostrar el formulario si el usuario no existe
-            showRegisterForm();
-        } else {
-            alert('¡Bienvenido de nuevo, ' + user.displayName + '!');
-            window.location.href = 'index.html';
-        }
-    } catch (error) {
-        console.error('Error al iniciar sesión con Google:', error.message);
-        alert('Error al iniciar sesión: ' + error.message);
-    }
-};
-
 // Función para mostrar el formulario de registro
 function showRegisterForm() {
+    console.log('showRegisterForm called');
     const registerContainer = document.querySelector('.register-container');
     const formContent = document.getElementById('registerForm');
+    const googleButton = document.querySelector('.btn-google');
     
     // Asegurarse de que el formulario esté en el DOM
     if (formContent) {
-        formContent.classList.remove('hidden-content');
+        // Eliminar la clase hidden-content
+        if (formContent.classList.contains('hidden-content')) {
+            formContent.classList.remove('hidden-content');
+        }
         
-        // Restaurar el botón de Google a su estado original
-        const googleButton = document.querySelector('.btn-google');
+        // Asegurarse de que el formulario esté visible
+        formContent.style.display = 'block';
+        
+        // Ocultar el botón de Google si ya hay un usuario autenticado
         if (googleButton) {
             googleButton.style.display = 'none';
         }
     }
 }
 
+// Función para iniciar sesión con Google
+window.loginWithGoogle = async function () {
+    try {
+        console.log('Iniciando proceso de inicio de sesión...');
+        
+        // Usar signInWithPopup
+        console.log('Iniciando popup...');
+        const result = await signInWithPopup(auth, googleProvider);
+        console.log('Popup completado');
+        
+        const user = result.user;
+        console.log('Usuario autenticado:', user);
+        console.log('UID:', user.uid);
+        console.log('Email:', user.email);
+        
+        // Verificar si el usuario ya existe
+        const userCheck = await checkUserExists(user.uid);
+        console.log('Resultado de checkUserExists:', userCheck);
+        
+        if (userCheck.exists) {
+            console.log('Usuario existente encontrado');
+            alert('¡Bienvenido de nuevo, ' + user.displayName + '!');
+            window.location.href = 'index.html';
+        } else {
+            console.log('Nuevo usuario, mostrando formulario');
+            // Mostrar el formulario de registro
+            showRegisterForm();
+        }
+    } catch (error) {
+        console.error('Error al iniciar sesión con Google:', error);
+        console.error('Error message:', error.message);
+        console.error('Error code:', error.code);
+        
+        // Mostrar mensaje de error más descriptivo
+        let errorMessage = 'Error al iniciar sesión: ';
+        switch (error.code) {
+            case 'auth/popup-blocked':
+                errorMessage += 'El popup fue bloqueado por el navegador. Por favor, intenta de nuevo y asegúrate de permitir los popups para este sitio.';
+                break;
+            case 'auth/popup-closed-by-user':
+                errorMessage += 'Operación cancelada por el usuario';
+                break;
+            default:
+                errorMessage += error.message;
+        }
+        
+        alert(errorMessage);
+    }
+};
+
 // Event listener para cuando el DOM esté cargado
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOMContentLoaded event triggered');
+    console.log('Estado inicial de autenticación:', auth.currentUser);
+    
     // Ocultar el formulario inicialmente
     const formContent = document.getElementById('registerForm');
     if (formContent) {
         formContent.classList.add('hidden-content');
     }
 
-    // Verificar si ya hay un usuario autenticado
-    const user = auth.currentUser;
-    if (user) {
-        checkUserExists(user.uid).then(userCheck => {
-            if (!userCheck.exists) {
-                showRegisterForm();
-            } else {
-                window.location.href = 'index.html';
-            }
-        });
+    // Configurar el botón de Google
+    const googleButton = document.getElementById('googleSignInButton');
+    if (googleButton) {
+        googleButton.addEventListener('click', window.loginWithGoogle);
     }
+
+    // Verificar el estado de autenticación
+    auth.onAuthStateChanged(async (user) => {
+        console.log('onAuthStateChanged triggered');
+        console.log('User state:', user);
+        
+        if (user) {
+            console.log('User authenticated:', user.uid);
+            showRegisterForm();
+        } else {
+            console.log('No user authenticated');
+            // Asegurarse de que el botón de Google esté visible si no hay usuario
+            if (googleButton) {
+                googleButton.style.display = 'block';
+            }
+        }
+    });
 
     const form = document.getElementById('registerForm');
     const clientButton = document.getElementById('clientButton');

@@ -61,13 +61,18 @@
                     </div>
                     
                     <div class="form-group">
+                        <label for="productCollection">Colección</label>
+                        <input type="text" id="productCollection" class="form-control" placeholder="Ej. Primavera 2024" required>
+                    </div>
+                    
+                    <div class="form-group">
                         <label for="productImage">Imagen del Producto</label>
                         <div class="file-input-container">
                             <div class="file-input-button">
                                 <i class="bi bi-cloud-arrow-up"></i>
                                 <span id="file-input-label">Seleccionar imagen</span>
                             </div>
-                            <input type="file" id="productImage" accept="image/*" required>
+                            <input type="file" id="productImage" accept="image/*">
                             <span id="file-input-name" class="file-input-name"></span>
                         </div>
                         <small class="form-text">Formatos aceptados: JPG, PNG, WEBP (Max. 2MB)</small>

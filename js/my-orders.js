@@ -1,4 +1,4 @@
-import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, doc, getDoc, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { app, auth } from './firebase-config.js';
 
 const db = getFirestore(app);
@@ -7,60 +7,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     const ordersContainer = document.getElementById('orders-container');
     const loadingSpinner = document.getElementById('loading-spinner');
     const backBtn = document.getElementById('back-btn');
-    const modal = document.getElementById('order-details-modal');
-    const modalContent = document.getElementById('modal-content');
-    const closeModalBtn = document.getElementById('close-modal-btn');
 
     // Configurar el botón de volver
     backBtn.addEventListener('click', () => {
-        window.history.back();
+        window.location.href = '/index.html';
     });
 
     // Mostrar spinner mientras se cargan los pedidos
     loadingSpinner.style.display = 'flex';
 
-    // Función para abrir el modal con detalles del pedido
-    const openOrderDetails = (order, orderId, products) => {
-        modalContent.innerHTML = `
-            <h2>Detalles del Pedido #${orderId}</h2>
-            <p><strong>Cliente:</strong> ${order.clientName || 'No disponible'}</p>
-            <p><strong>Total:</strong> $${order.total ? order.total.toFixed(2) : 'No disponible'}</p>
-            <p><strong>Dirección:</strong> ${order.address?.reference || 'No disponible'}</p>
-            ${order.address?.latitude && order.address?.longitude ? `
-                <p><strong>Coordenadas:</strong> ${order.address.latitude}, ${order.address.longitude}</p>
-            ` : ''}
-            <p><strong>Método de Pago:</strong> ${order.paymentMethod || 'No disponible'}</p>
-            <p><strong>Fecha:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString() : 'No disponible'}</p>
-            <h3>Productos:</h3>
-            <ul>
-                ${products.map(item => `
-                    <li>${item.quantity} x ${item.name || 'Producto desconocido'} - $${item.price ? (item.quantity * item.price).toFixed(2) : 'No disponible'}</li>
-                `).join('') || '<li>No hay productos</li>'}
-            </ul>
-        `;
-        modal.style.display = 'block';
-    };
-
-    // Cerrar el modal
-    if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-    }
-
-    // Cerrar modal al hacer clic fuera
-    window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            modal.style.display = 'none';
+    // Función para actualizar el estado del pedido
+    const updateOrderStatus = async (orderId) => {
+        try {
+            console.log('Actualizando pedido con ID:', orderId);
+            const orderRef = doc(db, 'orders', orderId);
+            await updateDoc(orderRef, {
+                status: 'Recibido'
+            });
+            console.log('Estado del pedido actualizado a Recibido en Firestore');
+            
+            // Actualizar la interfaz
+            const orderItem = document.querySelector(`.order-item[data-order-id="${orderId}"]`);
+            if (orderItem) {
+                const statusElement = orderItem.querySelector('h3');
+                if (statusElement) {
+                    statusElement.textContent = 'Estado: Recibido';
+                    console.log('Interfaz actualizada para pedido:', orderId);
+                } else {
+                    console.error('No se encontró el elemento <h3> para el estado');
+                }
+            } else {
+                console.error('No se encontró el elemento .order-item para el ID:', orderId);
+            }
+        } catch (error) {
+            console.error('Error al actualizar el estado del pedido:', error);
+            alert('Error al marcar el pedido como recibido: ' + error.message);
         }
-    });
+    };
 
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             console.log('Usuario autenticado:', user.uid);
             try {
                 const ordersRef = collection(db, 'orders');
-                const q = query(ordersRef, where('userId', '==', user.uid));
+                const q = query(ordersRef, where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
                 console.log('Consulta de Firestore creada:', q);
 
                 const querySnapshot = await getDocs(q);
@@ -113,8 +103,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const orderElement = document.createElement('div');
                     orderElement.classList.add('order-item');
+                    orderElement.dataset.orderId = doc.id;
                     orderElement.innerHTML = `
-                        <h3>Pedido #${doc.id}</h3>
+                        <h3>Estado: ${order.status || 'No disponible'}</h3>
                         <p><strong>Cliente:</strong> ${order.clientName || 'No disponible'}</p>
                         <p><strong>Total:</strong> $${displayTotal.toFixed(2)}</p>
                         <p><strong>Dirección:</strong> ${order.address?.reference || 'No disponible'}</p>
@@ -126,19 +117,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <li>${item.quantity} x ${item.name} - $${(item.quantity * item.price).toFixed(2)}</li>
                             `).join('') || '<li>No hay productos</li>'}
                         </ul>
-                        <button class="view-details-btn" data-order-id="${doc.id}">Ver Detalles</button>
+                        <button class="mark-received-btn" data-order-id="${doc.id}">Recibido</button>
                     `;
                     ordersContainer.appendChild(orderElement);
 
-                    // Añadir evento al botón de detalles
-                    document.querySelectorAll('.view-details-btn').forEach(button => {
-                        button.addEventListener('click', () => {
-                            const orderId = button.getAttribute('data-order-id');
-                            if (orderId === doc.id) {
-                                openOrderDetails(order, orderId, products);
-                            }
+                    // Añadir evento al botón de Recibido
+                    const receivedBtn = orderElement.querySelector('.mark-received-btn');
+                    if (receivedBtn) {
+                        receivedBtn.addEventListener('click', () => {
+                            updateOrderStatus(doc.id);
                         });
-                    });
+                    }
                 });
 
             } catch (error) {
