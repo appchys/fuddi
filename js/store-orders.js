@@ -1,11 +1,97 @@
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { 
+    getFirestore, 
+    collection, 
+    query, 
+    where, 
+    getDocs, 
+    doc as docRef, 
+    updateDoc, 
+    deleteDoc, 
+    getDoc 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { app, auth } from './firebase-config.js';
 
 // Inicializa Firestore
 const db = getFirestore(app);
 
+// Función para manejar el cambio de estado del pedido
+window.handleOrderStatus = async (orderId, currentStatus) => {
+    try {
+        const orderRef = docRef(db, 'orders', orderId);
+        const newStatus = currentStatus === 'pendiente' ? 'enviado' : 'pendiente';
+        
+        await updateDoc(orderRef, {
+            status: newStatus,
+            updatedAt: new Date().toISOString()
+        });
+
+        // Actualizar la vista
+        const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
+        if (orderCard) {
+            const statusElement = orderCard.querySelector('.status-text');
+            if (statusElement) {
+                statusElement.textContent = newStatus;
+                statusElement.className = `status-text ${newStatus}`;
+            }
+
+            const button = orderCard.querySelector('.action-btn');
+            if (button) {
+                button.textContent = newStatus === 'pendiente' ? 'Aceptar' : 'Enviado';
+                button.className = `action-btn ${newStatus === 'pendiente' ? 'accept-btn' : 'ship-btn'}`;
+            }
+        }
+
+        alert(`El estado del pedido ha sido actualizado a: ${newStatus}`);
+    } catch (error) {
+        console.error('Error al actualizar el estado del pedido:', error);
+        alert('Error al actualizar el estado del pedido. Por favor, inténtalo de nuevo.');
+    }
+};
+
+// Función para manejar la eliminación de pedidos
+window.handleDeleteOrder = async (orderId) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar este pedido?')) {
+        return;
+    }
+
+    try {
+        const orderRef = docRef(db, 'orders', orderId);
+        await deleteDoc(orderRef);
+        alert('Pedido eliminado correctamente');
+        window.location.reload();
+    } catch (error) {
+        console.error('Error al eliminar el pedido:', error);
+        alert('Error al eliminar el pedido. Por favor, inténtalo de nuevo.');
+    }
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     const ordersContainer = document.getElementById('store-orders-container');
+
+    // Obtener storeId del URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const storeId = urlParams.get('storeId');
+
+    if (!storeId) {
+        // Intentar obtener el storeId del localStorage
+        const storedStoreId = localStorage.getItem('storeId');
+        if (storedStoreId) {
+            // Redirigir con el storeId almacenado
+            window.location.href = `store-orders.html?storeId=${storedStoreId}`;
+            return;
+        }
+        
+        // Si no hay storeId, redirigir al inicio
+        alert('No se encontró un ID de tienda válido. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // Almacenar el storeId en localStorage para futuras referencias
+    localStorage.setItem('storeId', storeId);
+
+    // Exponer storeId al scope global
+    window.getStoreId = () => storeId;
 
     // Mostrar indicador de carga
     ordersContainer.innerHTML = '<p class="text-center text-gray-500">Cargando pedidos...</p>';
@@ -15,31 +101,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (user) {
             console.log('Usuario autenticado:', user.uid);
             try {
-                // Buscar la tienda asociada al usuario autenticado
-                const storeQuery = query(collection(db, 'stores'), where('owner', '==', user.uid));
-                const storeSnapshot = await getDocs(storeQuery);
-
-                if (storeSnapshot.empty) {
-                    console.log('No se encontró una tienda asociada al usuario:', user.uid);
-                    ordersContainer.innerHTML = '<p class="text-center text-gray-500">No tienes una tienda registrada.</p>';
-                    return;
-                }
-
-                // Asumimos que el usuario tiene una sola tienda
-                const storeDoc = storeSnapshot.docs[0];
-                const storeDocId = storeDoc.id;
-                console.log('Store Document ID obtenido:', storeDocId);
-
                 // Consultar las órdenes de la tienda
                 const ordersRef = collection(db, 'orders');
-                const q = query(ordersRef, where('storeDocId', '==', storeDocId));
+                const q = query(ordersRef, where('storeId', '==', storeId));
                 console.log('Consulta de Firestore creada:', q);
 
                 const querySnapshot = await getDocs(q);
                 console.log('Resultados de la consulta:', querySnapshot);
 
                 if (querySnapshot.empty) {
-                    console.log('No se encontraron pedidos para la tienda con storeDocId:', storeDocId);
+                    console.log('No se encontraron pedidos para la tienda con storeId:', storeId);
                     ordersContainer.innerHTML = '<p class="text-center text-gray-500">No hay pedidos para esta tienda.</p>';
                     return;
                 }
@@ -48,17 +119,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ordersContainer.innerHTML = '';
 
                 // Renderizar las órdenes como tarjetas
-                querySnapshot.forEach((doc) => {
+                for (const doc of querySnapshot.docs) {
                     const order = doc.data();
                     console.log('Pedido encontrado:', order);
 
+                    // Obtener el nombre del cliente
+                    const userRef = docRef(db, 'users', order.userId);
+                    const userDoc = await getDoc(userRef);
+                    const clientName = userDoc.data()?.name || 'Cliente no especificado';
+
                     // Validar datos
-                    const clientName = order.clientName || 'Cliente no especificado';
                     const total = typeof order.total === 'number' ? order.total.toFixed(2) : 'No disponible';
-                    const reference = order.address?.reference || 'Dirección no disponible';
+                    const shippingAddress = order.shippingAddress || {};
+                    const reference = shippingAddress.reference || 'Dirección no disponible';
                     const paymentMethod = order.paymentMethod || 'No especificado';
                     const createdAt = order.createdAt ? new Date(order.createdAt).toLocaleString() : 'Fecha no disponible';
-                    const items = Array.isArray(order.items) ? order.items : [];
+                    const items = Array.isArray(order.products) ? order.products : [];
                     const status = order.status || 'pendiente';
 
                     // Determinar texto y estado del botón según el estado
@@ -70,86 +146,88 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // Crear la tarjeta del pedido
                     const orderCard = document.createElement('div');
                     orderCard.className = 'order-card';
+                    orderCard.setAttribute('data-order-id', doc.id);
                     orderCard.innerHTML = `
-                        <h3 class="order-title">${clientName}</h3>
-                        <h4 class="products-title">Productos:</h4>
-                        <ul class="products-list">
-                            ${items.length > 0
-                                ? items
-                                      .map(
-                                          (item) => `
-                                            <li class="product-item">
-                                                ${item.quantity || 0} x ${item.name || 'Producto desconocido'} - 
-                                                $${((item.quantity || 0) * (item.price || 0)).toFixed(2)}
-                                            </li>
-                                        `
-                                      )
-                                      .join('')
-                                : '<li class="no-products">No hay productos en este pedido</li>'
-                            }
-                        </ul>
-                        <p><strong>Dirección:</strong> ${reference}</p>
-                        <p><strong>Total:</strong> $${total}</p>
-                        <p><strong>Método de Pago:</strong> ${paymentMethod}</p>
-                        <p><strong>Fecha:</strong> ${createdAt}</p>
-                        <p><strong>Estado:</strong> <span class="status-text ${status}">${status}</span></p>
-                        <div class="actions-container">
-                            <button class="action-btn ${buttonClass} ${buttonDisabledClass}" 
-                                    data-order-id="${doc.id}" ${isDisabled}>
+                        <div class="order-header">
+                            <h3 class="order-title">Pedido #${doc.id}</h3>
+                            <p class="order-date">${createdAt}</p>
+                        </div>
+                        
+                        <div class="order-client">
+                            <h4>Cliente:</h4>
+                            <p>${clientName}</p>
+                        </div>
+
+                        <div class="order-address">
+                            <h4>Dirección de entrega:</h4>
+                            <p>${reference}</p>
+                        </div>
+
+                        <div class="order-products">
+                            <h4>Productos:</h4>
+                            <ul class="products-list">
+                                ${items.map(item => `
+                                    <li>
+                                        <span class="product-name">${item.name}</span>
+                                        <span class="product-quantity">x${item.quantity}</span>
+                                        <span class="product-price">$${item.price.toFixed(2)}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+
+                        <div class="order-total">
+                            <h4>Total:</h4>
+                            <p>$${total}</p>
+                        </div>
+
+                        <div class="order-payment">
+                            <h4>Método de pago:</h4>
+                            <p>${paymentMethod}</p>
+                        </div>
+
+                        <div class="order-status">
+                            <h4>Estado:</h4>
+                            <p class="status-${status.toLowerCase()}">${status}</p>
+                        </div>
+
+                        <div class="order-actions">
+                            <button class="${buttonClass} ${buttonDisabledClass}" ${isDisabled} onclick="handleOrderStatus('${doc.id}', '${status}')">
                                 ${buttonText}
                             </button>
-                            <button class="action-btn delete-btn" data-order-id="${doc.id}">
+                            <button class="action-btn delete-btn" ${isDisabled} onclick="handleDeleteOrder('${doc.id}')">
                                 Eliminar
                             </button>
                         </div>
                     `;
+
                     ordersContainer.appendChild(orderCard);
-                });
+                }
 
                 // Añadir event listeners para los botones
                 document.querySelectorAll('.accept-btn, .ship-btn').forEach(button => {
                     button.addEventListener('click', async (e) => {
-                        const orderId = e.target.dataset.orderId;
-                        const currentStatus = e.target.classList.contains('accept-btn') ? 'pendiente' : 'en proceso';
-                        
-                        try {
-                            const newStatus = currentStatus === 'pendiente' ? 'en proceso' : 'enviado';
-                            await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
-                            alert(`Orden actualizada a "${newStatus}" exitosamente.`);
-                            // Recargar la página para reflejar el cambio
-                            location.reload();
-                        } catch (error) {
-                            console.error('Error al actualizar la orden:', error);
-                            alert('Hubo un error al actualizar la orden.');
-                        }
+                        const orderId = e.target.closest('.order-card').dataset.orderId;
+                        const currentStatus = button.classList.contains('accept-btn') ? 'pendiente' : 'enviado';
+                        await window.handleOrderStatus(orderId, currentStatus);
                     });
                 });
 
                 document.querySelectorAll('.delete-btn').forEach(button => {
                     button.addEventListener('click', async (e) => {
-                        const orderId = e.target.dataset.orderId;
-                        if (confirm('¿Estás seguro de que quieres eliminar este pedido?')) {
-                            try {
-                                await deleteDoc(doc(db, 'orders', orderId));
-                                alert('Orden eliminada exitosamente.');
-                                // Recargar la página para reflejar el cambio
-                                location.reload();
-                            } catch (error) {
-                                console.error('Error al eliminar la orden:', error);
-                                alert('Hubo un error al eliminar la orden.');
-                            }
-                        }
+                        const orderId = e.target.closest('.order-card').dataset.orderId;
+                        await window.handleDeleteOrder(orderId);
                     });
                 });
 
             } catch (error) {
                 console.error('Error al cargar los pedidos de la tienda:', error);
-                ordersContainer.innerHTML = '<p class="text-center text-red-500">Hubo un error al cargar los pedidos. Por favor, inténtalo de nuevo más tarde.</p>';
+                ordersContainer.innerHTML = '<p class="text-center text-red-500">Error al cargar los pedidos. Por favor, inténtalo de nuevo.</p>';
             }
         } else {
-            console.warn('Usuario no autenticado');
-            alert('Por favor, inicia sesión para ver los pedidos de tu tienda.');
-            window.location.href = '/login.html';
+            // Si no hay usuario autenticado, redirigir al inicio
+            alert('Debes iniciar sesión para ver los pedidos.');
+            window.location.href = 'index.html';
         }
     });
 });
