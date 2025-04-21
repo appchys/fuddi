@@ -60,7 +60,9 @@
 </head>
 <body class="bg-gray-100">
     <div class="form-container">
-        <a href="index.html" class="back-button">← Volver al panel</a>
+        <button class="back-button" onclick="window.location.href = 'store.html?storeId=' + getStoreId()">
+            <i class="bi bi-arrow-left"></i> Volver al perfil
+        </button>
         <h2 class="text-2xl font-bold mb-6 text-center">Editar Tienda</h2>
         <form id="editStoreForm" class="space-y-4">
             <div>

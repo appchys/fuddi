@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         modalTitle.innerHTML = '<i class="bi bi-plus-circle"></i> Agregar Producto';
     };
 
+    // Exponer storeId al scope global
+    window.getStoreId = () => storeId;
+
     // Event listeners para el modal
     addProductBtn.addEventListener('click', openModal);
     modalCloseBtn.addEventListener('click', closeModal);

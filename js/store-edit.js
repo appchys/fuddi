@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const bankAccountsContainer = document.getElementById('bankAccountsContainer');
     const addBankAccountButton = document.getElementById('addBankAccount');
 
+    // Exponer storeId al scope global
+    window.getStoreId = () => storeId;
+
     // Función para mostrar una cuenta bancaria guardada como texto con botón de eliminar
     function displayBankAccount(bank = '', accountNumber = '', holder = '') {
         const entry = document.createElement('div');
