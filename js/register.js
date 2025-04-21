@@ -10,7 +10,11 @@ import {
     getDoc,
     getDownloadURL,
     googleProvider,
-    signInWithPopup
+    signInWithPopup,
+    collection,
+    query,
+    where,
+    getDocs
 } from './firebase-config.js';
 
 console.log('Firebase auth:', auth);
@@ -163,6 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('storeId').removeAttribute('required');
         document.getElementById('imageUrl').removeAttribute('required');
         document.getElementById('coverImage').removeAttribute('required');
+        document.getElementById('username').removeAttribute('required');
     });
 
     // Manejar clic en el botón "Tienda"
@@ -172,9 +177,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         storeButton.classList.add('selected');
         clientButton.classList.remove('selected');
 
+        // Agregar evento para actualizar storeId cuando se ingrese username
+        const usernameInput = document.getElementById('username');
+        const storeIdInput = document.getElementById('storeId');
+        
+        usernameInput.addEventListener('input', (e) => {
+            // Generar storeId basado en el username
+            const username = e.target.value;
+            if (username) {
+                // Convertir a minúsculas y reemplazar espacios por guiones
+                storeIdInput.value = username.toLowerCase().replace(/\s+/g, '-');
+            }
+        });
+
         // Agregar el atributo "required" a los campos de tienda
         document.getElementById('description').setAttribute('required', 'true');
-        document.getElementById('storeId').setAttribute('required', 'true');
+        document.getElementById('username').setAttribute('required', 'true');
         document.getElementById('imageUrl').setAttribute('required', 'true');
         document.getElementById('coverImage').setAttribute('required', 'true');
     });
@@ -193,6 +211,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const name = document.getElementById('name').value;
         const phone = document.getElementById('phone').value;
         const description = document.getElementById('description').value;
+        const username = document.getElementById('username').value.trim();
+        const storeId = document.getElementById('storeId').value.trim();
 
         try {
             if (accountType === 'client') {
@@ -207,12 +227,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert('¡Registro como cliente exitoso!');
                 window.location.href = 'index.html'; // Redirigir a inicio
             } else if (accountType === 'store') {
-                const storeId = document.getElementById('storeId').value.trim();
-                if (!storeId) {
-                    alert('Por favor, ingrese un ID único para la tienda.');
+                if (!username) {
+                    alert('Por favor, ingrese un nombre de usuario.');
                     return;
                 }
 
+                // Verificar si el username ya está en uso
+                const storesRef = collection(db, 'stores');
+                const q = query(storesRef, where('username', '==', username));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
+                    alert('El nombre de usuario ya está en uso. Por favor, elija otro.');
+                    return;
+                }
+
+                // Verificar si el storeId ya está en uso
                 const storeDoc = await getDoc(doc(db, 'stores', storeId));
                 if (storeDoc.exists()) {
                     alert('El ID de la tienda ya está en uso. Por favor, elija otro.');
@@ -237,15 +266,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 const storeData = {
-                    storeId, // Guardar el storeId explícitamente como un campo
+                    storeId,
+                    username,
                     name,
                     phone,
                     description,
                     email: user.email,
                     owner: user.uid,
                     createdAt: new Date().toISOString(),
-                    coverUrl, // Puede ser una cadena vacía si no se subió imagen
-                    imageUrl, // Puede ser una cadena vacía si no se subió imagen
+                    coverUrl,
+                    imageUrl,
                 };
                 await setDoc(doc(db, 'stores', storeId), storeData);
                 alert('¡Registro como tienda exitoso!');

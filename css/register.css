@@ -187,6 +187,35 @@ body {
     color: #4285F4;
 }
 
+/* Estilo para el botón deshabilitado */
+.btn-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Estilo para el botón durante el guardado */
+.btn-saving {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-saving::after {
+    content: 'Guardando...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Responsive design */
 @media (max-width: 480px) {
     .register-container {

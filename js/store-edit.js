@@ -1,4 +1,4 @@
-import { auth, db, doc, getDoc, setDoc, storage, ref, uploadBytes } from './firebase-config.js';
+import { auth, db, doc, getDoc, setDoc, storage, ref, uploadBytes, collection, query, where, getDocs } from './firebase-config.js';
 import { getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -153,6 +153,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const shippingFee = document.getElementById('shippingFee').value;
         const imageUrlFile = document.getElementById('imageUrl').files[0];
         const coverImageFile = document.getElementById('coverImage').files[0];
+
+        // Verificar si el username ya está en uso (excepto si es el mismo)
+        if (username) {
+            try {
+                const storesRef = collection(db, 'stores');
+                const q = query(storesRef, where('username', '==', username));
+                const querySnapshot = await getDocs(q);
+                
+                // Verificar si hay algún documento que no sea el actual
+                let found = false;
+                querySnapshot.forEach((doc) => {
+                    if (doc.id !== storeId) {
+                        found = true;
+                    }
+                });
+                
+                if (found) {
+                    alert('El nombre de usuario ya está en uso. Por favor, elija otro.');
+                    return;
+                }
+            } catch (error) {
+                console.error('Error al verificar el username:', error);
+                alert('Error al verificar el nombre de usuario. Por favor, intenta de nuevo.');
+                return;
+            }
+        }
 
         // Recolectar datos bancarios
         const bankAccounts = [];
