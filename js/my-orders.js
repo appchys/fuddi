@@ -103,6 +103,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const userDoc = await getDoc(userRef);
                     const clientName = userDoc.data()?.name || 'Cliente no especificado';
 
+                    // Obtener el nombre de la tienda
+                    const storeRef = docRef(db, 'stores', order.storeId);
+                    const storeDoc = await getDoc(storeRef);
+                    const storeName = storeDoc.data()?.name || 'Tienda no especificada';
+
                     // Validar datos
                     const total = typeof order.total === 'number' ? order.total.toFixed(2) : 'No disponible';
                     const shippingAddress = order.shippingAddress || {};
@@ -117,8 +122,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     orderElement.dataset.orderId = doc.id;
                     orderElement.innerHTML = `
                         <div class="order-header">
-                            <h3 class="order-title">Pedido #${doc.id}</h3>
-                            <p class="order-date">${createdAt}</p>
+                            <div class="order-title-container">
+                                <h3 class="store-name">${storeName}</h3>
+                                <p class="order-date">${createdAt}</p>
+                            </div>
+                            <div class="order-status-container">
+                                <h4>Estado:</h4>
+                                <p class="status-${status.toLowerCase()}">${status}</p>
+                            </div>
                         </div>
                         
                         <div class="order-client">
@@ -152,11 +163,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="order-payment">
                             <h4>Método de pago:</h4>
                             <p>${paymentMethod}</p>
-                        </div>
-
-                        <div class="order-status">
-                            <h4>Estado:</h4>
-                            <p class="status-${status.toLowerCase()}">${status}</p>
                         </div>
 
                         <div class="order-actions">
