@@ -190,10 +190,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const name = document.getElementById('productName').value;
         const price = parseFloat(document.getElementById('productPrice').value);
         const description = document.getElementById('productDescription').value;
-        const collection = document.getElementById('productCollection').value;
+        const collectionName = document.getElementById('productCollection').value;
         const imageFile = document.getElementById('productImage').files[0];
 
-        if (!name || isNaN(price) || !description || !collection) {
+        if (!name || isNaN(price) || !description || !collectionName) {
             alert('Por favor complete todos los campos requeridos');
             return;
         }
@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 name,
                 price,
                 description,
-                collection,
+                collection: collectionName,
                 ...(imageUrl && { imageUrl }), // Only update imageUrl if we have a new one
                 updatedAt: new Date().toISOString()
             };
@@ -265,4 +265,22 @@ function openModal() {
     document.body.style.overflow = 'hidden';
     // Enfocar el primer campo al abrir el modal
     setTimeout(() => document.getElementById('productName').focus(), 100);
+}
+
+// Cargar colecciones
+async function loadCollections() {
+    const productsRef = collection(db, `stores/${storeId}/products`);
+    const querySnapshot = await getDocs(productsRef);
+    const collectionsSet = new Set();
+    querySnapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.collection) {
+            if (Array.isArray(data.collection)) {
+                data.collection.forEach(c => collectionsSet.add(c));
+            } else {
+                collectionsSet.add(data.collection);
+            }
+        }
+    });
+    return Array.from(collectionsSet);
 }
