@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Mejora en navegación"
+git commit -m "Diseño de catálogo"
 git push -u origin main

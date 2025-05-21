@@ -82,15 +82,21 @@ function formatPhoneNumber(phone) {
     return cleanPhone;
 }
 
-// Función para cargar los productos
+// Función para cargar los productos en formato lista
 async function loadProducts() {
     if (!storeId) {
         console.error("No se proporcionó un storeId en la URL.");
         return;
     }
 
+    // Elimina cualquier contenedor previo
+    const prevContainer = document.getElementById('products-container');
+    if (prevContainer) prevContainer.remove();
+
+    // Crear el contenedor principal de productos
     const productsContainer = document.createElement('div');
-    productsContainer.classList.add('products-container');
+    productsContainer.classList.add('grid');
+    productsContainer.id = 'products-container';
     document.querySelector('main').appendChild(productsContainer);
 
     try {
@@ -103,41 +109,39 @@ async function loadProducts() {
         // Agrupar productos por colección
         const productsByCollection = {};
         products.forEach(product => {
-            const collectionName = product.collection || 'Sin colección';
-            if (!productsByCollection[collectionName]) {
-                productsByCollection[collectionName] = [];
+            let collectionNames = [];
+            if (Array.isArray(product.collection)) {
+                collectionNames = product.collection;
+            } else if (typeof product.collection === 'string') {
+                collectionNames = [product.collection];
+            } else {
+                collectionNames = ['Sin colección'];
             }
-            productsByCollection[collectionName].push(product);
+            collectionNames.forEach(col => {
+                if (!productsByCollection[col]) productsByCollection[col] = [];
+                productsByCollection[col].push(product);
+            });
         });
 
         // Ordenar colecciones alfabéticamente
         const sortedCollections = Object.entries(productsByCollection)
-            .sort(([collectionA], [collectionB]) => collectionA.localeCompare(collectionB));
+            .sort(([a], [b]) => a.localeCompare(b));
 
         // Renderizar cada colección
         sortedCollections.forEach(([collectionName, products]) => {
-            // Crear contenedor de la colección
-            const collectionContainer = document.createElement('div');
-            collectionContainer.classList.add('collection-container');
-
-            // Crear título de la colección
+            // Título de la colección
             const collectionTitle = document.createElement('h2');
             collectionTitle.classList.add('collection-title');
             collectionTitle.textContent = collectionName;
-            collectionContainer.appendChild(collectionTitle);
+            productsContainer.appendChild(collectionTitle);
 
-            // Crear grid para los productos
-            const productsGrid = document.createElement('div');
-            productsGrid.classList.add('products-grid');
-
-            // Ordenar productos alfabéticamente
+            // Renderizar productos como lista
             products.sort((a, b) => a.name.localeCompare(b.name));
-
-            // Renderizar cada producto
             products.forEach(product => {
                 const productElement = document.createElement('div');
                 productElement.classList.add('product');
                 productElement.setAttribute('data-product-id', product.id);
+
                 productElement.innerHTML = `
                     <div class="product-image-container">
                         ${product.imageUrl ? `
@@ -149,26 +153,26 @@ async function loadProducts() {
                         `}
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">${product.name}</h3>
-                        <p class="product-price">$${product.price.toFixed(2)}</p>
-                        <p class="product-description">${product.description || ''}</p>
-                        <button class="add-to-cart-btn" onclick="window.addToCart('${product.id}')">
-                            Añadir al carrito
+                        <h3>${product.name}</h3>
+                        <p class="description">${product.description || ''}</p>
+                        <p class="price">$${product.price ? product.price.toFixed(2) : '0.00'}</p>
+                    </div>
+                    <div class="add-to-cart-container">
+                        <button class="add-to-cart-btn" title="Añadir al carrito" onclick="window.addToCart('${product.id}')">
+                            <i class="bi bi-cart-plus"></i>
                         </button>
                     </div>
                 `;
-                productsGrid.appendChild(productElement);
 
-                // Agregar evento para mostrar detalles
+                // Mostrar detalles al hacer click en el producto (excepto en el botón)
                 productElement.addEventListener('click', (e) => {
-                    if (!e.target.closest('button')) {
+                    if (!e.target.closest('.add-to-cart-btn')) {
                         showProductDetails(product.id);
                     }
                 });
-            });
 
-            collectionContainer.appendChild(productsGrid);
-            productsContainer.appendChild(collectionContainer);
+                productsContainer.appendChild(productElement);
+            });
         });
 
     } catch (error) {

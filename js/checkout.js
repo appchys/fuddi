@@ -34,12 +34,18 @@ async function updateView(user) {
         const userCheck = await checkUserExists(user.uid);
         if (!userCheck.exists) {
             userContainer.innerHTML = `
-                <form id="userForm">
-                    <label for="name">Nombre:</label>
-                    <input type="text" id="name" name="name" required>
-                    <label for="phone">Teléfono:</label>
-                    <input type="tel" id="phone" name="phone" required>
-                    <button type="submit" class="btn primary">Guardar Perfil</button>
+                <form id="userForm" class="profile-form">
+                    <div class="form-group">
+                        <label for="name"><i class="bi bi-person"></i> Nombre</label>
+                        <input type="text" id="name" name="name" required placeholder="Tu nombre completo">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone"><i class="bi bi-telephone"></i> Celular</label>
+                        <input type="tel" id="phone" name="phone" required placeholder="Ej: 091234567">
+                    </div>
+                    <button type="submit" class="btn primary" style="width:100%;margin-top:10px;">
+                        <i class="bi bi-save2"></i> Guardar Perfil
+                    </button>
                 </form>
             `;
         } else {
