@@ -384,7 +384,7 @@ footer {
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 1.5rem;
     padding: 1rem 0;
 }
@@ -434,12 +434,12 @@ footer {
 }
 
 .product-info {
-    padding: 1rem;
+    padding: 0;
 }
 
 .product-name {
     font-size: 1.1rem;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0 0;
     color: #333;
     font-weight: 500;
 }
