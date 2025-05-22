@@ -93,6 +93,27 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700">Datos bancarios</label>
                 <div id="bankAccountsContainer" class="space-y-2"></div>
+                <!-- Formulario de nueva cuenta bancaria oculto por defecto -->
+                <div id="bankAccountFormWrapper" style="display: none;" class="mt-4">
+                    <div class="bank-account-entry">
+                        <div class="mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Banco</label>
+                            <input type="text" id="newBank" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div class="mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Número de cuenta</label>
+                            <input type="text" id="newAccountNumber" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div class="mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Titular</label>
+                            <input type="text" id="newHolder" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" id="saveBankAccount" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700">Guardar</button>
+                            <button type="button" id="cancelBankAccount" class="bg-gray-400 text-white px-3 py-1 rounded-md hover:bg-gray-500">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
                 <button type="button" id="addBankAccount" class="mt-2 bg-green-600 text-white p-2 rounded-md hover:bg-green-700">
                     Añadir cuenta bancaria
                 </button>

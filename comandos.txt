@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Diseño de catálogo"
+git commit -m "Editar tienda"
 git push -u origin main

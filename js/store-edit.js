@@ -14,9 +14,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bankAccountsContainer = document.getElementById('bankAccountsContainer');
     const addBankAccountButton = document.getElementById('addBankAccount');
+    const bankAccountFormWrapper = document.getElementById('bankAccountFormWrapper');
+    const saveBankAccountBtn = document.getElementById('saveBankAccount');
+    const cancelBankAccountBtn = document.getElementById('cancelBankAccount');
+    const newBankInput = document.getElementById('newBank');
+    const newAccountNumberInput = document.getElementById('newAccountNumber');
+    const newHolderInput = document.getElementById('newHolder');
 
     // Exponer storeId al scope global
     window.getStoreId = () => storeId;
+
+    // Mostrar el formulario solo al presionar el botón
+    addBankAccountButton.addEventListener('click', () => {
+        bankAccountFormWrapper.style.display = 'block';
+        newBankInput.value = '';
+        newAccountNumberInput.value = '';
+        newHolderInput.value = '';
+        newBankInput.focus();
+    });
+
+    // Cancelar: ocultar y limpiar el formulario
+    cancelBankAccountBtn.addEventListener('click', () => {
+        bankAccountFormWrapper.style.display = 'none';
+        newBankInput.value = '';
+        newAccountNumberInput.value = '';
+        newHolderInput.value = '';
+    });
+
+    // Guardar: validar, guardar en Firestore y mostrar como display
+    saveBankAccountBtn.addEventListener('click', async () => {
+        const bank = newBankInput.value.trim();
+        const accountNumber = newAccountNumberInput.value.trim();
+        const holder = newHolderInput.value.trim();
+
+        if (!bank && !accountNumber && !holder) {
+            alert('Por favor, completa al menos un campo para guardar la cuenta bancaria.');
+            return;
+        }
+
+        try {
+            // 1. Obtener las cuentas actuales
+            const storeRef = doc(db, 'stores', getStoreId());
+            const storeSnap = await getDoc(storeRef);
+            let bankAccounts = [];
+            if (storeSnap.exists() && Array.isArray(storeSnap.data().bankAccounts)) {
+                bankAccounts = storeSnap.data().bankAccounts;
+            }
+            // 2. Agregar la nueva cuenta
+            bankAccounts.push({ bank, accountNumber, holder });
+            // 3. Guardar en Firestore
+            await setDoc(storeRef, { bankAccounts }, { merge: true });
+
+            // 4. Mostrar en la UI
+            displayBankAccount(bank, accountNumber, holder);
+
+            // 5. Limpiar y ocultar el formulario
+            bankAccountFormWrapper.style.display = 'none';
+            newBankInput.value = '';
+            newAccountNumberInput.value = '';
+            newHolderInput.value = '';
+
+            alert('Cuenta bancaria guardada correctamente.');
+        } catch (error) {
+            alert('Error al guardar la cuenta bancaria: ' + error.message);
+        }
+    });
 
     // Función para mostrar una cuenta bancaria guardada como texto con botón de eliminar
     function displayBankAccount(bank = '', accountNumber = '', holder = '') {
@@ -33,45 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
         bankAccountsContainer.appendChild(entry);
 
         // Evento para eliminar la entrada
-        entry.querySelector('.delete-btn').addEventListener('click', () => {
+        entry.querySelector('.delete-btn').addEventListener('click', async () => {
+            await removeBankAccountFromFirestore(entry, { bank, accountNumber, holder });
             bankAccountsContainer.removeChild(entry);
         });
     }
-
-    // Función para añadir una entrada de cuenta bancaria editable
-    function addBankAccountEntry(bank = '', accountNumber = '', holder = '') {
-        const entry = document.createElement('div');
-        entry.className = 'bank-account-entry';
-        entry.innerHTML = `
-            <div class="mb-2">
-                <label class="block text-sm font-medium text-gray-700">Banco</label>
-                <input type="text" name="bank" value="${bank}" 
-                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-            </div>
-            <div class="mb-2">
-                <label class="block text-sm font-medium text-gray-700">Número de cuenta</label>
-                <input type="text" name="accountNumber" value="${accountNumber}" 
-                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-            </div>
-            <div class="mb-2">
-                <label class="block text-sm font-medium text-gray-700">Titular</label>
-                <input type="text" name="holder" value="${holder}" 
-                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-            </div>
-            <button type="button" class="delete-btn">Eliminar</button>
-        `;
-        bankAccountsContainer.appendChild(entry);
-
-        // Evento para eliminar la entrada
-        entry.querySelector('.delete-btn').addEventListener('click', () => {
-            bankAccountsContainer.removeChild(entry);
-        });
-    }
-
-    // Evento para añadir nueva cuenta editable
-    addBankAccountButton.addEventListener('click', () => {
-        addBankAccountEntry();
-    });
 
     auth.onAuthStateChanged(async (user) => {
         if (!user) {
@@ -112,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayBankAccount(bank, accountNumber, holder);
                     });
                 }
-                addBankAccountEntry(); // Añadir una entrada editable vacía por defecto
 
                 const currentImage = document.getElementById('currentImage');
                 const currentCoverImage = document.getElementById('currentCoverImage');
@@ -239,3 +266,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Función para eliminar una cuenta bancaria de Firestore
+async function removeBankAccountFromFirestore(entry, accountToRemove) {
+    const storeRef = doc(db, 'stores', getStoreId());
+    const storeSnap = await getDoc(storeRef);
+    if (storeSnap.exists() && Array.isArray(storeSnap.data().bankAccounts)) {
+        let bankAccounts = storeSnap.data().bankAccounts;
+        // Si se pasa la cuenta a eliminar, filtrarla
+        if (accountToRemove) {
+            bankAccounts = bankAccounts.filter(acc =>
+                acc.bank !== accountToRemove.bank ||
+                acc.accountNumber !== accountToRemove.accountNumber ||
+                acc.holder !== accountToRemove.holder
+            );
+        }
+        await setDoc(storeRef, { bankAccounts }, { merge: true });
+    }
+}
