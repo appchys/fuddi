@@ -325,6 +325,19 @@ document.getElementById('close-cart-sidebar').addEventListener('click', () => {
     cartSidebar.classList.add('hidden');
 });
 
+// Cerrar la sidebar del carrito al dar clic fuera de ella
+document.addEventListener('mousedown', (event) => {
+    const cartSidebar = document.getElementById('cart-sidebar');
+    if (
+        cartSidebar.classList.contains('visible') &&
+        !cartSidebar.contains(event.target) &&
+        event.target.id !== 'cart-button'
+    ) {
+        cartSidebar.classList.remove('visible');
+        cartSidebar.classList.add('hidden');
+    }
+});
+
 // Función para manejar el checkout
 function checkout() {
     if (!storeId) {

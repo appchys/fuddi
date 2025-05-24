@@ -299,6 +299,75 @@ body {
     color: #4285F4;
 }
 
+/* Opciones de entrega (inmediata/programada) como botones con íconos */
+.delivery-time-options {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.delivery-time-option {
+    flex: 1 1 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #ddd;
+    border-radius: var(--border-radius);
+    background: #fff;
+    padding: 16px 0;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    font-size: 1.05rem;
+    font-weight: 500;
+    gap: 10px;
+    position: relative;
+}
+
+.delivery-time-option input[type="radio"] {
+    display: none;
+}
+
+.delivery-time-option i {
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+    margin-right: 6px;
+}
+
+.delivery-time-option input[type="radio"]:checked + span,
+.delivery-time-option input[type="radio"]:checked + i + span {
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+.delivery-time-option input[type="radio"]:checked ~ .option-content {
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+.delivery-time-option.selected,
+.delivery-time-option input[type="radio"]:checked ~ .option-content {
+    border-color: var(--secondary-color);
+    background: rgba(52, 152, 219, 0.07);
+}
+
+.delivery-time-option:hover {
+    border-color: var(--secondary-color);
+    background: #f5f7fa;
+}
+
+@media (max-width: 600px) {
+    .delivery-time-options {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .delivery-time-option {
+        width: 100%;
+        padding: 12px 0;
+    }
+}
+
 /* Utilidades */
 .hidden {
     display: none !important;

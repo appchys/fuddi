@@ -581,6 +581,27 @@ async function initialize() {
                     return;
                 }
 
+                // Obtener tipo de entrega y calcular fecha/hora
+                const deliveryType = document.querySelector('input[name="deliveryTime"]:checked').value;
+                let scheduledDate = '';
+                let scheduledTime = '';
+
+                if (deliveryType === 'asap') {
+                    // Entrega inmediata: sumar 30 minutos a la hora actual
+                    const now = new Date();
+                    now.setMinutes(now.getMinutes() + 30);
+                    scheduledDate = now.toISOString().slice(0, 10); // YYYY-MM-DD
+                    scheduledTime = now.toTimeString().slice(0, 5); // HH:mm
+                } else {
+                    // Programada: tomar los valores del formulario
+                    scheduledDate = scheduledDateInput.value;
+                    scheduledTime = scheduledTimeInput.value;
+                    if (!scheduledDate || !scheduledTime) {
+                        alert('Por favor, selecciona el día y la hora para la entrega programada.');
+                        return;
+                    }
+                }
+
                 try {
                     // Subir comprobante si es transferencia
                     let paymentProofUrl = null;
@@ -601,7 +622,10 @@ async function initialize() {
                         paymentProofUrl,
                         bankIndex: selectedPaymentMethod.value === 'transferencia' ? parseInt(document.getElementById('bank-select').value) : null,
                         status: 'pending',
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date().toISOString(),
+                        deliveryType,         // "asap" o "scheduled"
+                        scheduledDate,        // YYYY-MM-DD
+                        scheduledTime         // HH:mm
                     };
 
                     await addDoc(collection(db, 'orders'), orderData);
@@ -615,6 +639,35 @@ async function initialize() {
                 }
             });
         }
+
+        // Mostrar/ocultar campos de entrega programada
+        const deliveryTimeRadios = document.querySelectorAll('input[name="deliveryTime"]');
+        const scheduledFields = document.getElementById('scheduled-delivery-fields');
+        const scheduledDateInput = document.getElementById('scheduled-date');
+        const scheduledTimeInput = document.getElementById('scheduled-time');
+
+        // Setear fecha mínima (hoy) para el input de fecha
+        if (scheduledDateInput) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            scheduledDateInput.min = `${yyyy}-${mm}-${dd}`;
+        }
+
+        function updateScheduledFields() {
+            const selected = document.querySelector('input[name="deliveryTime"]:checked');
+            if (selected && selected.value === 'scheduled') {
+                scheduledFields.classList.remove('hidden');
+            } else {
+                scheduledFields.classList.add('hidden');
+            }
+        }
+
+        deliveryTimeRadios.forEach(radio => {
+            radio.addEventListener('change', updateScheduledFields);
+        });
+        updateScheduledFields();
     } catch (error) {
         console.error('Error al inicializar:', error);
         alert('Error al inicializar la página. Por favor, recarga la página.');
