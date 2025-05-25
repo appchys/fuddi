@@ -768,6 +768,20 @@ async function initialize() {
     }
 }
 
+// Carga la Google Maps JavaScript API solo cuando se necesita (para el mapa interactivo)
+// Evita exponer la clave en el HTML y reduce el consumo de cuota
+function loadGoogleMapsScript(callback) {
+    if (window.google && window.google.maps) {
+        callback();
+        return;
+    }
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}`;
+    script.async = true;
+    script.onload = callback;
+    document.head.appendChild(script);
+}
+
 // Inicializar la página
 document.addEventListener('DOMContentLoaded', initialize);
 
