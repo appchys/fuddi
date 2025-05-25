@@ -531,24 +531,26 @@ async function initialize() {
             });
         }
 
-        if (getLocationBtn) {
-            getLocationBtn.addEventListener('click', async () => {
-                // Confirmación antes de cargar el mapa interactivo (JavaScript API)
-                if (!confirm('¿Quieres cargar el mapa interactivo para seleccionar tu ubicación? Esto puede consumir tu cuota de Google Maps.')) {
-                    return;
-                }
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition((position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        document.getElementById('latitude').value = lat.toFixed(6);
-                        document.getElementById('longitude').value = lng.toFixed(6);
-                        // Solo carga el mapa interactivo si el usuario lo confirma
-                        initMap(lat, lng);
-                    });
-                }
-            });
-        }
+        loadGoogleMapsScript(() => {
+            if (getLocationBtn) {
+                getLocationBtn.addEventListener('click', async () => {
+                    // Confirmación antes de cargar el mapa interactivo (JavaScript API)
+                    if (!confirm('¿Quieres cargar el mapa interactivo para seleccionar tu ubicación? Esto puede consumir tu cuota de Google Maps.')) {
+                        return;
+                    }
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition((position) => {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+                            document.getElementById('latitude').value = lat.toFixed(6);
+                            document.getElementById('longitude').value = lng.toFixed(6);
+                            // Solo carga el mapa interactivo si el usuario lo confirma
+                            initMap(lat, lng);
+                        });
+                    }
+                });
+            }
+        });
 
         if (addressForm) {
             addressForm.addEventListener('submit', async (e) => {
