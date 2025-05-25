@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Mejoras en carrito y checkout"
+git commit -m "Mejoras en registro de direcciones de entrega"
 git push -u origin main

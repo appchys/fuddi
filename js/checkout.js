@@ -2,6 +2,18 @@ import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from "https://w
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { app } from './firebase-config.js';
+// Importa tu clave de API desde config.js (NO expongas la clave en el código fuente público)
+// Asegúrate de agregar config.js a tu .gitignore
+import { GOOGLE_MAPS_API_KEY } from './config.js';
+
+/*
+    IMPORTANTE:
+    - Restringe tu clave de API en Google Cloud Console SOLO a tu dominio y a las APIs necesarias (Static Maps y JavaScript).
+    - Consulta: https://console.cloud.google.com/apis/credentials
+    - Configura límites de cuota y alertas de presupuesto en Google Cloud Console para evitar costos inesperados.
+    - Static Maps API: $2 por 1,000 solicitudes (más barato, se usa para vistas previas).
+    - JavaScript Maps API: $7 por 1,000 solicitudes (más caro, solo para mapa interactivo).
+*/
 
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -418,11 +430,11 @@ async function initialize() {
 
                 const userDoc = doc(db, 'users', user.uid);
                 const userSnapshot = await getDoc(userDoc);
-                
+
                 if (userSnapshot.exists()) {
                     const userData = userSnapshot.data();
                     addresses = userData.addresses || [];
-                    
+
                     if (addresses.length > 0) {
                         selectedAddress = addresses[addresses.length - 1]; // Seleccionar la última dirección por defecto
                         updateSelectedAddressView(selectedAddress);
@@ -436,24 +448,56 @@ async function initialize() {
             }
         }
 
+        // Static Maps API se usa aquí para minimizar costos ($2 por 1,000 solicitudes)
         function createAddressElement(address, index) {
             const addressElement = document.createElement('div');
             addressElement.classList.add('address-item');
-            addressElement.innerHTML = `
-                <p><strong>Referencia:</strong> ${address.reference}</p>
-                <p><strong>Coordenadas:</strong> ${address.latitude && address.longitude ? `${address.latitude}, ${address.longitude}` : 'No especificadas'}</p>
-                <button class="select-address-btn" data-index="${index}">Seleccionar</button>
-            `;
+            addressElement.style.display = 'flex';
+            addressElement.style.alignItems = 'center';
+            addressElement.style.gap = '14px';
+            addressElement.style.marginBottom = '18px';
+
+            // Static map image (90x90) para lista de direcciones
+            const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${address.latitude},${address.longitude}&zoom=16&size=90x90&markers=color:red%7C${address.latitude},${address.longitude}&key=${GOOGLE_MAPS_API_KEY}`;
+            const mapImg = document.createElement('img');
+            mapImg.src = staticMapUrl;
+            mapImg.alt = 'Mapa dirección';
+            mapImg.style.width = '90px';
+            mapImg.style.height = '90px';
+            mapImg.style.borderRadius = '8px';
+            mapImg.style.cursor = 'pointer';
+            mapImg.tabIndex = 0;
+
+            // Referencia a la derecha del mapa
+            const refDiv = document.createElement('div');
+            refDiv.innerHTML = `<p style="margin:0;font-weight:500;cursor:pointer;" tabindex="0">${address.reference}</p>`;
+
+            // Seleccionar al hacer click en mapa o referencia
+            function selectThisAddress() {
+                selectedAddress = address;
+                updateSelectedAddressView(selectedAddress);
+            }
+            mapImg.addEventListener('click', selectThisAddress);
+            mapImg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') selectThisAddress(); });
+            refDiv.addEventListener('click', selectThisAddress);
+            refDiv.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') selectThisAddress(); });
+
+            addressElement.appendChild(mapImg);
+            addressElement.appendChild(refDiv);
+
             return addressElement;
         }
 
+        // Static Maps API se usa aquí para minimizar costos ($2 por 1,000 solicitudes)
         function updateSelectedAddressView(address) {
             const selectedAddressDiv = document.createElement('div');
             selectedAddressDiv.className = 'selected-address';
+            // Static map image (200x100) para dirección seleccionada
+            const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${address.latitude},${address.longitude}&zoom=16&size=200x100&markers=color:red%7C${address.latitude},${address.longitude}&key=${GOOGLE_MAPS_API_KEY}`;
             selectedAddressDiv.innerHTML = `
                 <p><strong>Dirección seleccionada:</strong></p>
                 <p><strong>Referencia:</strong> ${address.reference}</p>
-                <p><strong>Coordenadas:</strong> ${address.latitude && address.longitude ? `${address.latitude}, ${address.longitude}` : 'No especificadas'}</p>
+                <img src="${staticMapUrl}" alt="Mapa dirección" style="width:100%;max-width:200px;height:100px;margin:10px 0;border-radius:8px;object-fit:cover;">
                 <button id="toggle-addresses-btn" class="btn">▼ Mostrar otras direcciones</button>
             `;
 
@@ -489,15 +533,19 @@ async function initialize() {
 
         if (getLocationBtn) {
             getLocationBtn.addEventListener('click', async () => {
-                try {
-                    const position = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject);
+                // Confirmación antes de cargar el mapa interactivo (JavaScript API)
+                if (!confirm('¿Quieres cargar el mapa interactivo para seleccionar tu ubicación? Esto puede consumir tu cuota de Google Maps.')) {
+                    return;
+                }
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        document.getElementById('latitude').value = lat.toFixed(6);
+                        document.getElementById('longitude').value = lng.toFixed(6);
+                        // Solo carga el mapa interactivo si el usuario lo confirma
+                        initMap(lat, lng);
                     });
-                    latitudeSpan.textContent = position.coords.latitude.toFixed(6);
-                    longitudeSpan.textContent = position.coords.longitude.toFixed(6);
-                } catch (error) {
-                    console.error('Error al obtener la ubicación:', error);
-                    alert('No se pudo obtener tu ubicación. Por favor, ingresa las coordenadas manualmente.');
                 }
             });
         }
@@ -506,8 +554,8 @@ async function initialize() {
             addressForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const reference = document.getElementById('reference').value;
-                const latitude = latitudeSpan.textContent;
-                const longitude = longitudeSpan.textContent;
+                const latitude = latitudeSpan.value || latitudeSpan.textContent;
+                const longitude = longitudeSpan.value || longitudeSpan.textContent;
 
                 if (!reference) {
                     alert('Por favor, ingresa una referencia para la dirección.');
@@ -544,8 +592,8 @@ async function initialize() {
                 updateSelectedAddressView(selectedAddress);
                 newAddressForm.classList.add('hidden');
                 addressForm.reset();
-                latitudeSpan.textContent = '0.000000';
-                longitudeSpan.textContent = '0.000000';
+                latitudeSpan.value = '0.000000';
+                longitudeSpan.value = '0.000000';
             });
         }
 
@@ -668,6 +716,50 @@ async function initialize() {
             radio.addEventListener('change', updateScheduledFields);
         });
         updateScheduledFields();
+
+        // --- Mapa interactivo SOLO para crear/editar dirección ---
+        /**
+         * Muestra un mapa interactivo usando Google Maps JavaScript API.
+         * Cada carga cuenta como una solicitud de $7 por 1,000 (verifica tu cuota y presupuesto).
+         * Usa solo cuando el usuario realmente necesita mover el pin.
+         */
+        let map, marker;
+        function initMap(lat = -1.843254, lng = -79.990611) {
+            const mapDiv = document.getElementById('map');
+            if (!mapDiv) return;
+
+            mapDiv.style.display = 'block'; // Mostrar el mapa
+
+            const center = { lat: parseFloat(lat), lng: parseFloat(lng) };
+            map = new google.maps.Map(mapDiv, {
+                center,
+                zoom: 16,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false
+            });
+
+            marker = new google.maps.Marker({
+                position: center,
+                map,
+                draggable: true
+            });
+
+            // Actualizar coordenadas al mover el pin
+            marker.addListener('dragend', function () {
+                const pos = marker.getPosition();
+                document.getElementById('latitude').value = pos.lat().toFixed(6);
+                document.getElementById('longitude').value = pos.lng().toFixed(6);
+            });
+
+            // Actualizar pin al hacer clic en el mapa
+            map.addListener('click', function (e) {
+                marker.setPosition(e.latLng);
+                document.getElementById('latitude').value = e.latLng.lat().toFixed(6);
+                document.getElementById('longitude').value = e.latLng.lng().toFixed(6);
+            });
+        }
+        // --- Fin mapa interactivo ---
     } catch (error) {
         console.error('Error al inicializar:', error);
         alert('Error al inicializar la página. Por favor, recarga la página.');
@@ -676,3 +768,10 @@ async function initialize() {
 
 // Inicializar la página
 document.addEventListener('DOMContentLoaded', initialize);
+
+/*
+    NOTA:
+    - Para proteger tu clave de API, usa restricciones de dominio y de API en Google Cloud Console.
+    - Configura límites de cuota y alertas de presupuesto en https://console.cloud.google.com/apis/quotas y https://console.cloud.google.com/billing/alerts
+    - Static Maps API es mucho más barata ($2/1,000) que JavaScript API ($7/1,000). Usa la primera siempre que sea posible.
+*/
