@@ -19,7 +19,18 @@
         </header>
 
         <main class="checkout-main">
-            <!-- Resumen del Pedido -->
+            <!-- Información del Cliente (mover arriba del resumen del pedido) -->
+            <section class="checkout-section customer-info">
+                <h2><i class="bi bi-person"></i> Información</h2>
+                <div id="user-info-container"></div>
+                <div class="google-login-section">
+                    <button class="btn btn-google" onclick="loginWithGoogle()">
+                        <i class="bi bi-google"></i> Iniciar sesión con Google
+                    </button>
+                </div>
+            </section>
+
+            <!-- Resumen del Pedido (debe ir después de Información) -->
             <section class="checkout-section cart-summary">
                 <h2><i class="bi bi-cart3"></i> Resumen del Pedido</h2>
                 <div id="cart-details" class="cart-items">
@@ -41,40 +52,31 @@
                 </div>
             </section>
 
-            <!-- Botón de inicio de sesión con Google -->
-            <div class="google-login-section">
-                <button class="btn btn-google" onclick="loginWithGoogle()">
-                    <i class="bi bi-google"></i> Iniciar sesión con Google
-                </button>
-            </div>
-
-            <!-- Información del Cliente -->
-            <section class="checkout-section customer-info">
-                <h2><i class="bi bi-person-circle"></i> Información</h2>
-                <div id="user-info-container" class="user-info">
-                    <!-- Información cargada dinámicamente -->
-                    <form id="userForm" class="profile-form">
-                        <div class="form-group">
-                            <label for="name"><i class="bi bi-person"></i> Nombre</label>
-                            <input type="text" id="name" name="name" required placeholder="Tu nombre completo">
+            <!-- Tipo de entrega -->
+            <section class="checkout-section delivery-type">
+                <h2><i class="bi bi-shop-window"></i> ¿Cómo deseas recibir tu pedido?</h2>
+                <div class="delivery-type-options">
+                    <label class="delivery-type-option">
+                        <input type="radio" name="deliveryType" value="delivery" checked>
+                        <div class="option-content">
+                            <i class="bi bi-truck"></i>
+                            <span>Delivery a domicilio</span>
                         </div>
-                        <div class="form-group">
-                            <label for="phone"><i class="bi bi-telephone"></i> Teléfono</label>
-                            <input type="tel" id="phone" name="phone" required placeholder="Ej: 0999999999">
+                    </label>
+                    <label class="delivery-type-option">
+                        <input type="radio" name="deliveryType" value="pickup">
+                        <div class="option-content">
+                            <i class="bi bi-shop"></i>
+                            <span>Retiro en tienda</span>
                         </div>
-                        <button type="submit" class="btn primary" style="width:100%;margin-top:10px;">
-                            <i class="bi bi-save2"></i> Guardar Perfil
-                        </button>
-                    </form>
+                    </label>
                 </div>
             </section>
 
-            <!-- Dirección de Entrega -->
-            <section class="checkout-section delivery-address">
+            <!-- Dirección de Entrega (oculta por defecto) -->
+            <section class="checkout-section delivery-address hidden">
                 <h2><i class="bi bi-geo-alt"></i> Dirección de Entrega</h2>
-                <div id="saved-addresses" class="address-list">
-                    <!-- Direcciones cargadas dinámicamente -->
-                </div>
+                <div id="saved-addresses" class="address-list"></div>
                 <button id="add-address-btn" class="btn secondary">
                     <i class="bi bi-plus-circle"></i> Agregar Dirección
                 </button>
@@ -100,17 +102,24 @@
                 </div>
             </section>
 
-            <!-- Agrega esto después de la sección de Dirección de Entrega y antes de Método de Pago -->
+            <!-- Nueva sección: Tiempo de entrega -->
             <section class="checkout-section delivery-time">
                 <h2><i class="bi bi-clock"></i> ¿Cuándo deseas tu pedido?</h2>
                 <div class="delivery-time-options">
                     <label class="delivery-time-option">
                         <input type="radio" name="deliveryTime" value="asap" checked>
-                        <span>Lo más pronto posible <small>(aprox. 30 minutos)</small></span>
+                        <div class="option-content">
+                            <i class="bi bi-lightning-charge"></i>
+                            <span>Entrega inmediata</span>
+                            <!-- El texto de tiempo se insertará dinámicamente aquí -->
+                        </div>
                     </label>
                     <label class="delivery-time-option">
                         <input type="radio" name="deliveryTime" value="scheduled">
-                        <span>Programar entrega</span>
+                        <div class="option-content">
+                            <i class="bi bi-calendar-event"></i>
+                            <span>Programar entrega</span>
+                        </div>
                     </label>
                 </div>
                 <div id="scheduled-delivery-fields" class="scheduled-fields hidden" style="margin-top: 1rem;">

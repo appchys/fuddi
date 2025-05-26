@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Mejoras en registro de direcciones de entrega"
+git commit -m "Notiticaciones por correo"
 git push -u origin main

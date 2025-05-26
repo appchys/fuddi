@@ -1,6 +1,6 @@
-// index.js
-import { app } from './firebase-config.js'; // Import nombrado
-import { getFirestore, collection, getDocs, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// index.js (SOLO frontend, NO Cloud Functions ni nodemailer aquí)
+import { app } from './firebase-config.js';
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Initialize Firestore
 const db = getFirestore(app);
@@ -11,21 +11,15 @@ async function withRetry(fn, retries = 3, delay = 1000) {
         try {
             return await fn();
         } catch (error) {
-            if (i === retries - 1) {
-                console.error("Todos los intentos fallaron:", error);
-                throw error;
-            }
-            console.warn(`Intento ${i + 1} falló, reintentando en ${delay}ms...`, error);
+            if (i === retries - 1) throw error;
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
 }
 
 // Fetch and display stores
-
 async function fetchStores() {
     const storesContainer = document.getElementById('stores-container');
-    
     try {
         const storesSnapshot = await withRetry(() => getDocs(collection(db, "stores")));
         storesSnapshot.forEach(doc => {
@@ -62,15 +56,11 @@ async function fetchStores() {
 // Fetch and display products
 async function fetchProducts() {
     const productsContainer = document.getElementById('products-container');
-    
     try {
         const storesSnapshot = await withRetry(() => getDocs(collection(db, "stores")));
-
-        // Iterate over each store to fetch its products
         for (const storeDoc of storesSnapshot.docs) {
-            const storeId = storeDoc.id; // Get the store ID
+            const storeId = storeDoc.id;
             const productsSnapshot = await withRetry(() => getDocs(collection(db, `stores/${storeId}/products`)));
-
             productsSnapshot.forEach(productDoc => {
                 const product = productDoc.data();
                 const productElement = document.createElement('div');
@@ -97,24 +87,20 @@ async function setRandomCover() {
     try {
         const storesSnapshot = await withRetry(() => getDocs(collection(db, "stores")));
         const productImages = [];
-
-        // Itera sobre cada tienda para obtener las imágenes de los productos
         for (const storeDoc of storesSnapshot.docs) {
             const storeId = storeDoc.id;
             const productsSnapshot = await withRetry(() => getDocs(collection(db, `stores/${storeId}/products`)));
-
             productsSnapshot.forEach(productDoc => {
                 const product = productDoc.data();
                 if (product.imageUrl) {
-                    productImages.push(product.imageUrl); // Agrega la URL de la imagen del producto
+                    productImages.push(product.imageUrl);
                 }
             });
         }
-
         if (productImages.length > 0) {
-            const randomImage = productImages[Math.floor(Math.random() * productImages.length)]; // Selecciona una imagen aleatoria
+            const randomImage = productImages[Math.floor(Math.random() * productImages.length)];
             const randomCoverElement = document.getElementById('random-cover');
-            randomCoverElement.style.backgroundImage = `url(${randomImage})`; // Establece la imagen de fondo
+            randomCoverElement.style.backgroundImage = `url(${randomImage})`;
         }
     } catch (error) {
         console.error("Error al cargar la portada aleatoria:", error);

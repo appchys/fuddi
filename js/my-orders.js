@@ -19,22 +19,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Función para actualizar el estado del pedido
     const updateOrderStatus = async (orderId) => {
         try {
-            console.log('Actualizando pedido con ID:', orderId);
-            
             // Obtener la referencia al documento del pedido
             const orderRef = docRef(db, 'orders', orderId);
-            
+
             // Obtener el estado actual del pedido
             const orderDoc = await getDoc(orderRef);
             if (!orderDoc.exists()) {
-                console.error('Pedido no encontrado:', orderId);
                 alert('Error: Pedido no encontrado');
                 return;
             }
 
             const currentStatus = orderDoc.data().status;
             if (currentStatus === 'recibido') {
-                console.log('El pedido ya está marcado como recibido');
                 alert('Este pedido ya está marcado como recibido');
                 return;
             }
@@ -48,8 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 status: 'recibido',
                 updatedAt: new Date().toISOString()
             });
-            console.log('Estado del pedido actualizado a recibido en Firestore');
-            
+
             // Actualizar la interfaz
             const orderItem = document.querySelector(`.order-item[data-order-id="${orderId}"]`);
             if (orderItem) {
@@ -69,34 +64,28 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert('Pedido marcado como recibido exitosamente');
             }
         } catch (error) {
-            console.error('Error al actualizar el estado del pedido:', error);
             alert('Error al marcar el pedido como recibido. Por favor, inténtalo de nuevo.');
         }
     };
 
     auth.onAuthStateChanged(async (user) => {
         if (user) {
-            console.log('Usuario autenticado:', user.uid);
             try {
                 const ordersRef = collection(db, 'orders');
                 const q = query(ordersRef, where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
-                console.log('Consulta de Firestore creada:', q);
 
                 const querySnapshot = await getDocs(q);
-                console.log('Resultados de la consulta:', querySnapshot);
 
                 // Ocultar spinner
                 loadingSpinner.style.display = 'none';
 
                 if (querySnapshot.empty) {
-                    console.log('No se encontraron pedidos para el usuario:', user.uid);
                     ordersContainer.innerHTML = '<p>No tienes pedidos realizados.</p>';
                     return;
                 }
 
                 querySnapshot.forEach(async (doc) => {
                     const order = doc.data();
-                    console.log('Pedido encontrado:', order);
 
                     // Obtener el nombre del cliente
                     const userRef = docRef(db, 'users', order.userId);
@@ -183,12 +172,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
             } catch (error) {
-                console.error('Error al cargar los pedidos:', error);
                 loadingSpinner.style.display = 'none';
                 ordersContainer.innerHTML = '<p>Hubo un error al cargar tus pedidos. Por favor, inténtalo de nuevo más tarde.</p>';
             }
         } else {
-            console.warn('Usuario no autenticado');
             loadingSpinner.style.display = 'none';
             alert('Por favor, inicia sesión para ver tus pedidos.');
             window.location.href = '/login.html';

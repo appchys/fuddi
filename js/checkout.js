@@ -52,8 +52,11 @@ async function updateView(user) {
                         <input type="text" id="name" name="name" required placeholder="Tu nombre completo">
                     </div>
                     <div class="form-group">
-                        <label for="phone"><i class="bi bi-telephone"></i> Celular</label>
+                        <label for="phone"><i class="bi bi-whatsapp"></i> Whatsapp</label>
                         <input type="tel" id="phone" name="phone" required placeholder="Ej: 091234567">
+                        <small style="display:block;color:#666;font-size:0.92em;margin-top:4px;">
+                            Importante, lo usaremos para coordinar la entrega
+                        </small>
                     </div>
                     <button type="submit" class="btn primary" style="width:100%;margin-top:10px;">
                         <i class="bi bi-save2"></i> Guardar Perfil
@@ -65,8 +68,7 @@ async function updateView(user) {
             userContainer.innerHTML = `
                 <div class="user-data">
                     <p><strong>Nombre:</strong> ${userData.name}</p>
-                    <p><strong>Teléfono:</strong> ${userData.phone}</p>
-                    <p><strong>Email:</strong> ${userData.email}</p>
+                    <p><strong>Whatsapp:</strong> ${userData.phone}</p>
                 </div>
             `;
         }
@@ -139,10 +141,8 @@ async function initialize() {
         // Obtener el ID de la tienda de la URL
         const params = new URLSearchParams(window.location.search);
         const storeId = params.get('storeId');
-        console.log('ID de tienda obtenido:', storeId);
 
         if (!storeId) {
-            console.error('No se proporcionó un ID de tienda válido');
             alert('No se proporcionó un ID de tienda válido.');
             return;
         }
@@ -190,18 +190,12 @@ async function initialize() {
         // Función para cargar datos bancarios
         async function loadBankAccounts(selectedBank = null) {
             try {
-                console.log('Intentando cargar datos bancarios...');
-                console.log('ID de tienda:', storeId);
-        
                 const storeRef = doc(db, 'stores', storeId);
-                console.log('Referencia a la tienda:', storeRef.path);
         
                 const storeDoc = await getDoc(storeRef);
-                console.log('Resultado de getDoc:', storeDoc.exists());
         
                 if (storeDoc.exists()) {
                     const storeData = storeDoc.data();
-                    console.log('Datos de la tienda:', JSON.stringify(storeData));
                     
                     if (!Array.isArray(storeData.bankAccounts)) {
                         console.error('Los datos bancarios no están en formato array');
@@ -211,12 +205,10 @@ async function initialize() {
                     }
         
                     const bankAccounts = storeData.bankAccounts;
-                    console.log('Cuentas bancarias:', bankAccounts);
         
                     bankAccountsList.innerHTML = '';
         
                     if (bankAccounts.length > 0) {
-                        console.log('Encontradas', bankAccounts.length, 'cuentas bancarias');
                         
                         // Crear select con los bancos
                         const select = document.createElement('select');
@@ -225,7 +217,6 @@ async function initialize() {
                         select.innerHTML = '<option value="">Selecciona un banco</option>';
         
                         bankAccounts.forEach((account, index) => {
-                            console.log('Agregando cuenta:', account);
                             const option = document.createElement('option');
                             option.value = index;
                             option.textContent = account.bank || 'Banco no especificado';
@@ -240,7 +231,6 @@ async function initialize() {
                         // Mostrar detalles del banco seleccionado
                         if (selectedBank !== null && bankAccounts[selectedBank]) {
                             const account = bankAccounts[selectedBank];
-                            console.log('Mostrando detalles del banco:', account);
                             
                             const accountElement = document.createElement('div');
                             accountElement.style = 'border: 1px solid #e5e7eb; padding: 16px; border-radius: 6px; margin-bottom: 16px;';
@@ -284,12 +274,10 @@ async function initialize() {
                             }
                         });
                     } else {
-                        console.log('No se encontraron cuentas bancarias');
                         bankAccountsList.innerHTML = '<p style="color: #b91c1c;">No hay cuentas bancarias disponibles.</p>';
                         document.getElementById('confirm-btn').disabled = true;
                     }
                 } else {
-                    console.error('No se encontró la tienda con ID:', storeId);
                     bankAccountsList.innerHTML = '<p style="color: #b91c1c;">Tienda no encontrada.</p>';
                     document.getElementById('confirm-btn').disabled = true;
                 }
@@ -302,26 +290,19 @@ async function initialize() {
 
         // Manejar cambio en método de pago
         const paymentRadios = document.querySelectorAll('input[name="payment"]');
-        console.log('Radios de pago encontrados:', paymentRadios.length);
         
         paymentRadios.forEach((radio) => {
-            console.log('Agregando listener a:', radio.value);
             radio.addEventListener('change', async () => {
-                console.log('Cambio en método de pago detectado');
                 const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked');
                 if (selectedPaymentMethod.value.toLowerCase() === 'transferencia') {
-                    console.log('Método de pago transferencia seleccionado');
                     bankDetailsContainer.classList.remove('hidden');
-                    console.log('Cargando datos bancarios...');
                     try {
                         await loadBankAccounts();
-                        console.log('Datos bancarios cargados exitosamente');
                     } catch (error) {
                         console.error('Error al cargar datos bancarios:', error);
                     }
                     document.getElementById('confirm-btn').disabled = true;
                 } else {
-                    console.log('Método de pago transferencia deseleccionado');
                     bankDetailsContainer.classList.add('hidden');
                     bankAccountsList.innerHTML = '';
                     selectedFile = null;
@@ -534,17 +515,14 @@ async function initialize() {
         loadGoogleMapsScript(() => {
             if (getLocationBtn) {
                 getLocationBtn.addEventListener('click', async () => {
-                    // Confirmación antes de cargar el mapa interactivo (JavaScript API)
-                    if (!confirm('¿Quieres cargar el mapa interactivo para seleccionar tu ubicación? Esto puede consumir tu cuota de Google Maps.')) {
-                        return;
-                    }
+                    // Quitar la alerta de confirmación, cargar el mapa directamente
                     if (navigator.geolocation) {
                         navigator.geolocation.getCurrentPosition((position) => {
                             const lat = position.coords.latitude;
                             const lng = position.coords.longitude;
                             document.getElementById('latitude').value = lat.toFixed(6);
                             document.getElementById('longitude').value = lng.toFixed(6);
-                            // Solo carga el mapa interactivo si el usuario lo confirma
+                            // Cargar el mapa interactivo directamente
                             initMap(lat, lng);
                         });
                     }
@@ -615,9 +593,27 @@ async function initialize() {
         const confirmBtn = document.getElementById('confirm-btn');
         if (confirmBtn) {
             confirmBtn.addEventListener('click', async () => {
-                if (!selectedAddress) {
-                    alert('Por favor, selecciona una dirección de entrega.');
+                // Verifica el tipo de entrega
+                const tipoEntrega = document.querySelector('input[name="deliveryType"]:checked')?.value;
+
+                // Verifica que el perfil esté creado antes de continuar
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('Debes iniciar sesión para continuar.');
                     return;
+                }
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (!userDoc.exists()) {
+                    alert('Debes completar tu perfil antes de generar la orden.');
+                    return;
+                }
+
+                // Solo pide dirección si es delivery
+                if (tipoEntrega === 'delivery') {
+                    if (!selectedAddress) {
+                        alert('Por favor, selecciona una dirección de entrega.');
+                        return;
+                    }
                 }
 
                 const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked');
@@ -632,11 +628,11 @@ async function initialize() {
                 }
 
                 // Obtener tipo de entrega y calcular fecha/hora
-                const deliveryType = document.querySelector('input[name="deliveryTime"]:checked').value;
+                const deliveryTimeType = document.querySelector('input[name="deliveryTime"]:checked').value;
                 let scheduledDate = '';
                 let scheduledTime = '';
 
-                if (deliveryType === 'asap') {
+                if (deliveryTimeType === 'asap') {
                     // Entrega inmediata: sumar 30 minutos a la hora actual
                     const now = new Date();
                     now.setMinutes(now.getMinutes() + 30);
@@ -667,15 +663,15 @@ async function initialize() {
                         userId: auth.currentUser.uid,
                         products: cart,
                         total: parseFloat(document.getElementById('total').textContent.replace('$', '')),
-                        shippingAddress: selectedAddress,
+                        shippingAddress: tipoEntrega === 'delivery' ? selectedAddress : null,
                         paymentMethod: selectedPaymentMethod.value,
                         paymentProofUrl,
                         bankIndex: selectedPaymentMethod.value === 'transferencia' ? parseInt(document.getElementById('bank-select').value) : null,
                         status: 'pending',
                         createdAt: new Date().toISOString(),
-                        deliveryType,         // "asap" o "scheduled"
-                        scheduledDate,        // YYYY-MM-DD
-                        scheduledTime         // HH:mm
+                        deliveryType: deliveryTimeType, // "asap" o "scheduled"
+                        scheduledDate,                  // YYYY-MM-DD
+                        scheduledTime                   // HH:mm
                     };
 
                     await addDoc(collection(db, 'orders'), orderData);
@@ -702,7 +698,18 @@ async function initialize() {
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
             const dd = String(today.getDate()).padStart(2, '0');
-            scheduledDateInput.min = `${yyyy}-${mm}-${dd}`;
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+            scheduledDateInput.min = todayStr;
+            scheduledDateInput.value = todayStr; // Día actual por defecto
+        }
+
+        // Setear hora por defecto: actual + 30 minutos
+        if (scheduledTimeInput) {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 30);
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            scheduledTimeInput.value = `${hh}:${min}`;
         }
 
         function updateScheduledFields() {
@@ -718,6 +725,40 @@ async function initialize() {
             radio.addEventListener('change', updateScheduledFields);
         });
         updateScheduledFields();
+
+        function updateEntregaInmediataTiempo() {
+            const entregaInmediataLabel = document.querySelector('.delivery-time-option input[value="asap"] + .option-content');
+            const tipoEntrega = document.querySelector('input[name="deliveryType"]:checked')?.value;
+            if (!entregaInmediataLabel) return;
+
+            // Elimina texto previo si existe
+            let tiempoSpan = entregaInmediataLabel.querySelector('.entrega-tiempo');
+            if (tiempoSpan) tiempoSpan.remove();
+
+            // Crea el texto según el tipo de entrega
+            let texto = '';
+            if (tipoEntrega === 'delivery') {
+                texto = 'Tiempo aproximado: 30 minutos';
+            } else if (tipoEntrega === 'pickup') {
+                texto = 'Tiempo aproximado: 15 minutos';
+            }
+            if (texto) {
+                const small = document.createElement('small');
+                small.className = 'entrega-tiempo';
+                small.style.display = 'block';
+                small.style.fontSize = '0.85em';
+                small.style.color = '#666';
+                small.textContent = texto;
+                entregaInmediataLabel.appendChild(small);
+            }
+        }
+
+        // Actualiza el texto al cambiar tipo de entrega o tiempo de entrega
+        const deliveryTypeRadios = document.querySelectorAll('input[name="deliveryType"]');
+        deliveryTypeRadios.forEach(radio => {
+            radio.addEventListener('change', updateEntregaInmediataTiempo);
+        });
+        updateEntregaInmediataTiempo();
 
         // --- Mapa interactivo SOLO para crear/editar dirección ---
         /**
@@ -776,14 +817,37 @@ function loadGoogleMapsScript(callback) {
         return;
     }
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&loading=async`; // Añade loading=async para evitar la advertencia
     script.async = true;
     script.onload = callback;
     document.head.appendChild(script);
 }
 
 // Inicializar la página
-document.addEventListener('DOMContentLoaded', initialize);
+document.addEventListener('DOMContentLoaded', () => {
+    initialize();
+
+    // Mostrar/ocultar dirección según tipo de entrega
+    const deliveryTypeRadios = document.querySelectorAll('input[name="deliveryType"]');
+    const deliveryAddressSection = document.querySelector('.delivery-address');
+
+    function toggleAddressSection() {
+        const selected = document.querySelector('input[name="deliveryType"]:checked');
+        if (!selected || !deliveryAddressSection) return;
+        if (selected.value === 'delivery') {
+            deliveryAddressSection.classList.remove('hidden');
+        } else {
+            deliveryAddressSection.classList.add('hidden');
+        }
+    }
+
+    deliveryTypeRadios.forEach(radio => {
+        radio.addEventListener('change', toggleAddressSection);
+    });
+
+    // Inicializa el estado al cargar
+    toggleAddressSection();
+});
 
 /*
     NOTA:
