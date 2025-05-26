@@ -847,6 +847,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inicializa el estado al cargar
     toggleAddressSection();
+
+    // Agrega el event listener para el botón de Google
+    const googleLoginBtn = document.getElementById('google-login-btn');
+    if (googleLoginBtn) {
+        googleLoginBtn.addEventListener('click', loginWithGoogle);
+    }
 });
 
 /*
