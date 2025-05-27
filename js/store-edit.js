@@ -1,5 +1,14 @@
 import { auth, db, doc, getDoc, setDoc, storage, ref, uploadBytes, collection, query, where, getDocs } from './firebase-config.js';
 import { getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js';
+import { GOOGLE_MAPS_API_KEY } from './config.js';
+
+// Al inicio del archivo, antes de cualquier función o bloque:
+let deliveryZones = [];
+const draft = localStorage.getItem('deliveryZonesDraft');
+if (draft) {
+    deliveryZones = JSON.parse(draft);
+}
+let map, drawingManager, currentPolygon = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('editStoreForm');
@@ -157,6 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     currentCoverImage.classList.add('hidden');
                 }
+
+                // Cargar zonas de entrega
+                loadDeliveryZonesFromStore(storeData);
             } catch (error) {
                 alert('Error al cargar los datos de la tienda: ' + error.message);
                 window.location.href = 'index.html';
@@ -258,6 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 storeData.coverUrl = await getDownloadURL(coverRef);
             }
 
+            // Agregar zonas de entrega a los datos de la tienda
+            storeData.deliveryZones = deliveryZones;
+            console.log('Zonas a guardar:', deliveryZones); // <-- Agrega esto
             await setDoc(doc(db, 'stores', storeId), storeData, { merge: true });
             alert('¡Tienda actualizada exitosamente!');
             window.location.href = `store.html?storeId=${storeId}`;
@@ -284,3 +299,162 @@ async function removeBankAccountFromFirestore(entry, accountToRemove) {
         await setDoc(storeRef, { bankAccounts }, { merge: true });
     }
 }
+
+// Funciones para las zonas de entrega
+// Inicializa el mapa y DrawingManager
+function initDeliveryZonesMap(center = { lat: -1.843254, lng: -79.990611 }) {
+    map = new google.maps.Map(document.getElementById('deliveryZonesMap'), {
+        center,
+        zoom: 14,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false
+    });
+
+    drawingManager = new google.maps.drawing.DrawingManager({
+        drawingMode: null,
+        drawingControl: false,
+        polygonOptions: {
+            fillColor: '#2196f3',
+            fillOpacity: 0.2,
+            strokeWeight: 2,
+            clickable: true,
+            editable: true,
+            zIndex: 1
+        }
+    });
+    drawingManager.setMap(map);
+
+    // Al terminar de dibujar un polígono
+    google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
+        const path = polygon.getPath().getArray().map(latlng => ({
+            lat: latlng.lat(),
+            lng: latlng.lng()
+        }));
+
+        // Mostrar modal
+        const modal = document.getElementById('zoneModal');
+        const form = document.getElementById('zoneForm');
+        const nameInput = document.getElementById('zoneName');
+        const shippingInput = document.getElementById('zoneShipping');
+        const cancelBtn = document.getElementById('cancelZoneBtn');
+
+        nameInput.value = '';
+        shippingInput.value = '';
+        modal.style.display = 'flex';
+
+        // Cancelar
+        cancelBtn.onclick = () => {
+            modal.style.display = 'none';
+            polygon.setMap(null);
+            drawingManager.setDrawingMode(null);
+        };
+
+        // Guardar zona
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            const name = nameInput.value.trim();
+            const shipping = parseFloat(shippingInput.value);
+            if (name && !isNaN(shipping)) {
+                deliveryZones.push({ name, shipping, polygon: path });
+                localStorage.setItem('deliveryZonesDraft', JSON.stringify(deliveryZones));
+                renderZonesList();
+                drawAllZones();
+            }
+            modal.style.display = 'none';
+            polygon.setMap(null);
+            drawingManager.setDrawingMode(null);
+        };
+    });
+}
+
+// Dibuja todos los polígonos guardados
+function drawAllZones() {
+    if (!map) return;
+    // Limpia los overlays previos
+    if (window._zonePolygons) {
+        window._zonePolygons.forEach(p => p.setMap(null));
+    }
+    window._zonePolygons = [];
+    deliveryZones.forEach(zone => {
+        const poly = new google.maps.Polygon({
+            paths: zone.polygon,
+            fillColor: '#2196f3',
+            fillOpacity: 0.2,
+            strokeWeight: 2,
+            editable: false,
+            map
+        });
+        window._zonePolygons.push(poly);
+    });
+}
+
+// Renderiza la lista de zonas
+function renderZonesList() {
+    const list = document.getElementById('zonesList');
+    list.innerHTML = '';
+    deliveryZones.forEach((zone, idx) => {
+        const div = document.createElement('div');
+        div.className = 'mb-1 flex items-center gap-2';
+        div.innerHTML = `<span class="font-semibold">${zone.name}</span>
+            <span class="text-gray-600 ml-2">($${zone.shipping?.toFixed(2) ?? '0.00'})</span>
+            <button type="button" class="bg-red-500 text-white px-2 py-0.5 rounded delete-zone-btn" data-idx="${idx}">Eliminar</button>`;
+        list.appendChild(div);
+    });
+    // Eliminar zona
+    list.querySelectorAll('.delete-zone-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+            const idx = parseInt(btn.dataset.idx);
+            deliveryZones.splice(idx, 1);
+            renderZonesList();
+            drawAllZones();
+            // Al agregar o eliminar zonas:
+            localStorage.setItem('deliveryZonesDraft', JSON.stringify(deliveryZones));
+        });
+    });
+}
+
+// Botón para agregar zona
+document.getElementById('addZoneBtn').addEventListener('click', () => {
+    drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
+});
+
+// Inicializa el mapa cuando Google Maps esté listo
+window.initDeliveryZonesMap = initDeliveryZonesMap;
+
+// 2. Inicializa el mapa después de cargar el draft
+loadGoogleMapsScript(() => {
+    initDeliveryZonesMap();
+});
+
+// Cargar zonas existentes al editar
+async function loadDeliveryZonesFromStore(storeData) {
+    deliveryZones = Array.isArray(storeData.deliveryZones) ? storeData.deliveryZones : [];
+    drawAllZones();
+    renderZonesList();
+}
+
+// Función para cargar el script de Google Maps
+function loadGoogleMapsScript(callback) {
+    if (window.google && window.google.maps && window.google.maps.drawing) {
+        callback();
+        return;
+    }
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=drawing&loading=async`;
+    script.async = true;
+    script.onload = () => {
+        // Espera hasta que google.maps esté realmente disponible
+        const waitForGoogleMaps = () => {
+            if (window.google && window.google.maps && window.google.maps.Map && window.google.maps.drawing) {
+                callback();
+            } else {
+                setTimeout(waitForGoogleMaps, 50);
+            }
+        };
+        waitForGoogleMaps();
+    };
+    document.head.appendChild(script);
+}
+
+localStorage.removeItem('deliveryZonesDraft');
