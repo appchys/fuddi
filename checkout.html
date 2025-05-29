@@ -31,8 +31,6 @@
                 </div>
             </section>
 
-            
-
             <!-- Tipo de entrega -->
             <section class="checkout-section delivery-type">
                 <h2><i class="bi bi-shop-window"></i> ¿Cómo deseas recibir tu pedido?</h2>
@@ -40,8 +38,8 @@
                     <label class="delivery-type-option">
                         <input type="radio" name="deliveryType" value="delivery" checked>
                         <div class="option-content">
-                            <i class="bi bi-truck"></i>
-                            <span>Delivery a domicilio</span>
+                            <i class="bi bi-bicycle"></i>
+                            <span>Delivery</span>
                         </div>
                     </label>
                     <label class="delivery-type-option">
@@ -112,6 +110,7 @@
                         <label for="scheduled-time">Hora</label>
                         <input type="time" id="scheduled-time" name="scheduled-time">
                     </div>
+                    <div id="scheduled-warning" style="color:#b91c1c;font-size:0.97em;margin-top:6px;"></div>
                 </div>
             </section>
 
@@ -168,9 +167,6 @@
                 <button id="confirm-btn" class="btn confirm-btn">
                     <i class="bi bi-check-circle-fill"></i> Confirmar Pedido
                 </button>
-                <p class="secure-checkout">
-                    <i class="bi bi-lock-fill"></i> Compra segura - Tus datos están protegidos
-                </p>
             </section>
         </main>
     </div>

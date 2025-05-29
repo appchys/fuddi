@@ -195,7 +195,7 @@ async function initialize() {
                 const storeDoc = await getDoc(storeRef);
         
                 if (storeDoc.exists()) {
-                    const storeData = storeDoc.data();
+                    storeData = storeDoc.data();
                     const deliveryZones = Array.isArray(storeData.deliveryZones) ? storeData.deliveryZones : [];
 
                     if (!Array.isArray(storeData.bankAccounts)) {
@@ -401,9 +401,13 @@ async function initialize() {
         const getLocationBtn = document.getElementById('get-location-btn');
         const latitudeSpan = document.getElementById('latitude');
         const longitudeSpan = document.getElementById('longitude');
+        const scheduledDateInput = document.getElementById('scheduled-date');
+        const scheduledTimeInput = document.getElementById('scheduled-time');
+        const scheduledWarning = document.getElementById('scheduled-warning'); // <-- AGREGA ESTA LÍNEA
 
         let selectedAddress = null;
         let addresses = [];
+        let storeData = null;
 
         // Función para cargar direcciones guardadas del usuario
         async function loadSavedAddresses() {
@@ -481,7 +485,7 @@ async function initialize() {
             const storeRef = doc(db, 'stores', storeId);
             getDoc(storeRef).then(storeDoc => {
                 if (storeDoc.exists()) {
-                    const storeData = storeDoc.data();
+                    storeData = storeDoc.data();
                     const deliveryZones = Array.isArray(storeData.deliveryZones) ? storeData.deliveryZones : [];
                     if (deliveryZones.length > 0) {
                         loadGoogleMapsScript(() => {
@@ -770,8 +774,7 @@ async function initialize() {
         // Mostrar/ocultar campos de entrega programada
         const deliveryTimeRadios = document.querySelectorAll('input[name="deliveryTime"]');
         const scheduledFields = document.getElementById('scheduled-delivery-fields');
-        const scheduledDateInput = document.getElementById('scheduled-date');
-        const scheduledTimeInput = document.getElementById('scheduled-time');
+        
 
         // Setear fecha mínima (hoy) para el input de fecha
         if (scheduledDateInput) {
@@ -964,6 +967,45 @@ async function initialize() {
             }
             return null;
         }
+
+        function validateScheduledDateTime() {
+            if (!scheduledDateInput || !scheduledTimeInput || !scheduledWarning) return;
+            // Aquí ya tenemos storeData cargado globalmente
+            const openingHours = storeData.openingHours || {};
+            const dateStr = scheduledDateInput.value;
+            const timeStr = scheduledTimeInput.value;
+            scheduledWarning.textContent = '';
+            if (!dateStr) return;
+  
+            const daysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const [year, month, day] = dateStr.split('-').map(Number);
+            const jsDate = new Date(Date.UTC(year, month - 1, day));
+            const dayOfWeek = daysMap[jsDate.getUTCDay()];
+            const hours = openingHours[dayOfWeek];
+  
+            console.log('dateStr:', dateStr, 'getDay:', new Date(dateStr).getDay(), 'dayOfWeek:', dayOfWeek, 'hours:', hours);
+  
+            if (!hours) {
+                scheduledWarning.textContent = 'La tienda no atiende el día seleccionado.';
+                return;
+            }
+  
+            if (timeStr) {
+                const [h, m] = timeStr.split(':').map(Number);
+                const [openH, openM] = hours.open.split(':').map(Number);
+                const [closeH, closeM] = hours.close.split(':').map(Number);
+                const selectedMinutes = h * 60 + m;
+                const openMinutes = openH * 60 + openM;
+                const closeMinutes = closeH * 60 + closeM;
+                if (selectedMinutes < openMinutes || selectedMinutes > closeMinutes) {
+                    scheduledWarning.textContent = `La tienda solo atiende de ${hours.open} a ${hours.close} ese día.`;
+                    return;
+                }
+            }
+        }
+
+        if (scheduledDateInput) scheduledDateInput.addEventListener('change', validateScheduledDateTime);
+        if (scheduledTimeInput) scheduledTimeInput.addEventListener('change', validateScheduledDateTime);
     } catch (error) {
         console.error('Error al inicializar:', error);
         alert('Error al inicializar la página. Por favor, recarga la página.');
@@ -1037,6 +1079,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const googleLoginBtn = document.getElementById('google-login-btn');
     if (googleLoginBtn) {
         googleLoginBtn.addEventListener('click', loginWithGoogle);
+    }
+
+    // Horario de atención
+    const openingHoursFields = document.getElementById('openingHoursFields');
+    if (openingHoursFields) {
+        // Días de la semana
+        const daysOfWeek = [
+            'Lunes',
+            'Martes',
+            'Miércoles',
+            'Jueves',
+            'Viernes',
+            'Sábado',
+            'Domingo'
+        ];
+
+        // Crear campos para cada día
+        daysOfWeek.forEach((day, index) => {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day-field';
+            dayDiv.innerHTML = `
+                <label class="block text-sm font-medium text-gray-700 mb-2">${day}</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="time" id="opening-time-${index}" class="time-input" placeholder="Apertura">
+                    <input type="time" id="closing-time-${index}" class="time-input" placeholder="Cierre">
+                </div>
+            `;
+            openingHoursFields.appendChild(dayDiv);
+        });
     }
 });
 

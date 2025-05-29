@@ -169,6 +169,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Cargar zonas de entrega
                 loadDeliveryZonesFromStore(storeData);
+
+                // Cargar horarios de apertura
+                const openingHours = storeData.openingHours || {};
+                daysOfWeek.forEach(day => {
+                    const openInput = openingHoursFields.querySelector(`input.open-time[data-day="${day.key}"]`);
+                    const closeInput = openingHoursFields.querySelector(`input.close-time[data-day="${day.key}"]`);
+                    const closedCheckbox = openingHoursFields.querySelector(`input.closed-checkbox[data-day="${day.key}"]`);
+                    if (openingHours[day.key]) {
+                        openInput.value = openingHours[day.key].open || '';
+                        closeInput.value = openingHours[day.key].close || '';
+                        closedCheckbox.checked = false;
+                        openInput.disabled = false;
+                        closeInput.disabled = false;
+                    } else {
+                        openInput.value = '';
+                        closeInput.value = '';
+                        closedCheckbox.checked = true;
+                        openInput.disabled = true;
+                        closeInput.disabled = true;
+                    }
+                    closedCheckbox.addEventListener('change', () => {
+                        openInput.disabled = closedCheckbox.checked;
+                        closeInput.disabled = closedCheckbox.checked;
+                    });
+                });
             } catch (error) {
                 alert('Error al cargar los datos de la tienda: ' + error.message);
                 window.location.href = 'index.html';
@@ -244,6 +269,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Recolectar horario de atención
+        const openingHours = {};
+        daysOfWeek.forEach(day => {
+            const openInput = openingHoursFields.querySelector(`input.open-time[data-day="${day.key}"]`);
+            const closeInput = openingHoursFields.querySelector(`input.close-time[data-day="${day.key}"]`);
+            const closedCheckbox = openingHoursFields.querySelector(`input.closed-checkbox[data-day="${day.key}"]`);
+            if (!closedCheckbox.checked && openInput.value && closeInput.value) {
+                openingHours[day.key] = {
+                    open: openInput.value,
+                    close: closeInput.value
+                };
+            } else {
+                openingHours[day.key] = null;
+            }
+        });
+
         try {
             const storeData = {
                 name,
@@ -256,6 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 shippingFee: shippingFee ? parseFloat(shippingFee) : null,
                 bankAccounts,
                 updatedAt: new Date().toISOString(),
+                openingHours, // <--- AGREGA ESTA LÍNEA
             };
 
             if (imageUrlFile) {
@@ -458,3 +500,31 @@ function loadGoogleMapsScript(callback) {
 }
 
 localStorage.removeItem('deliveryZonesDraft');
+
+const daysOfWeek = [
+    { key: 'monday', label: 'Lunes' },
+    { key: 'tuesday', label: 'Martes' },
+    { key: 'wednesday', label: 'Miércoles' },
+    { key: 'thursday', label: 'Jueves' },
+    { key: 'friday', label: 'Viernes' },
+    { key: 'saturday', label: 'Sábado' },
+    { key: 'sunday', label: 'Domingo' }
+];
+
+const openingHoursFields = document.getElementById('openingHoursFields');
+if (openingHoursFields) {
+    daysOfWeek.forEach(day => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2';
+        row.innerHTML = `
+            <label class="w-24">${day.label}</label>
+            <input type="time" class="open-time border rounded p-1" data-day="${day.key}" data-type="open">
+            <span>a</span>
+            <input type="time" class="close-time border rounded p-1" data-day="${day.key}" data-type="close">
+            <label class="ml-2">
+                <input type="checkbox" class="closed-checkbox" data-day="${day.key}"> Cerrado
+            </label>
+        `;
+        openingHoursFields.appendChild(row);
+    });
+}
