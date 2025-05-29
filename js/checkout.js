@@ -196,7 +196,8 @@ async function initialize() {
         
                 if (storeDoc.exists()) {
                     const storeData = storeDoc.data();
-                    
+                    const deliveryZones = Array.isArray(storeData.deliveryZones) ? storeData.deliveryZones : [];
+
                     if (!Array.isArray(storeData.bankAccounts)) {
                         console.error('Los datos bancarios no están en formato array');
                         bankAccountsList.innerHTML = '<p style="color: #b91c1c;">Formato de datos bancarios incorrecto.</p>';
@@ -478,6 +479,7 @@ async function initialize() {
             selectedAddressDiv.innerHTML = `
                 <p><strong>Dirección seleccionada:</strong></p>
                 <p><strong>Referencia:</strong> ${address.reference}</p>
+                <div id="coverage-message" style="margin:4px 0 8px 0;font-size:0.98em;"></div>
                 <img src="${staticMapUrl}" alt="Mapa dirección" style="width:100%;max-width:200px;height:100px;margin:10px 0;border-radius:8px;object-fit:cover;">
                 <button id="toggle-addresses-btn" class="btn">▼ Mostrar otras direcciones</button>
             `;
@@ -496,6 +498,44 @@ async function initialize() {
             savedAddressesContainer.innerHTML = '';
             savedAddressesContainer.appendChild(selectedAddressDiv);
             savedAddressesContainer.appendChild(otherAddressesDiv);
+
+            // Validar cobertura y mostrar mensaje
+            const storeRef = doc(db, 'stores', storeId);
+            getDoc(storeRef).then(storeDoc => {
+                if (storeDoc.exists()) {
+                    const storeData = storeDoc.data();
+                    const deliveryZones = Array.isArray(storeData.deliveryZones) ? storeData.deliveryZones : [];
+                    if (deliveryZones.length > 0) {
+                        loadGoogleMapsGeometryScript(() => {
+                            const isCovered = isPointInDeliveryZones(
+                                address.latitude,
+                                address.longitude,
+                                deliveryZones
+                            );
+                            const msgDiv = document.getElementById('coverage-message');
+                            if (!isCovered) {
+                                msgDiv.innerHTML = `<span style="color:#b91c1c;"><i class="bi bi-exclamation-triangle"></i> No tenemos cobertura en esta dirección.</span>
+                                <br>
+                                <a href="#" id="showCoverageZonesLink" style="color:#2563eb;text-decoration:underline;cursor:pointer;font-size:0.97em;">Ver zonas de cobertura</a>`;
+                                document.getElementById('confirm-btn').disabled = true;
+                            } else {
+                                msgDiv.innerHTML = `<span style="color:#16a34a;"><i class="bi bi-check-circle"></i> ¡Esta dirección está dentro de la zona de cobertura!</span>
+                                <br>
+                                <a href="#" id="showCoverageZonesLink" style="color:#2563eb;text-decoration:underline;cursor:pointer;font-size:0.97em;">Ver zonas de cobertura</a>`;
+                                document.getElementById('confirm-btn').disabled = false;
+                            }
+
+                            const showCoverageZonesLink = document.getElementById('showCoverageZonesLink');
+                            if (showCoverageZonesLink) {
+                                showCoverageZonesLink.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    openCoverageZonesModal(deliveryZones);
+                                });
+                            }
+                        });
+                    }
+                }
+            });
 
             const toggleBtn = document.getElementById('toggle-addresses-btn');
             toggleBtn.addEventListener('click', () => {
@@ -803,6 +843,74 @@ async function initialize() {
             });
         }
         // --- Fin mapa interactivo ---
+
+        function isPointInDeliveryZones(lat, lng, deliveryZones) {
+            if (!window.google || !window.google.maps || !window.google.maps.geometry) return false;
+            const point = new google.maps.LatLng(lat, lng);
+            for (const zone of deliveryZones) {
+                const polygon = new google.maps.Polygon({
+                    paths: zone.polygon
+                });
+                if (google.maps.geometry.poly.containsLocation(point, polygon)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function openCoverageZonesModal(deliveryZones) {
+            const modal = document.getElementById('coverageZonesModal');
+            const mapDiv = document.getElementById('coverageZonesMap');
+            const listDiv = document.getElementById('coverageZonesList');
+            modal.style.display = 'flex';
+
+            // Limpia el mapa anterior
+            mapDiv.innerHTML = '';
+
+            // Carga Google Maps y dibuja los polígonos
+            loadGoogleMapsScript(() => {
+                // Centra el mapa en la primera zona o en un punto por defecto
+                let center = { lat: -1.843254, lng: -79.990611 };
+                if (deliveryZones.length > 0 && deliveryZones[0].polygon && deliveryZones[0].polygon.length > 0) {
+                    center = deliveryZones[0].polygon[0];
+                }
+                const map = new google.maps.Map(mapDiv, {
+                    center,
+                    zoom: 13,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: false
+                });
+
+                // Dibuja los polígonos
+                deliveryZones.forEach(zone => {
+                    const polygon = new google.maps.Polygon({
+                        paths: zone.polygon,
+                        fillColor: '#2563eb',
+                        fillOpacity: 0.18,
+                        strokeColor: '#2563eb',
+                        strokeWeight: 2,
+                        map
+                    });
+                });
+
+                // Lista de zonas
+                if (listDiv) {
+                    listDiv.innerHTML = deliveryZones.map(z =>
+                        `<div style="margin-bottom:4px;"><b>${z.name || 'Zona'}</b> &mdash; Envío: $${z.shipping?.toFixed(2) ?? '0.00'}</div>`
+                    ).join('');
+                }
+            });
+
+            // Cerrar modal
+            document.getElementById('closeCoverageZonesModal').onclick = () => {
+                modal.style.display = 'none';
+            };
+            // Cerrar al hacer click fuera del modal
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.style.display = 'none';
+            };
+        }
     } catch (error) {
         console.error('Error al inicializar:', error);
         alert('Error al inicializar la página. Por favor, recarga la página.');
@@ -812,12 +920,36 @@ async function initialize() {
 // Carga la Google Maps JavaScript API solo cuando se necesita (para el mapa interactivo)
 // Evita exponer la clave en el HTML y reduce el consumo de cuota
 function loadGoogleMapsScript(callback) {
-    if (window.google && window.google.maps) {
+    if (window.google && window.google.maps && window.google.maps.geometry && window.google.maps.drawing) {
+        callback();
+        return;
+    }
+    // Evita cargar varias veces
+    if (document.getElementById('google-maps-script')) {
+        // Si ya se está cargando, espera a que esté listo
+        const check = setInterval(() => {
+            if (window.google && window.google.maps && window.google.maps.geometry && window.google.maps.drawing) {
+                clearInterval(check);
+                callback();
+            }
+        }, 50);
+        return;
+    }
+    const script = document.createElement('script');
+    script.id = 'google-maps-script';
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry,drawing&loading=async`;
+    script.async = true;
+    script.onload = callback;
+    document.head.appendChild(script);
+}
+
+function loadGoogleMapsGeometryScript(callback) {
+    if (window.google && window.google.maps && window.google.maps.geometry) {
         callback();
         return;
     }
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&loading=async`; // Añade loading=async para evitar la advertencia
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry&loading=async`;
     script.async = true;
     script.onload = callback;
     document.head.appendChild(script);
@@ -855,9 +987,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/*
-    NOTA:
-    - Para proteger tu clave de API, usa restricciones de dominio y de API en Google Cloud Console.
-    - Configura límites de cuota y alertas de presupuesto en https://console.cloud.google.com/apis/quotas y https://console.cloud.google.com/billing/alerts
-    - Static Maps API es mucho más barata ($2/1,000) que JavaScript API ($7/1,000). Usa la primera siempre que sea posible.
-*/

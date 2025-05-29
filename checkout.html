@@ -174,5 +174,15 @@
     <!-- Incluir Toastify JS -->
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script type="module" src="./js/checkout.js"></script>
+
+    <!-- Modal de zonas de cobertura -->
+    <div id="coverageZonesModal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:400px;width:95vw;box-shadow:0 2px 16px #0002;position:relative;">
+        <button id="closeCoverageZonesModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">&times;</button>
+        <h3 style="margin-bottom:12px;font-size:1.1em;">Zonas de cobertura de la tienda</h3>
+        <div id="coverageZonesMap" style="width:100%;height:300px;border-radius:8px;"></div>
+        <div id="coverageZonesList" style="margin-top:10px;font-size:0.98em;"></div>
+      </div>
+    </div>
 </body>
 </html>
