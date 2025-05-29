@@ -811,29 +811,49 @@ async function initialize() {
         updateScheduledFields();
 
         function updateEntregaInmediataTiempo() {
-            const entregaInmediataLabel = document.querySelector('.delivery-time-option input[value="asap"] + .option-content');
-            const tipoEntrega = document.querySelector('input[name="deliveryType"]:checked')?.value;
+            // Busca el input y luego su contenedor padre (label), luego el .option-content
+            const entregaInmediataInput = document.querySelector('input[name="deliveryTime"][value="asap"]');
+            if (!entregaInmediataInput) return;
+            const entregaInmediataLabel = entregaInmediataInput.closest('label');
             if (!entregaInmediataLabel) return;
+            const optionContent = entregaInmediataLabel.querySelector('.option-content');
+            const tipoEntrega = document.querySelector('input[name="deliveryType"]:checked')?.value;
+            if (!optionContent || !storeData || !storeData.openingHours) return;
 
             // Elimina texto previo si existe
-            let tiempoSpan = entregaInmediataLabel.querySelector('.entrega-tiempo');
+            let tiempoSpan = optionContent.querySelector('.entrega-tiempo');
             if (tiempoSpan) tiempoSpan.remove();
 
-            // Crea el texto según el tipo de entrega
             let texto = '';
-            if (tipoEntrega === 'delivery') {
+            const tiendaCerrada = !isNowInOpeningHours(storeData.openingHours);
+            if (tiendaCerrada) {
+                texto = 'Tienda cerrada';
+                entregaInmediataInput.disabled = true;
+                // Si estaba seleccionado, deselecciona y selecciona programada
+                if (entregaInmediataInput.checked) {
+                    // Busca el input programado y selecciónalo
+                    const scheduledInput = document.querySelector('input[name="deliveryTime"][value="scheduled"]');
+                    if (scheduledInput) {
+                        scheduledInput.checked = true;
+                        // Dispara el evento para mostrar campos programados
+                        scheduledInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                }
+            } else if (tipoEntrega === 'delivery') {
                 texto = 'Tiempo aproximado: 30 minutos';
+                entregaInmediataInput.disabled = false;
             } else if (tipoEntrega === 'pickup') {
                 texto = 'Tiempo aproximado: 15 minutos';
+                entregaInmediataInput.disabled = false;
             }
             if (texto) {
                 const small = document.createElement('small');
                 small.className = 'entrega-tiempo';
                 small.style.display = 'block';
                 small.style.fontSize = '0.85em';
-                small.style.color = '#666';
+                small.style.color = texto === 'Tienda cerrada' ? '#b91c1c' : '#666';
                 small.textContent = texto;
-                entregaInmediataLabel.appendChild(small);
+                optionContent.appendChild(small);
             }
         }
 
@@ -1110,4 +1130,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+function isNowInOpeningHours(openingHours) {
+    const now = new Date();
+    const daysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayOfWeek = daysMap[now.getDay()];
+    const hours = openingHours[dayOfWeek];
+    if (!hours) return false;
+    const [openH, openM] = hours.open.split(':').map(Number);
+    const [closeH, closeM] = hours.close.split(':').map(Number);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const openMinutes = openH * 60 + openM;
+    const closeMinutes = closeH * 60 + closeM;
+    return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
+}
 
