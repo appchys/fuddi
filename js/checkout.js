@@ -376,17 +376,18 @@ async function initialize() {
             if (subtotalElement) {
                 subtotalElement.textContent = `$${subtotalTotal.toFixed(2)}`;
             }
+// No actualices shipping ni total aquí, se actualizan en updateSelectedAddressView
 
-            const shippingElement = document.getElementById('shipping');
-            if (shippingElement) {
-                shippingElement.textContent = `$${shipping.toFixed(2)}`;
-            }
+            // const shippingElement = document.getElementById('shipping');
+            // if (shippingElement) {
+            //     shippingElement.textContent = `$${shipping.toFixed(2)}`;
+            // }
 
-            const totalElement = document.getElementById('total');
-            if (totalElement) {
-                const total = subtotalTotal + shipping;
-                totalElement.textContent = `$${total.toFixed(2)}`;
-            }
+            // const totalElement = document.getElementById('total');
+            // if (totalElement) {
+            //     const total = subtotalTotal + shipping;
+            //     totalElement.textContent = `$${total.toFixed(2)}`;
+            // }
         }
 
         // Inicializar la vista del carrito
@@ -474,15 +475,100 @@ async function initialize() {
         function updateSelectedAddressView(address) {
             const selectedAddressDiv = document.createElement('div');
             selectedAddressDiv.className = 'selected-address';
-            // Static map image (200x100) para dirección seleccionada
             const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${address.latitude},${address.longitude}&zoom=16&size=200x100&markers=color:red%7C${address.latitude},${address.longitude}&key=${GOOGLE_MAPS_API_KEY}`;
-            selectedAddressDiv.innerHTML = `
-                <p><strong>Dirección seleccionada:</strong></p>
-                <p><strong>Referencia:</strong> ${address.reference}</p>
-                <div id="coverage-message" style="margin:4px 0 8px 0;font-size:0.98em;"></div>
-                <img src="${staticMapUrl}" alt="Mapa dirección" style="width:100%;max-width:200px;height:100px;margin:10px 0;border-radius:8px;object-fit:cover;">
-                <button id="toggle-addresses-btn" class="btn">▼ Mostrar otras direcciones</button>
-            `;
+
+            // Carga zonas y valida cobertura ANTES de armar el HTML
+            const storeRef = doc(db, 'stores', storeId);
+            getDoc(storeRef).then(storeDoc => {
+                if (storeDoc.exists()) {
+                    const storeData = storeDoc.data();
+                    const deliveryZones = Array.isArray(storeData.deliveryZones) ? storeData.deliveryZones : [];
+                    if (deliveryZones.length > 0) {
+                        loadGoogleMapsScript(() => {
+                            const isCovered = isPointInDeliveryZones(
+                                address.latitude,
+                                address.longitude,
+                                deliveryZones
+                            );
+                            let referenceHtml = `<strong>Referencia:</strong> ${address.reference}`;
+                            if (isCovered) {
+                                referenceHtml += `
+                                    <span class="coverage-check" style="display:inline-block;vertical-align:middle;position:relative;cursor:pointer;margin-left:6px;">
+                                        <i class="bi bi-check-circle-fill" style="color:#16a34a;font-size:1.1em;"></i>
+                                        <span class="coverage-tooltip" style="display:none;position:absolute;left:120%;top:50%;transform:translateY(-50%);background:#fff;border:1px solid #16a34a;color:#222;padding:6px 12px;border-radius:6px;box-shadow:0 2px 8px #0002;white-space:nowrap;z-index:10;font-size:0.97em;">
+                                            ¡Esta dirección está dentro de la zona de cobertura!
+                                        </span>
+                                    </span>
+                                `;
+                            }
+                            selectedAddressDiv.innerHTML = `
+                                <p><strong>Dirección seleccionada:</strong></p>
+                                <p>${referenceHtml}</p>
+                                <div id="coverage-message" style="margin:4px 0 8px 0;font-size:0.98em;"></div>
+                                <img src="${staticMapUrl}" alt="Mapa dirección" style="width:100%;max-width:200px;height:100px;margin:10px 0;border-radius:8px;object-fit:cover;">
+                                <button id="toggle-addresses-btn" class="btn">▼ Mostrar otras direcciones</button>
+                            `;
+
+                            const toggleBtn = document.getElementById('toggle-addresses-btn');
+                            toggleBtn.addEventListener('click', () => {
+                                const otherAddresses = document.getElementById('other-addresses');
+                                otherAddresses.style.display = otherAddresses.style.display === 'none' ? 'block' : 'none';
+                                toggleBtn.textContent = otherAddresses.style.display === 'none' ? '▼ Mostrar otras direcciones' : '▲ Ocultar otras direcciones';
+                            });
+
+                            const coverageCheck = selectedAddressDiv.querySelector('.coverage-check');
+                            if (coverageCheck) {
+                                const tooltip = coverageCheck.querySelector('.coverage-tooltip');
+                                coverageCheck.addEventListener('mouseenter', () => {
+                                    tooltip.style.display = 'block';
+                                });
+                                coverageCheck.addEventListener('mouseleave', () => {
+                                    tooltip.style.display = 'none';
+                                });
+                            }
+
+                            // Validar cobertura y mostrar mensaje
+                            const msgDiv = document.getElementById('coverage-message');
+                            let shippingValue = 1;
+                            let zone = null;
+                            if (isCovered) {
+                                zone = getZoneForAddress(address.latitude, address.longitude, deliveryZones);
+                                if (zone && typeof zone.shipping === 'number') {
+                                    shippingValue = zone.shipping;
+                                }
+                                msgDiv.innerHTML = `<a href="#" id="showCoverageZonesLink" style="color:#2563eb;text-decoration:underline;cursor:pointer;font-size:0.97em;">Ver zonas de cobertura</a>`;
+                                document.getElementById('confirm-btn').disabled = false;
+                            } else {
+                                msgDiv.innerHTML = `<span style="color:#b91c1c;"><i class="bi bi-exclamation-triangle"></i> No tenemos cobertura en esta dirección.</span>
+                                <br>
+                                <a href="#" id="showCoverageZonesLink" style="color:#2563eb;text-decoration:underline;cursor:pointer;font-size:0.97em;">Ver zonas de cobertura</a>`;
+                                document.getElementById('confirm-btn').disabled = true;
+                            }
+
+                            // Actualiza el valor de envío y el total en el resumen
+                            const shippingElement = document.getElementById('shipping');
+                            if (shippingElement) {
+                                shippingElement.textContent = `$${shippingValue.toFixed(2)}`;
+                            }
+                            const subtotalElement = document.getElementById('subtotal');
+                            const totalElement = document.getElementById('total');
+                            if (subtotalElement && totalElement) {
+                                const subtotal = parseFloat(subtotalElement.textContent.replace('$', '')) || 0;
+                                totalElement.textContent = `$${(subtotal + shippingValue).toFixed(2)}`;
+                            }
+
+                            // Enlace para ver zonas de cobertura
+                            const showCoverageZonesLink = document.getElementById('showCoverageZonesLink');
+                            if (showCoverageZonesLink) {
+                                showCoverageZonesLink.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    openCoverageZonesModal(deliveryZones);
+                                });
+                            }
+                        });
+                    }
+                }
+            });
 
             const otherAddressesDiv = document.createElement('div');
             otherAddressesDiv.id = 'other-addresses';
@@ -498,51 +584,6 @@ async function initialize() {
             savedAddressesContainer.innerHTML = '';
             savedAddressesContainer.appendChild(selectedAddressDiv);
             savedAddressesContainer.appendChild(otherAddressesDiv);
-
-            // Validar cobertura y mostrar mensaje
-            const storeRef = doc(db, 'stores', storeId);
-            getDoc(storeRef).then(storeDoc => {
-                if (storeDoc.exists()) {
-                    const storeData = storeDoc.data();
-                    const deliveryZones = Array.isArray(storeData.deliveryZones) ? storeData.deliveryZones : [];
-                    if (deliveryZones.length > 0) {
-                        loadGoogleMapsGeometryScript(() => {
-                            const isCovered = isPointInDeliveryZones(
-                                address.latitude,
-                                address.longitude,
-                                deliveryZones
-                            );
-                            const msgDiv = document.getElementById('coverage-message');
-                            if (!isCovered) {
-                                msgDiv.innerHTML = `<span style="color:#b91c1c;"><i class="bi bi-exclamation-triangle"></i> No tenemos cobertura en esta dirección.</span>
-                                <br>
-                                <a href="#" id="showCoverageZonesLink" style="color:#2563eb;text-decoration:underline;cursor:pointer;font-size:0.97em;">Ver zonas de cobertura</a>`;
-                                document.getElementById('confirm-btn').disabled = true;
-                            } else {
-                                msgDiv.innerHTML = `<span style="color:#16a34a;"><i class="bi bi-check-circle"></i> ¡Esta dirección está dentro de la zona de cobertura!</span>
-                                <br>
-                                <a href="#" id="showCoverageZonesLink" style="color:#2563eb;text-decoration:underline;cursor:pointer;font-size:0.97em;">Ver zonas de cobertura</a>`;
-                                document.getElementById('confirm-btn').disabled = false;
-                            }
-
-                            const showCoverageZonesLink = document.getElementById('showCoverageZonesLink');
-                            if (showCoverageZonesLink) {
-                                showCoverageZonesLink.addEventListener('click', (e) => {
-                                    e.preventDefault();
-                                    openCoverageZonesModal(deliveryZones);
-                                });
-                            }
-                        });
-                    }
-                }
-            });
-
-            const toggleBtn = document.getElementById('toggle-addresses-btn');
-            toggleBtn.addEventListener('click', () => {
-                const otherAddresses = document.getElementById('other-addresses');
-                otherAddresses.style.display = otherAddresses.style.display === 'none' ? 'block' : 'none';
-                toggleBtn.textContent = otherAddresses.style.display === 'none' ? '▼ Mostrar otras direcciones' : '▲ Ocultar otras direcciones';
-            });
         }
 
         // Event listeners
@@ -910,6 +951,18 @@ async function initialize() {
             modal.onclick = (e) => {
                 if (e.target === modal) modal.style.display = 'none';
             };
+        }
+
+        function getZoneForAddress(lat, lng, deliveryZones) {
+            if (!window.google || !window.google.maps || !window.google.maps.geometry) return null;
+            const point = new google.maps.LatLng(lat, lng);
+            for (const zone of deliveryZones) {
+                const polygon = new google.maps.Polygon({ paths: zone.polygon });
+                if (google.maps.geometry.poly.containsLocation(point, polygon)) {
+                    return zone;
+                }
+            }
+            return null;
         }
     } catch (error) {
         console.error('Error al inicializar:', error);
