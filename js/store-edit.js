@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('username').value = storeData.username || '';
                 document.getElementById('phone').value = storeData.phone || '';
                 document.getElementById('description').value = storeData.description || '';
-                document.getElementById('shippingFee').value = storeData.shippingFee || '';
+                
 
                 // Cargar datos bancarios
                 bankAccountsContainer.innerHTML = '';
@@ -217,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const username = document.getElementById('username').value;
         const phone = document.getElementById('phone').value;
         const description = document.getElementById('description').value;
-        const shippingFee = document.getElementById('shippingFee').value;
         const imageUrlFile = document.getElementById('imageUrl').files[0];
         const coverImageFile = document.getElementById('coverImage').files[0];
 
@@ -294,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 email: user.email,
                 owner: user.uid,
                 storeId,
-                shippingFee: shippingFee ? parseFloat(shippingFee) : null,
+                
                 bankAccounts,
                 updatedAt: new Date().toISOString(),
                 openingHours, // <--- AGREGA ESTA LÍNEA
