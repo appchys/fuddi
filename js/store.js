@@ -101,10 +101,21 @@ async function loadProducts() {
 
     try {
         const productsSnapshot = await getDocs(collection(db, `stores/${storeId}/products`));
-        const products = productsSnapshot.docs.map(doc => ({
+        let products = productsSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
+
+        // Filtrar productos ocultos
+        products = products.filter(product => !product.hidden);
+
+        // Ordenar por 'order' si existe, si no por nombre
+        products.sort((a, b) => {
+            if (typeof a.order === 'number' && typeof b.order === 'number') {
+                return a.order - b.order;
+            }
+            return a.name.localeCompare(b.name);
+        });
 
         // Agrupar productos por colección
         const productsByCollection = {};
@@ -123,9 +134,27 @@ async function loadProducts() {
             });
         });
 
-        // Ordenar colecciones alfabéticamente
-        const sortedCollections = Object.entries(productsByCollection)
-            .sort(([a], [b]) => a.localeCompare(b));
+        // === NUEVO: Obtener y aplicar el orden de colecciones ===
+        let collectionsOrder = [];
+        const storeDocSnap = await getDoc(doc(db, 'stores', storeId));
+        if (storeDocSnap.exists() && storeDocSnap.data().collectionsOrder) {
+            collectionsOrder = storeDocSnap.data().collectionsOrder;
+        }
+
+        let sortedCollections = Object.entries(productsByCollection);
+        if (collectionsOrder.length) {
+            sortedCollections.sort(([a], [b]) => {
+                const idxA = collectionsOrder.indexOf(a);
+                const idxB = collectionsOrder.indexOf(b);
+                if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+                if (idxA === -1) return 1;
+                if (idxB === -1) return -1;
+                return idxA - idxB;
+            });
+        } else {
+            sortedCollections.sort(([a], [b]) => a.localeCompare(b));
+        }
+        // === FIN NUEVO ===
 
         // Renderizar cada colección
         sortedCollections.forEach(([collectionName, products]) => {
@@ -136,7 +165,7 @@ async function loadProducts() {
             productsContainer.appendChild(collectionTitle);
 
             // Renderizar productos como lista
-            products.sort((a, b) => a.name.localeCompare(b.name));
+            // Ya están ordenados por 'order'
             products.forEach(product => {
                 const productElement = document.createElement('div');
                 productElement.classList.add('product');
@@ -157,10 +186,12 @@ async function loadProducts() {
                         <p class="description">${product.description || ''}</p>
                         <p class="price">$${product.price ? product.price.toFixed(2) : '0.00'}</p>
                     </div>
-                    <div class="add-to-cart-container">
-                        <button class="add-to-cart-btn" title="Añadir al carrito" onclick="window.addToCart('${product.id}')">
-                            <i class="bi bi-cart-plus"></i>
-                        </button>
+                    <div class="product-actions">
+                        <div class="add-to-cart-container">
+                            <button class="add-to-cart-btn" title="Añadir al carrito" onclick="window.addToCart('${product.id}')">
+                                <i class="bi bi-cart-plus"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
 

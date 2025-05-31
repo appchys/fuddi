@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Horarios de atecion"
+git commit -m "Editar productos"
 git push -u origin main
