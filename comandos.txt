@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Corrección de detallitos"
+git commit -m "Seguir tienda"
 git push -u origin main

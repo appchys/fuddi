@@ -1,5 +1,6 @@
 import { app, auth, googleProvider, signInWithPopup } from './firebase-config.js';
-import { getFirestore, doc, getDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // Initialize Firestore
 const db = getFirestore(app);
@@ -498,6 +499,51 @@ const updateCartCount = () => {
         cartCount.textContent = totalItems > 0 ? totalItems : '';
     }
 };
+
+const followBtn = document.getElementById('follow-store');
+
+function updateFollowButton(isFollowing) {
+    if (!followBtn) return;
+    if (isFollowing) {
+        followBtn.innerHTML = `<i class="bi bi-person-check"></i> Siguiendo`;
+        followBtn.classList.add("following");
+    } else {
+        followBtn.innerHTML = `<i class="bi bi-person-plus"></i> Seguir`;
+        followBtn.classList.remove("following");
+    }
+}
+
+onAuthStateChanged(auth, async (user) => {
+    if (!followBtn) return;
+    if (!user) {
+        followBtn.onclick = () => alert("Inicia sesión para seguir tiendas.");
+        updateFollowButton(false);
+        return;
+    }
+    const followerRef = doc(db, `stores/${storeId}/followers`, user.uid);
+    const docSnap = await getDoc(followerRef);
+    updateFollowButton(docSnap.exists());
+
+    followBtn.onclick = async () => {
+        const isFollowing = (await getDoc(followerRef)).exists();
+        if (isFollowing) {
+            await deleteDoc(followerRef);
+            await deleteDoc(doc(db, `stores/${storeId}/followers/${user.uid}`));
+            await deleteDoc(doc(db, `users/${user.uid}/follows/${storeId}`));
+            updateFollowButton(false);
+        } else {
+            await setDoc(followerRef, {
+                uid: user.uid,
+                followedAt: new Date().toISOString()
+            });
+            await setDoc(doc(db, `users/${user.uid}/follows/${storeId}`), {
+                storeId,
+                followedAt: new Date().toISOString()
+            });
+            updateFollowButton(true);
+        }
+    };
+});
 
 // Cargar los datos de la tienda y sus productos
 loadStore();

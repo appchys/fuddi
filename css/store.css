@@ -602,3 +602,9 @@ footer {
     bottom: 0;
     width: 100%;
 }
+
+#follow-store.following {
+    background: #e0e0e0;
+    color: #333;
+    font-weight: bold;
+}
