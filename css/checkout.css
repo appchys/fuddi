@@ -324,6 +324,13 @@ body {
     gap: 5px;
 }
 
+/* Permite scroll en la lista de direcciones del modal */
+#otherAddressesList {
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .checkout-section {

@@ -1066,6 +1066,24 @@ async function initialize() {
                 document.getElementById('otherAddressesModal').style.display = 'none';
             }
         });
+
+        // Cerrar el modal de nueva dirección al hacer clic en la X o fuera del contenido
+        const newAddressModal = document.getElementById('newAddressModal');
+        if (newAddressModal) {
+            // Botón de cerrar
+            const closeBtn = document.getElementById('closeNewAddressModal');
+            if (closeBtn) {
+                closeBtn.onclick = () => {
+                    newAddressModal.style.display = 'none';
+                };
+            }
+            // Cerrar al hacer clic fuera del contenido
+            newAddressModal.addEventListener('mousedown', function(e) {
+                if (e.target === newAddressModal) {
+                    newAddressModal.style.display = 'none';
+                }
+            });
+        }
     } catch (error) {
         console.error('Error al inicializar:', error);
         alert('Error al inicializar la página. Por favor, recarga la página.');
