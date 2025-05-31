@@ -59,26 +59,7 @@
                 <button id="add-address-btn" class="btn secondary">
                     <i class="bi bi-plus-circle"></i> Agregar Dirección
                 </button>
-                <div id="new-address-form" class="address-form hidden">
-                    <h3><i class="bi bi-pencil-square"></i> Nueva Dirección</h3>
-                    <form id="addressForm">
-                        <div class="form-group">
-                            <label for="reference">Referencia (Ej: Casa, Oficina)</label>
-                            <input type="text" id="reference" name="reference" placeholder="Ej: Frente al parque" required>
-                        </div>
-                        <button type="button" id="get-location-btn" class="btn secondary">
-                            <i class="bi bi-geo-alt-fill"></i> Usar mi ubicación actual
-                        </button>
-                        <!-- Coordenadas ocultas para registro interno -->
-                        <input type="hidden" id="latitude" name="latitude" value="0.0000">
-                        <input type="hidden" id="longitude" name="longitude" value="0.0000">
-                        <!-- El mapa inicia oculto -->
-                        <div id="map" style="width: 100%; height: 300px; margin: 16px 0; border-radius: 8px; overflow: hidden; display: none;"></div>
-                        <button type="submit" class="btn primary">
-                            <i class="bi bi-save2"></i> Guardar Dirección
-                        </button>
-                    </form>
-                </div>
+                
             </section>
 
             <!-- Nueva sección: Tiempo de entrega -->
@@ -181,6 +162,38 @@
         <h3 style="margin-bottom:12px;font-size:1.1em;">Zonas de cobertura de la tienda</h3>
         <div id="coverageZonesMap" style="width:100%;height:300px;border-radius:8px;"></div>
         <div id="coverageZonesList" style="margin-top:10px;font-size:0.98em;"></div>
+      </div>
+    </div>
+
+    <!-- Modal para otras direcciones -->
+    <div id="otherAddressesModal" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:400px;width:95vw;box-shadow:0 2px 16px #0002;position:relative;">
+        <button id="closeOtherAddressesModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">&times;</button>
+        <h3 style="margin-bottom:12px;font-size:1.1em;">Otras direcciones guardadas</h3>
+        <div id="otherAddressesList"></div>
+      </div>
+    </div>
+
+    <!-- Modal para agregar nueva dirección -->
+    <div id="newAddressModal" style="display:none;position:fixed;z-index:2100;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:400px;width:95vw;box-shadow:0 2px 16px #0002;position:relative;">
+        <button id="closeNewAddressModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">&times;</button>
+        <h3 style="margin-bottom:12px;font-size:1.1em;"><i class="bi bi-pencil-square"></i> Nueva Dirección</h3>
+        <form id="addressForm">
+            <div class="form-group">
+                <label for="reference">Referencia (Ej: Casa, Oficina)</label>
+                <input type="text" id="reference" name="reference" placeholder="Ej: Frente al parque" required>
+            </div>
+            <button type="button" id="get-location-btn" class="btn secondary">
+                <i class="bi bi-geo-alt-fill"></i> Usar mi ubicación actual
+            </button>
+            <input type="hidden" id="latitude" name="latitude" value="0.0000">
+            <input type="hidden" id="longitude" name="longitude" value="0.0000">
+            <div id="map" style="width: 100%; height: 300px; margin: 16px 0; border-radius: 8px; overflow: hidden; display: none;"></div>
+            <button type="submit" class="btn primary" style="margin-top:10px;">
+                <i class="bi bi-save2"></i> Guardar Dirección
+            </button>
+        </form>
       </div>
     </div>
 </body>

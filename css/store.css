@@ -124,26 +124,40 @@ main {
     padding: 20px;
 }
 
-/* Botón "Añadir al carrito" */
+/* Botón "Añadir al carrito" cuadrado, gris, con símbolo + */
 .add-to-cart,
 .add-to-cart-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #ff6f91;
-    color: #fff;
+    background-color: #e0e0e0;
+    color: #333;
     border: none;
-    border-radius: 50%;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 1.5rem;
     width: 40px;
     height: 40px;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.2s, color 0.2s;
     padding: 0;
+    box-shadow: none;
+}
+.add-to-cart-btn i,
+.add-to-cart i {
+    display: none; /* Oculta el icono de carrito si existe */
+}
+.add-to-cart-btn::before,
+.add-to-cart::before {
+    content: "+";
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    display: block;
 }
 .add-to-cart-btn:hover,
 .add-to-cart:hover {
-    background-color: #e65b7a;
+    background-color: #bdbdbd;
+    color: #111;
 }
 
 /* Sidebar de detalles del producto */

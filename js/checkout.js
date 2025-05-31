@@ -510,15 +510,10 @@ async function initialize() {
                                 <p>${referenceHtml}</p>
                                 <div id="coverage-message" style="margin:4px 0 8px 0;font-size:0.98em;"></div>
                                 <img src="${staticMapUrl}" alt="Mapa dirección" style="width:100%;max-width:200px;height:100px;margin:10px 0;border-radius:8px;object-fit:cover;">
-                                <button id="toggle-addresses-btn" class="btn">▼ Mostrar otras direcciones</button>
+                                <button id="show-other-addresses-btn" class="btn">Otras direcciones</button>
                             `;
 
-                            const toggleBtn = document.getElementById('toggle-addresses-btn');
-                            toggleBtn.addEventListener('click', () => {
-                                const otherAddresses = document.getElementById('other-addresses');
-                                otherAddresses.style.display = otherAddresses.style.display === 'none' ? 'block' : 'none';
-                                toggleBtn.textContent = otherAddresses.style.display === 'none' ? '▼ Mostrar otras direcciones' : '▲ Ocultar otras direcciones';
-                            });
+                            
 
                             const coverageCheck = selectedAddressDiv.querySelector('.coverage-check');
                             if (coverageCheck) {
@@ -532,7 +527,7 @@ async function initialize() {
                             }
 
                             // Validar cobertura y mostrar mensaje
-                            const msgDiv = document.getElementById('coverage-message');
+                            const msgDiv = selectedAddressDiv.querySelector('#coverage-message');
                             let shippingValue = 1;
                             let zone = null;
                             if (isCovered) {
@@ -593,7 +588,17 @@ async function initialize() {
         // Event listeners
         if (addAddressBtn) {
             addAddressBtn.addEventListener('click', () => {
-                newAddressForm.classList.remove('hidden');
+                document.getElementById('newAddressModal').style.display = 'flex';
+                // Limpia el formulario y el mapa al abrir el modal
+                const addressForm = document.getElementById('addressForm');
+                if (addressForm) addressForm.reset();
+                const mapDiv = document.getElementById('map');
+                if (mapDiv) {
+                    mapDiv.style.display = 'none';
+                    mapDiv.innerHTML = '';
+                }
+                document.getElementById('latitude').value = '0.0000';
+                document.getElementById('longitude').value = '0.0000';
             });
         }
 
@@ -655,7 +660,10 @@ async function initialize() {
                 }
 
                 updateSelectedAddressView(selectedAddress);
-                newAddressForm.classList.add('hidden');
+
+                // Cierra el modal de nueva dirección
+                document.getElementById('newAddressModal').style.display = 'none';
+
                 addressForm.reset();
                 latitudeSpan.value = '0.000000';
                 longitudeSpan.value = '0.000000';
@@ -1026,6 +1034,38 @@ async function initialize() {
 
         if (scheduledDateInput) scheduledDateInput.addEventListener('change', validateScheduledDateTime);
         if (scheduledTimeInput) scheduledTimeInput.addEventListener('change', validateScheduledDateTime);
+
+        // Mostrar el modal de otras direcciones
+        document.addEventListener('click', function(e) {
+            // Abrir el modal al hacer click en el botón
+            if (e.target && e.target.id === 'show-other-addresses-btn') {
+                const modal = document.getElementById('otherAddressesModal');
+                const listDiv = document.getElementById('otherAddressesList');
+                listDiv.innerHTML = '';
+                // Muestra todas las direcciones menos la seleccionada
+                addresses.forEach((addr, idx) => {
+                    if (addr !== selectedAddress) {
+                        const el = createAddressElement(addr, idx);
+                        // Al seleccionar, cambia la dirección y cierra el modal
+                        el.addEventListener('click', () => {
+                            selectedAddress = addr;
+                            updateSelectedAddressView(selectedAddress);
+                            modal.style.display = 'none';
+                        });
+                        listDiv.appendChild(el);
+                    }
+                });
+                modal.style.display = 'flex';
+            }
+            // Cerrar el modal al hacer click en el botón de cerrar
+            if (e.target && e.target.id === 'closeOtherAddressesModal') {
+                document.getElementById('otherAddressesModal').style.display = 'none';
+            }
+            // Cerrar el modal al hacer click fuera del contenido
+            if (e.target && e.target.id === 'otherAddressesModal') {
+                document.getElementById('otherAddressesModal').style.display = 'none';
+            }
+        });
     } catch (error) {
         console.error('Error al inicializar:', error);
         alert('Error al inicializar la página. Por favor, recarga la página.');
@@ -1144,4 +1184,3 @@ function isNowInOpeningHours(openingHours) {
     const closeMinutes = closeH * 60 + closeM;
     return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
 }
-
