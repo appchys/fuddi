@@ -220,12 +220,9 @@ async function showProductDetails(productId) {
         const sidebar = document.getElementById('product-sidebar');
         const productDetails = document.getElementById('product-details');
 
-        // Agregar contenido a la sidebar
+        // Agregar contenido a la sidebar (sin el botón de carrito arriba)
         productDetails.innerHTML = `
-            <button id="view-cart" class="view-cart-btn" title="Ver Carrito">
-                <i class="bi bi-cart"></i>
-            </button>
-            <img src="${product.imageUrl}" alt="${product.name}" style="width: 100%; height: auto; border-radius: 8px;">
+            <img src="${product.imageUrl}" alt="${product.name}" style="width: 70%; max-width:180px; height: auto; border-radius: 8px; display:block; margin: 0 auto 12px auto;">
             <h2>${product.name}</h2>
             <p>${product.description}</p>
             <p><strong>Precio:</strong> $${product.price}</p>
@@ -236,12 +233,6 @@ async function showProductDetails(productId) {
         const addToCartSidebarButton = document.querySelector('.add-to-cart-sidebar');
         addToCartSidebarButton.addEventListener('click', () => {
             window.addToCart(productId);
-        });
-
-        // Agregar evento al botón "Ver Carrito"
-        const viewCartButton = document.getElementById('view-cart');
-        viewCartButton.addEventListener('click', () => {
-            showCart();
         });
 
         // Mostrar la sidebar

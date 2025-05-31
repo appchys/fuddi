@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Editar productos"
+git commit -m "Sidebar de detalle de productos mejorada"
 git push -u origin main
