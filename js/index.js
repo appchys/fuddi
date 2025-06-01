@@ -1,9 +1,11 @@
 // index.js (SOLO frontend, NO Cloud Functions ni nodemailer aquí)
 import { app } from './firebase-config.js';
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Initialize Firestore
 const db = getFirestore(app);
+const auth = getAuth();
 
 // Función auxiliar para reintentar una promesa
 async function withRetry(fn, retries = 3, delay = 1000) {
@@ -106,6 +108,58 @@ async function setRandomCover() {
         console.error("Error al cargar la portada aleatoria:", error);
     }
 }
+
+// Fetch and display followed stores
+async function fetchFollowedStores() {
+    const user = auth.currentUser;
+    const container = document.getElementById('followed-stores-container');
+    container.innerHTML = '';
+    if (!user) {
+        container.innerHTML = '<p>Inicia sesión para ver tus tiendas seguidas.</p>';
+        return;
+    }
+    // Obtener los IDs de las tiendas seguidas
+    const followsSnap = await getDocs(collection(db, `users/${user.uid}/follows`));
+    if (followsSnap.empty) {
+        container.innerHTML = '<p>No sigues ninguna tienda aún.</p>';
+        return;
+    }
+    // Obtener los datos de cada tienda seguida
+    for (const docSnap of followsSnap.docs) {
+        const storeId = docSnap.id;
+        const storeRef = doc(db, "stores", storeId);
+        const storeDoc = await getDoc(storeRef);
+        if (storeDoc.exists()) {
+            const store = storeDoc.data();
+            const storeElement = document.createElement('div');
+            storeElement.classList.add('store');
+            storeElement.innerHTML = `
+                <a href="store.html?storeId=${storeId}" style="text-decoration: none; color: inherit; display: block;">
+                    <div class="store-container">
+                        <div class="store-header">
+                            <div class="store-cover" style="background-color: ${store.coverUrl ? 'transparent' : '#ccc'};">
+                                ${store.coverUrl ? `<img src="${store.coverUrl}" alt="Portada de la tienda ${store.name}" class="store-cover-img" loading="lazy">` : ''}
+                            </div>
+                            <div class="store-profile-container">
+                                <img src="${store.imageUrl || 'default-profile.png'}" alt="Imagen de perfil de la tienda ${store.name}" class="store-profile-img" loading="lazy">
+                            </div>
+                        </div>
+                        <div class="store-details">
+                            <h3 class="store-name">${store.name || 'Tienda sin nombre'}</h3>
+                            <p class="store-description">${store.description || 'Sin descripción'}</p>
+                        </div>
+                    </div>
+                </a>
+            `;
+            container.appendChild(storeElement);
+        }
+    }
+}
+
+// Detectar login y mostrar seguidos
+onAuthStateChanged(auth, () => {
+    fetchFollowedStores();
+});
 
 // Load data on page load
 fetchStores();

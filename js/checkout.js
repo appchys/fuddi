@@ -191,9 +191,8 @@ async function initialize() {
         async function loadBankAccounts(selectedBank = null) {
             try {
                 const storeRef = doc(db, 'stores', storeId);
-        
                 const storeDoc = await getDoc(storeRef);
-        
+
                 if (storeDoc.exists()) {
                     storeData = storeDoc.data();
                     const deliveryZones = Array.isArray(storeData.deliveryZones) ? storeData.deliveryZones : [];
@@ -407,7 +406,7 @@ async function initialize() {
 
         let selectedAddress = null;
         let addresses = [];
-        let storeData = null;
+        let storeData = null; // Declara storeData global para la función initialize
 
         // Función para cargar direcciones guardadas del usuario
         async function loadSavedAddresses() {
@@ -782,27 +781,6 @@ async function initialize() {
         // Mostrar/ocultar campos de entrega programada
         const deliveryTimeRadios = document.querySelectorAll('input[name="deliveryTime"]');
         const scheduledFields = document.getElementById('scheduled-delivery-fields');
-        
-
-        // Setear fecha mínima (hoy) para el input de fecha
-        if (scheduledDateInput) {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            const todayStr = `${yyyy}-${mm}-${dd}`;
-            scheduledDateInput.min = todayStr;
-            scheduledDateInput.value = todayStr; // Día actual por defecto
-        }
-
-        // Setear hora por defecto: actual + 30 minutos
-        if (scheduledTimeInput) {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() + 30);
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            scheduledTimeInput.value = `${hh}:${min}`;
-        }
 
         function updateScheduledFields() {
             const selected = document.querySelector('input[name="deliveryTime"]:checked');
@@ -813,47 +791,52 @@ async function initialize() {
             }
         }
 
+        // Solo declara y agrega listeners una vez
         deliveryTimeRadios.forEach(radio => {
             radio.addEventListener('change', updateScheduledFields);
+            radio.addEventListener('change', updateEntregaInmediataTiempo);
         });
         updateScheduledFields();
 
+        // 1. Al cargar la página, selecciona "Programar entrega" por defecto
+        const scheduledInput = document.querySelector('input[name="deliveryTime"][value="scheduled"]');
+        if (scheduledInput) {
+            scheduledInput.checked = true;
+        }
+
+        // 2. Función para actualizar el estado y mensaje del botón de entrega inmediata
         function updateEntregaInmediataTiempo() {
-            // Busca el input y luego su contenedor padre (label), luego el .option-content
             const entregaInmediataInput = document.querySelector('input[name="deliveryTime"][value="asap"]');
-            if (!entregaInmediataInput) return;
-            const entregaInmediataLabel = entregaInmediataInput.closest('label');
-            if (!entregaInmediataLabel) return;
-            const optionContent = entregaInmediataLabel.querySelector('.option-content');
+            const entregaInmediataLabel = entregaInmediataInput?.closest('label');
+            const optionContent = entregaInmediataLabel?.querySelector('.option-content');
             const tipoEntrega = document.querySelector('input[name="deliveryType"]:checked')?.value;
-            if (!optionContent || !storeData || !storeData.openingHours) return;
+
+            if (!entregaInmediataInput || !optionContent || !storeData || !storeData.openingHours) return;
 
             // Elimina texto previo si existe
-            let tiempoSpan = optionContent.querySelector('.entrega-tiempo');
-            if (tiempoSpan) tiempoSpan.remove();
+            optionContent.querySelector('.entrega-tiempo')?.remove();
 
             let texto = '';
             const tiendaCerrada = !isNowInOpeningHours(storeData.openingHours);
+
             if (tiendaCerrada) {
                 texto = 'Tienda cerrada';
                 entregaInmediataInput.disabled = true;
-                // Si estaba seleccionado, deselecciona y selecciona programada
-                if (entregaInmediataInput.checked) {
-                    // Busca el input programado y selecciónalo
-                    const scheduledInput = document.querySelector('input[name="deliveryTime"][value="scheduled"]');
-                    if (scheduledInput) {
-                        scheduledInput.checked = true;
-                        // Dispara el evento para mostrar campos programados
-                        scheduledInput.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
+                entregaInmediataInput.checked = false;
+                // Selecciona programada si no está seleccionada
+                if (scheduledInput && !scheduledInput.checked) {
+                    scheduledInput.checked = true;
+                    scheduledInput.dispatchEvent(new Event('change', { bubbles: true }));
                 }
-            } else if (tipoEntrega === 'delivery') {
-                texto = 'Tiempo aproximado: 30 minutos';
+            } else {
                 entregaInmediataInput.disabled = false;
-            } else if (tipoEntrega === 'pickup') {
-                texto = 'Tiempo aproximado: 15 minutos';
-                entregaInmediataInput.disabled = false;
+                texto = tipoEntrega === 'delivery'
+                    ? 'Tiempo aproximado: 30 minutos'
+                    : tipoEntrega === 'pickup'
+                        ? 'Tiempo aproximado: 15 minutos'
+                        : '';
             }
+
             if (texto) {
                 const small = document.createElement('small');
                 small.className = 'entrega-tiempo';
@@ -865,12 +848,80 @@ async function initialize() {
             }
         }
 
-        // Actualiza el texto al cambiar tipo de entrega o tiempo de entrega
+        // Listeners para tipo de entrega
         const deliveryTypeRadios = document.querySelectorAll('input[name="deliveryType"]');
         deliveryTypeRadios.forEach(radio => {
             radio.addEventListener('change', updateEntregaInmediataTiempo);
         });
-        updateEntregaInmediataTiempo();
+
+        // Llama a updateEntregaInmediataTiempo() y configura fecha/hora programada automáticamente después de cargar storeData
+        const storeRef = doc(db, 'stores', storeId);
+        const storeDoc = await getDoc(storeRef);
+
+        if (storeDoc.exists()) {
+            storeData = storeDoc.data();
+
+            // --- INICIO: Selección automática de fecha/hora programada ---
+            if (scheduledDateInput && scheduledTimeInput && storeData.openingHours) {
+                const now = new Date();
+                const daysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                let found = false;
+
+                function formatDate(d) {
+                    return d.toISOString().slice(0, 10);
+                }
+
+                for (let i = 0; i < 8; i++) { // máximo 7 días adelante
+                    const testDate = new Date(now);
+                    testDate.setDate(now.getDate() + i);
+                    const dayOfWeek = daysMap[testDate.getDay()];
+                    const hours = storeData.openingHours[dayOfWeek];
+
+                    if (hours) {
+                        let openH = parseInt(hours.open.split(':')[0], 10);
+                        let openM = parseInt(hours.open.split(':')[1], 10);
+                        let closeH = parseInt(hours.close.split(':')[0], 10);
+                        let closeM = parseInt(hours.close.split(':')[1], 10);
+
+                        if (i === 0 && isNowInOpeningHours(storeData.openingHours)) {
+                            // Tienda abierta: hora actual + 1h, pero dentro del horario
+                            let target = new Date(now.getTime() + 60 * 60 * 1000);
+                            let minTime = openH * 60 + openM;
+                            let maxTime = closeH * 60 + closeM;
+                            let targetMinutes = target.getHours() * 60 + target.getMinutes();
+                            if (targetMinutes < minTime) targetMinutes = minTime;
+                            if (targetMinutes > maxTime) targetMinutes = maxTime;
+
+                            // Redondea a los 5 minutos siguientes
+                            targetMinutes = Math.ceil(targetMinutes / 5) * 5;
+                            let h = Math.floor(targetMinutes / 60);
+                            let m = targetMinutes % 60;
+                            scheduledDateInput.value = formatDate(now);
+                            scheduledTimeInput.value = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                            found = true;
+                            break;
+                        } else if (i > 0 && hours) {
+                            // Tienda cerrada: busca el próximo día con horario
+                            scheduledDateInput.value = formatDate(testDate);
+                            scheduledTimeInput.value = `${openH.toString().padStart(2, '0')}:${openM.toString().padStart(2, '0')}`;
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found) {
+                    scheduledDateInput.value = '';
+                    scheduledTimeInput.value = '';
+                }
+            }
+            // --- FIN: Selección automática de fecha/hora programada ---
+
+            updateScheduledFields();
+            updateEntregaInmediataTiempo();
+        } else {
+            alert('No se encontró la tienda.');
+            return;
+        }
 
         // --- Mapa interactivo SOLO para crear/editar dirección ---
         /**

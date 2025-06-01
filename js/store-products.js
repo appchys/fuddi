@@ -213,27 +213,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 </div>
                             `}
                         </div>
-                        <div class="product-info">
-                            <h3>${product.name}</h3>
-                            <p class="description">${product.description || ''}</p>
-                            <p class="price">$${product.price ? product.price.toFixed(2) : '0.00'}</p>
-                        </div>
-                        <div class="product-actions">
-                            <button class="btn move-up" data-idx="${idx}" ${idx === 0 ? 'disabled' : ''} title="Subir">
-                                <i class="bi bi-arrow-up"></i>
-                            </button>
-                            <button class="btn move-down" data-idx="${idx}" ${idx === products.length - 1 ? 'disabled' : ''} title="Bajar">
-                                <i class="bi bi-arrow-down"></i>
-                            </button>
-                            <button class="btn toggle-visibility-btn" data-id="${product.id}" title="${product.hidden ? 'Mostrar' : 'Ocultar'}">
-                                <i class="bi ${product.hidden ? 'bi-eye-slash' : 'bi-eye'}"></i>
-                            </button>
-                            <button class="btn" data-id="${product.id}">
-                                <i class="bi bi-pencil-square"></i>
-                            </button>
-                            <button class="btn" data-id="${product.id}" data-image="${product.imageUrl}">
-                                <i class="bi bi-trash"></i>
-                            </button>
+                        <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                            <div class="product-info">
+                                <h3>${product.name}</h3>
+                                <p class="description">${product.description || ''}</p>
+                                <p class="price">$${product.price ? product.price.toFixed(2) : '0.00'}</p>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn move-up" data-idx="${idx}" ${idx === 0 ? 'disabled' : ''} title="Subir">
+                                    <i class="bi bi-arrow-up"></i>
+                                </button>
+                                <button class="btn move-down" data-idx="${idx}" ${idx === products.length - 1 ? 'disabled' : ''} title="Bajar">
+                                    <i class="bi bi-arrow-down"></i>
+                                </button>
+                                <button class="btn toggle-visibility-btn" data-id="${product.id}" title="${product.hidden ? 'Mostrar' : 'Ocultar'}">
+                                    <i class="bi ${product.hidden ? 'bi-eye-slash' : 'bi-eye'}"></i>
+                                </button>
+                                <button class="btn" data-id="${product.id}">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button class="btn" data-id="${product.id}" data-image="${product.imageUrl}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     `;
                     collectionList.appendChild(productElement);

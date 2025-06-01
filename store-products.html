@@ -97,3 +97,81 @@
     <script type="module" src="./js/store-products.js"></script>
 </body>
 </html>
+
+<script>
+    // Suponiendo que tienes una función para obtener el ID de la tienda
+    function getStoreId() {
+        // Lógica para obtener el ID de la tienda
+    }
+
+    // Ejemplo de cómo podrías estar manejando la carga de productos
+    const products = []; // Tu array de productos
+
+    function renderProducts() {
+        const productsList = document.getElementById('products-list');
+        productsList.innerHTML = ''; // Limpiar lista existente
+
+        if (products.length === 0) {
+            productsList.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-box-seam"></i>
+                    <p>No hay productos registrados</p>
+                </div>
+            `;
+            return;
+        }
+
+        products.forEach((product, idx) => {
+            const productElement = document.createElement('div');
+            productElement.className = 'product-item';
+            productElement.innerHTML = `
+                <div class="product-image-container">
+                    ${product.imageUrl ? `
+                        <img src="${product.imageUrl}" alt="${product.name}" class="product-image">
+                    ` : `
+                        <div class="placeholder-image">
+                            <span>${product.name.charAt(0).toUpperCase()}</span>
+                        </div>
+                    `}
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                    <div class="product-info">
+                        <h3>${product.name}</h3>
+                        <p class="description">${product.description || ''}</p>
+                        <p class="price">$${product.price ? product.price.toFixed(2) : '0.00'}</p>
+                    </div>
+                    <div class="product-actions">
+                        <button class="btn move-up" data-idx="${idx}" ${idx === 0 ? 'disabled' : ''} title="Subir">
+                            <i class="bi bi-arrow-up"></i>
+                        </button>
+                        <button class="btn move-down" data-idx="${idx}" ${idx === products.length - 1 ? 'disabled' : ''} title="Bajar">
+                            <i class="bi bi-arrow-down"></i>
+                        </button>
+                        <button class="btn toggle-visibility-btn" data-id="${product.id}" title="${product.hidden ? 'Mostrar' : 'Ocultar'}">
+                            <i class="bi ${product.hidden ? 'bi-eye-slash' : 'bi-eye'}"></i>
+                        </button>
+                        <button class="btn" data-id="${product.id}">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn" data-id="${product.id}" data-image="${product.imageUrl}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            productsList.appendChild(productElement);
+        });
+    }
+
+    document.getElementById('add-product-btn').addEventListener('click', () => {
+        // Lógica para abrir el modal de agregar producto
+    });
+
+    document.getElementById('cancel-add-product').addEventListener('click', () => {
+        // Lógica para cerrar el modal
+    });
+
+    // Inicializar la lista de productos
+    renderProducts();
+</script>
