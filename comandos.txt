@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Mejoras en checkout"
+git commit -m "Index mejoras"
 git push -u origin main
