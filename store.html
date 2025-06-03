@@ -33,15 +33,30 @@
     <main>
         <!-- Botones de acción -->
         <div id="store-actions" class="store-actions">
-            <button id="follow-store" class="btn">
-                <i class="bi bi-person-plus"></i> Seguir
-            </button>
-            <button id="whatsapp-link" class="btn">
-                <i class="bi bi-whatsapp"></i> Whatsapp
-            </button>
-            <button id="cart-button" class="btn" title="Ver Carrito">
-                <i class="bi bi-cart"></i> Carrito
-            </button>
+            <!-- Grupo para visitantes (por defecto oculto, se muestra por JS si no es dueño) -->
+            <div id="visitor-actions" style="display:none;">
+                <button id="follow-store" class="btn">
+                    <i class="bi bi-person-plus"></i> Seguir
+                </button>
+                <button id="whatsapp-link" class="btn">
+                    <i class="bi bi-whatsapp"></i> Whatsapp
+                </button>
+                <button id="cart-button" class="btn" title="Ver Carrito">
+                    <i class="bi bi-cart"></i> Carrito
+                </button>
+            </div>
+            <!-- Grupo para propietario (por defecto oculto, se muestra por JS si es dueño) -->
+            <div id="owner-actions" style="display:none;">
+                <button id="add-product-btn" class="btn" onclick="window.location.href='store-products.html?storeId=' + storeId">
+                    <i class="bi bi-plus-circle"></i> Agregar productos
+                </button>
+                <button id="view-orders-btn" class="btn" onclick="window.location.href='store-orders.html?storeId=' + storeId">
+                    <i class="bi bi-list-check"></i> Ver pedidos
+                </button>
+                <button id="edit-store-btn" class="btn" onclick="window.location.href='store-edit.html?storeId=' + storeId">
+                    <i class="bi bi-pencil-square"></i> Editar tienda
+                </button>
+            </div>
         </div>
         <!-- Agrega más detalles de la tienda aquí -->
         <!-- Botón tipo hamburguesa flotante -->
@@ -74,5 +89,11 @@
     </footer>
 
     <script type="module" src="js/store.js"></script>
-    <script type="module" src="js/control-panel.js"></script></body>
+    <script type="module" src="js/control-panel.js"></script>
+    <script>
+    // Obtener el storeId de la URL y hacerlo global
+    const params = new URLSearchParams(window.location.search);
+    window.storeId = params.get('storeId');
+</script>
+</body>
 </html>

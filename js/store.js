@@ -545,6 +545,26 @@ onAuthStateChanged(auth, async (user) => {
     };
 });
 
+// ...después de cargar storeData y onAuthStateChanged...
+onAuthStateChanged(auth, async (user) => {
+    const visitorActions = document.getElementById('visitor-actions');
+    const ownerActions = document.getElementById('owner-actions');
+    if (!storeId) return;
+    const storeDoc = await getDoc(doc(db, "stores", storeId));
+    if (!storeDoc.exists()) return;
+    const store = storeDoc.data();
+
+    if (user && store.owner === user.uid) {
+        // Es el dueño
+        if (ownerActions) ownerActions.style.display = "flex";
+        if (visitorActions) visitorActions.style.display = "none";
+    } else {
+        // Es visitante
+        if (ownerActions) ownerActions.style.display = "none";
+        if (visitorActions) visitorActions.style.display = "flex";
+    }
+});
+
 // Cargar los datos de la tienda y sus productos
 loadStore();
 loadProducts();

@@ -1,7 +1,7 @@
 // index.js (SOLO frontend, NO Cloud Functions ni nodemailer aquí)
 import { app } from './firebase-config.js';
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Initialize Firestore
 const db = getFirestore(app);
@@ -24,6 +24,12 @@ async function fetchStores() {
     const storesContainer = document.getElementById('stores-container');
     try {
         const storesSnapshot = await withRetry(() => getDocs(collection(db, "stores")));
+        const user = auth.currentUser;
+        let followedIds = [];
+        if (user) {
+            const followsSnap = await getDocs(collection(db, `users/${user.uid}/follows`));
+            followedIds = followsSnap.docs.map(doc => doc.id);
+        }
         storesSnapshot.forEach(doc => {
             const store = doc.data();
             const storeId = doc.id;
@@ -40,14 +46,52 @@ async function fetchStores() {
                                 <img src="${store.imageUrl || 'default-profile.png'}" alt="Imagen de perfil de la tienda ${store.name}" class="store-profile-img" loading="lazy">
                             </div>
                         </div>
-                        <div class="store-details">
-                            <h3 class="store-name">${store.name || 'Tienda sin nombre'}</h3>
+                        <div class="store-details" style="position:relative;">
+                            <button class="follow-btn${followedIds.includes(storeId) ? ' following' : ''}" data-store-id="${storeId}" style="position:absolute;top:0;right:0;min-width:90px;">
+                                <i class="bi ${followedIds.includes(storeId) ? 'bi-check-circle-fill' : 'bi-person-plus'}"></i>
+                                ${followedIds.includes(storeId) ? 'Siguiendo' : 'Seguir'}
+                            </button>
+                            <h3 class="store-name" style="margin-right:100px;">${store.name || 'Tienda sin nombre'}</h3>
                             <p class="store-description">${store.description || 'Sin descripción'}</p>
                         </div>
                     </div>
                 </a>
             `;
             storesContainer.appendChild(storeElement);
+        });
+
+        // Lógica de seguir tienda
+        document.querySelectorAll('.follow-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const storeId = btn.getAttribute('data-store-id');
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('Inicia sesión para seguir tiendas.');
+                    return;
+                }
+                const followRef = doc(db, `users/${user.uid}/follows/${storeId}`);
+                const storeFollowRef = doc(db, `stores/${storeId}/followers/${user.uid}`);
+                const isFollowing = btn.textContent.trim().startsWith('Siguiendo');
+                if (isFollowing) {
+                    await deleteDoc(followRef);
+                    await deleteDoc(storeFollowRef);
+                    btn.classList.remove('following');
+                    btn.innerHTML = `<i class="bi bi-person-plus"></i> Seguir`;
+                } else {
+                    await setDoc(followRef, {
+                        storeId,
+                        followedAt: new Date().toISOString()
+                    });
+                    await setDoc(storeFollowRef, {
+                        uid: user.uid,
+                        followedAt: new Date().toISOString()
+                    });
+                    btn.classList.add('following');
+                    btn.innerHTML = `<i class="bi bi-check-circle-fill"></i> Siguiendo`;
+                }
+            });
         });
     } catch (error) {
         console.error("Error al cargar las tiendas:", error);
@@ -156,6 +200,33 @@ async function fetchFollowedStores() {
     }
 }
 
+// Función para mostrar/ocultar el botón de registro según el usuario
+function toggleRegisterButton() {
+    const registerBtn = document.querySelector('button[onclick*="register.html"]');
+    if (!registerBtn) return;
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            registerBtn.style.display = "flex";
+            return;
+        }
+        // Verifica si el usuario existe como tienda o cliente
+        const userDoc = await getDoc(doc(db, `users/${user.uid}`));
+        const storesSnap = await getDocs(collection(db, "stores"));
+        let isStoreOwner = false;
+        storesSnap.forEach(storeDoc => {
+            const store = storeDoc.data();
+            if (store.owner === user.uid) isStoreOwner = true;
+        });
+
+        if (userDoc.exists() || isStoreOwner) {
+            registerBtn.style.display = "none";
+        } else {
+            registerBtn.style.display = "flex";
+        }
+    });
+}
+
 // Detectar login y mostrar seguidos
 onAuthStateChanged(auth, () => {
     fetchFollowedStores();
@@ -165,3 +236,4 @@ onAuthStateChanged(auth, () => {
 fetchStores();
 fetchProducts();
 setRandomCover();
+toggleRegisterButton();

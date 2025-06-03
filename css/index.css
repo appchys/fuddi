@@ -210,6 +210,49 @@ h2 {
     text-align: center; /* Centrado del texto (opcional) */
 }
 
+/* Estilo para el botón de seguir */
+.follow-btn {
+    background: none;
+    border: none;
+    color: #4caf50; /* Verde olivo para "Seguir" */
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 6px;
+    float: right;
+    transition: color 0.15s;
+    box-shadow: none;
+}
+
+.follow-btn i {
+    margin-right: 4px;
+    font-size: 1.1em;
+}
+
+.follow-btn.following {
+    color: #ff6f91; /* Rosa igual al botón Continuar del carrito */
+    font-weight: bold;
+}
+
+.follow-btn.following i {
+    color: #ff6f91;
+}
+
+/* Efecto hover para el botón de seguir */
+.follow-btn:hover,
+.follow-btn:focus {
+    text-decoration: underline;
+    background: none;
+    color: #388e3c; /* Un verde más oscuro para hover en "Seguir" */
+}
+
+.follow-btn.following:hover,
+.follow-btn.following:focus {
+    color: #e65b7a; /* Un rosa más oscuro para hover en "Siguiendo" */
+}
+
 /* Media query para pantallas más grandes (opcional) */
 @media (min-width: 768px) {
     #stores-container {

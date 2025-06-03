@@ -272,6 +272,13 @@ body {
     background-color: #219653;
 }
 
+.btn-disabled {
+    background-color: #bdbdbd !important;
+    color: #fff !important;
+    cursor: not-allowed !important;
+    border: none !important;
+}
+
 /* Estilo para el botón de Google */
 .google-login-section {
     display: flex;
