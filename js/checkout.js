@@ -724,7 +724,13 @@ async function initialize() {
                         userId: auth.currentUser.uid,
                         products: cart,
                         total: parseFloat(document.getElementById('total').textContent.replace('$', '')),
-                        shippingAddress: tipoEntrega === 'delivery' ? selectedAddress : null,
+                        shippingAddress: tipoEntrega === 'delivery' ? {
+                            ...selectedAddress,
+                            lat: selectedAddress.lat || null,
+                            lng: selectedAddress.lng || null,
+                            latitude: selectedAddress.lat ? parseFloat(selectedAddress.lat) : null,
+                            longitude: selectedAddress.lng ? parseFloat(selectedAddress.lng) : null
+                        } : null,
                         paymentMethod: selectedPaymentMethod.value,
                         paymentProofUrl: paymentProofUrl,
                         bankIndex: selectedPaymentMethod.value === 'Transferencia' ? parseInt(document.getElementById('bank-select').value) : null,

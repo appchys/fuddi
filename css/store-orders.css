@@ -504,6 +504,94 @@ body {
     font-weight: 500;
 }
 
+/* Estilos para el mapa y el comprobante de pago en el modal */
+.map-container {
+    margin-top: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.map-container h4 {
+    background-color: #f5f5f5;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.map-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.payment-proof-container {
+    margin-top: 1.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.payment-proof-container h4 {
+    background-color: #f5f5f5;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.payment-proof-link {
+    display: block;
+    text-decoration: none;
+    color: var(--primary-color);
+    text-align: center;
+    padding: 1rem;
+    transition: background-color 0.2s;
+}
+
+.payment-proof-link:hover {
+    background-color: #f9f9f9;
+}
+
+.payment-proof-image {
+    max-width: 100%;
+    max-height: 200px;
+    height: auto;
+    display: block;
+    margin: 0 auto 0.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 4px;
+    background-color: white;
+}
+
+.payment-proof-link span {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* Ajustes responsivos para el modal */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+        padding: 15px;
+    }
+    
+    .map-image {
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .payment-proof-image {
+        max-height: 150px;
+    }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .store-header .container {

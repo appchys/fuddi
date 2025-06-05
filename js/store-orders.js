@@ -10,6 +10,7 @@ import {
     getDoc 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { app, auth } from './firebase-config.js';
+import { GOOGLE_MAPS_API_KEY } from './config.js';
 
 // Inicializa Firestore
 const db = getFirestore(app);
@@ -99,6 +100,45 @@ function showOrderDetails(order) {
             <h4>Dirección de Entrega</h4>
             <p>${order.shippingAddress.reference || 'No especificada'}</p>
             ${order.shippingAddress.notes ? `<p><em>Notas: ${order.shippingAddress.notes}</em></p>` : ''}
+            
+            <!-- Mapa de ubicación -->
+            ${order.shippingAddress && (order.shippingAddress.lat || order.shippingAddress.latitude) && (order.shippingAddress.lng || order.shippingAddress.longitude) ? `
+                <div class="map-container">
+                    <h4>Ubicación en el mapa</h4>
+                    ${(() => {
+                        const lat = order.shippingAddress.lat || order.shippingAddress.latitude;
+                        const lng = order.shippingAddress.lng || order.shippingAddress.longitude;
+                        const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=600x300&maptype=roadmap&markers=color:red%7C${lat},${lng}&key=${GOOGLE_MAPS_API_KEY}`;
+                        const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                        
+                        console.log('Generando mapa con URL:', mapUrl);
+                        
+                        return `
+                            <p>Coordenadas: ${lat}, ${lng}</p>
+                            <a href="${mapsUrl}" target="_blank" style="display: block; margin-bottom: 10px;">
+                                <img 
+                                    src="${mapUrl}" 
+                                    alt="Ubicación de entrega"
+                                    class="map-image"
+                                    onerror="console.error('Error al cargar el mapa:', this.src)"
+                                    onload="console.log('Mapa cargado correctamente')"
+                                >
+                            </a>
+                            <a href="${mapsUrl}" target="_blank" style="color: #3366cc; text-decoration: none;">
+                                Ver en Google Maps
+                            </a>
+                        `;
+                    })()}
+                </div>
+            ` : `
+                <div class="no-map">
+                    <p>No hay coordenadas de ubicación disponibles</p>
+                    ${order.shippingAddress ? `
+                        <p>Datos de dirección disponibles:</p>
+                        <pre>${JSON.stringify(order.shippingAddress, null, 2)}</pre>
+                    ` : '<p>No hay datos de dirección disponibles</p>'}
+                </div>
+            `}
         </div>
         
         <div class="order-section">
@@ -121,6 +161,21 @@ function showOrderDetails(order) {
         <div class="order-section">
             <h4>Método de Pago</h4>
             <p>${order.paymentMethod || 'No especificado'}</p>
+            
+            <!-- Comprobante de pago -->
+            ${order.paymentProofUrl ? `
+                <div class="payment-proof-container">
+                    <h4>Comprobante de Pago</h4>
+                    <a href="${order.paymentProofUrl}" target="_blank" class="payment-proof-link">
+                        <img 
+                            src="${order.paymentProofUrl}" 
+                            alt="Comprobante de pago"
+                            class="payment-proof-image"
+                        >
+                        <span>Ver comprobante completo</span>
+                    </a>
+                </div>
+            ` : ''}
         </div>
         
         <div class="order-actions">
@@ -244,19 +299,37 @@ document.addEventListener('DOMContentLoaded', async () => {
                     `;
 
                     // Agregar evento de clic para mostrar detalles
-                    orderCard.addEventListener('click', () => showOrderDetails({
-                        id: doc.id,
-                        clientName,
-                        status,
-                        total,
-                        shippingAddress: order.shippingAddress || {},
-                        paymentMethod: order.paymentMethod,
-                        products: items,
-                        createdAt: order.createdAt,
-                        deliveryType: order.deliveryType,
-                        scheduledDate: order.scheduledDate,
-                        scheduledTime: order.scheduledTime
-                    }));
+                    orderCard.addEventListener('click', () => {
+                        console.log('Datos del pedido:', {
+                            id: doc.id,
+                            clientName,
+                            status,
+                            total,
+                            shippingAddress: order.shippingAddress || {},
+                            paymentMethod: order.paymentMethod,
+                            products: items,
+                            createdAt: order.createdAt,
+                            deliveryType: order.deliveryType,
+                            scheduledDate: order.scheduledDate,
+                            scheduledTime: order.scheduledTime,
+                            paymentProofUrl: order.paymentProofUrl
+                        });
+                        
+                        showOrderDetails({
+                            id: doc.id,
+                            clientName,
+                            status,
+                            total,
+                            shippingAddress: order.shippingAddress || {},
+                            paymentMethod: order.paymentMethod,
+                            products: items,
+                            createdAt: order.createdAt,
+                            deliveryType: order.deliveryType,
+                            scheduledDate: order.scheduledDate,
+                            scheduledTime: order.scheduledTime,
+                            paymentProofUrl: order.paymentProofUrl
+                        });
+                    });
 
                     ordersContainer.appendChild(orderCard);
                 }
