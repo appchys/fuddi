@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Index mejoras"
+git commit -m "Registro"
 git push -u origin main
