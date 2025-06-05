@@ -163,28 +163,29 @@
     position: fixed;
     top: 20px;
     left: 20px;
-    background-color: transparent; /* Fondo transparente */
-    color: #ffffff; /* Color del ícono */
-    border: none;
-    border-radius: 50%; /* Forma circular */
     width: 50px;
     height: 50px;
+    background-color: #fff5f1; /* Color naranja para el círculo */
+    color: rgb(183, 40, 40); /* Color del ícono */
+    border: none;
+    border-radius: 50%; /* Hace que el botón sea circular */
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: none; /* Sin sombra */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra suave */
     cursor: pointer;
-    z-index: 10; /* Asegura que esté por encima de otros elementos */
-    transition: opacity 0.3s ease; /* Transición para mostrar/ocultar */
+    z-index: 10;
+    transition: all 0.3s ease; /* Transición suave para efectos */
 }
 
 /* Efecto hover para el botón */
 .hamburger-btn:hover {
-    color: #555; /* Cambia el color del ícono al pasar el mouse */
+    background-color: #f8b5b5; /* Color naranja más oscuro al pasar el mouse */
+    transform: scale(1.05); /* Ligero aumento de tamaño al pasar el mouse */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada al pasar el mouse */
 }
 
 /* Estilo para el ícono */
 .hamburger-btn i {
     font-size: 24px; /* Tamaño del ícono */
 }
-
