@@ -65,6 +65,98 @@ window.handleDeleteOrder = async (orderId) => {
     }
 };
 
+// Función para mostrar los detalles del pedido en el modal
+function showOrderDetails(order) {
+    const modal = document.getElementById('orderDetailsModal');
+    const orderDetails = document.getElementById('orderDetails');
+    
+    // Formatear la fecha
+    const formattedDate = order.createdAt ? new Date(order.createdAt).toLocaleString() : 'No disponible';
+    
+    // Crear el contenido del modal
+    orderDetails.innerHTML = `
+        <h3>Detalles del Pedido #${order.id}</h3>
+        
+        <div class="order-section">
+            <h4>Cliente</h4>
+            <p>${order.clientName}</p>
+        </div>
+        
+        <div class="order-section">
+            <h4>Estado</h4>
+            <p class="status-${order.status}">${order.status === 'pendiente' ? 'Pendiente' : 'Enviado'}</p>
+        </div>
+        
+        <div class="order-section">
+            <h4>Fecha y Hora</h4>
+            <p>${formattedDate}</p>
+            ${order.deliveryType === 'scheduled' ? `
+                <p><strong>Programado para:</strong> ${order.scheduledDate} a las ${order.scheduledTime}</p>
+            ` : ''}
+        </div>
+        
+        <div class="order-section">
+            <h4>Dirección de Entrega</h4>
+            <p>${order.shippingAddress.reference || 'No especificada'}</p>
+            ${order.shippingAddress.notes ? `<p><em>Notas: ${order.shippingAddress.notes}</em></p>` : ''}
+        </div>
+        
+        <div class="order-section">
+            <h4>Productos</h4>
+            <ul class="products-list">
+                ${order.products.map(item => `
+                    <li>
+                        <span>${item.quantity}x ${item.name}</span>
+                        <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                    </li>
+                `).join('')}
+            </ul>
+        </div>
+        
+        <div class="order-section">
+            <h4>Total</h4>
+            <p><strong>$${parseFloat(order.total).toFixed(2)}</strong></p>
+        </div>
+        
+        <div class="order-section">
+            <h4>Método de Pago</h4>
+            <p>${order.paymentMethod || 'No especificado'}</p>
+        </div>
+        
+        <div class="order-actions">
+            <button class="action-btn ${order.status === 'pendiente' ? 'accept-btn' : 'ship-btn'}" 
+                    onclick="handleOrderStatus('${order.id}', '${order.status}'); closeModal();">
+                ${order.status === 'pendiente' ? 'Marcar como Enviado' : 'Marcar como Pendiente'}
+            </button>
+            <button class="action-btn delete-btn" onclick="handleDeleteOrder('${order.id}'); closeModal();">
+                Eliminar Pedido
+            </button>
+        </div>
+    `;
+    
+    // Mostrar el modal
+    modal.style.display = 'block';
+    
+    // Cerrar el modal al hacer clic en la X
+    document.querySelector('.close-modal').onclick = closeModal;
+    
+    // Cerrar el modal al hacer clic fuera del contenido
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+    };
+}
+
+// Función para cerrar el modal
+function closeModal() {
+    const modal = document.getElementById('orderDetailsModal');
+    modal.style.display = 'none';
+}
+
+// Hacer la función closeModal accesible globalmente
+window.closeModal = closeModal;
+
 document.addEventListener('DOMContentLoaded', async () => {
     const ordersContainer = document.getElementById('store-orders-container');
 
@@ -137,88 +229,37 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const items = Array.isArray(order.products) ? order.products : [];
                     const status = order.status || 'pendiente';
 
-                    // Determinar texto y estado del botón según el estado
-                    const buttonText = status === 'pendiente' ? 'Aceptar' : 'Enviado';
-                    const buttonClass = status === 'pendiente' ? 'accept-btn' : 'ship-btn';
-                    const isDisabled = status === 'enviado' ? 'disabled' : '';
-                    const buttonDisabledClass = status === 'enviado' ? 'disabled-btn' : '';
-
-                    // Crear la tarjeta del pedido
+                    // Crear la tarjeta del pedido simplificada
                     const orderCard = document.createElement('div');
                     orderCard.className = 'order-card';
                     orderCard.setAttribute('data-order-id', doc.id);
                     orderCard.innerHTML = `
                         <div class="order-header">
-                            <h3 class="order-title">Pedido #${doc.id}</h3>
-                            <p class="order-date">${createdAt}</p>
+                            <h3 class="order-title">${clientName}</h3>
+                            <p class="status-text ${status}">${status === 'pendiente' ? 'Pendiente' : 'Enviado'}</p>
                         </div>
-                        
-                        <div class="order-client">
-                            <h4>Cliente:</h4>
-                            <p>${clientName}</p>
-                        </div>
-
-                        <div class="order-address">
-                            <h4>Dirección de entrega:</h4>
-                            <p>${reference}</p>
-                        </div>
-
-                        <div class="order-products">
-                            <h4>Productos:</h4>
-                            <ul class="products-list">
-                                ${items.map(item => `
-                                    <li>
-                                        <span class="product-name">${item.name}</span>
-                                        <span class="product-quantity">x${item.quantity}</span>
-                                        <span class="product-price">$${item.price.toFixed(2)}</span>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                        </div>
-
-                        <div class="order-total">
-                            <h4>Total:</h4>
-                            <p>$${total}</p>
-                        </div>
-
-                        <div class="order-payment">
-                            <h4>Método de pago:</h4>
-                            <p>${paymentMethod}</p>
-                        </div>
-
-                        <div class="order-status">
-                            <h4>Estado:</h4>
-                            <p class="status-${status.toLowerCase()}">${status}</p>
-                        </div>
-
-                        <div class="order-actions">
-                            <button class="${buttonClass} ${buttonDisabledClass}" ${isDisabled} onclick="handleOrderStatus('${doc.id}', '${status}')">
-                                ${buttonText}
-                            </button>
-                            <button class="action-btn delete-btn" ${isDisabled} onclick="handleDeleteOrder('${doc.id}')">
-                                Eliminar
-                            </button>
+                        <div class="order-summary">
+                            <p>${items.length} producto${items.length !== 1 ? 's' : ''} • $${total}</p>
                         </div>
                     `;
 
+                    // Agregar evento de clic para mostrar detalles
+                    orderCard.addEventListener('click', () => showOrderDetails({
+                        id: doc.id,
+                        clientName,
+                        status,
+                        total,
+                        shippingAddress: order.shippingAddress || {},
+                        paymentMethod: order.paymentMethod,
+                        products: items,
+                        createdAt: order.createdAt,
+                        deliveryType: order.deliveryType,
+                        scheduledDate: order.scheduledDate,
+                        scheduledTime: order.scheduledTime
+                    }));
+
                     ordersContainer.appendChild(orderCard);
                 }
-
-                // Añadir event listeners para los botones
-                document.querySelectorAll('.accept-btn, .ship-btn').forEach(button => {
-                    button.addEventListener('click', async (e) => {
-                        const orderId = e.target.closest('.order-card').dataset.orderId;
-                        const currentStatus = button.classList.contains('accept-btn') ? 'pendiente' : 'enviado';
-                        await window.handleOrderStatus(orderId, currentStatus);
-                    });
-                });
-
-                document.querySelectorAll('.delete-btn').forEach(button => {
-                    button.addEventListener('click', async (e) => {
-                        const orderId = e.target.closest('.order-card').dataset.orderId;
-                        await window.handleDeleteOrder(orderId);
-                    });
-                });
 
             } catch (error) {
                 console.error('Error al cargar los pedidos de la tienda:', error);

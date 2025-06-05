@@ -387,6 +387,123 @@ body {
     opacity: 0.9;
 }
 
+/* Estilos para el modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 700px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+}
+
+.close-modal:hover {
+    color: #000;
+}
+
+/* Estilos para la tarjeta del pedido en la lista */
+.order-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.order-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Eliminar el borde inferior de la tarjeta */
+.order-card {
+    border-bottom: none;
+}
+
+/* Estilos para el modal de detalles */
+#orderDetails h3 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+#orderDetails .order-section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+#orderDetails .order-section:last-child {
+    border-bottom: none;
+}
+
+#orderDetails h4 {
+    color: var(--dark-gray);
+    margin-bottom: 10px;
+}
+
+#orderDetails .products-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#orderDetails .products-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+#orderDetails .products-list li:last-child {
+    border-bottom: none;
+}
+
+#orderDetails .order-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+}
+
+/* Estilos para el estado del pedido */
+.status-pendiente {
+    color: #e67e22;
+    font-weight: 500;
+}
+
+.status-enviado {
+    color: #2ecc71;
+    font-weight: 500;
+}
+
+.status-cancelado {
+    color: #e74c3c;
+    font-weight: 500;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .store-header .container {

@@ -2,42 +2,27 @@ import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from "https://w
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { app } from './firebase-config.js';
-// Importa tu clave de API desde config.js (NO expongas la clave en el código fuente público)
-// Asegúrate de agregar config.js a tu .gitignore
 import { GOOGLE_MAPS_API_KEY } from './config.js';
-
-/*
-    IMPORTANTE:
-    - Restringe tu clave de API en Google Cloud Console SOLO a tu dominio y a las APIs necesarias (Static Maps y JavaScript).
-    - Consulta: https://console.cloud.google.com/apis/credentials
-    - Configura límites de cuota y alertas de presupuesto en Google Cloud Console para evitar costos inesperados.
-    - Static Maps API: $2 por 1,000 solicitudes (más barato, se usa para vistas previas).
-    - JavaScript Maps API: $7 por 1,000 solicitudes (más caro, solo para mapa interactivo).
-*/
 
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
-// Función para verificar si el usuario existe en Firestore
 async function checkUserExists(userId) {
     const userDoc = doc(db, 'users', userId);
     const userSnapshot = await getDoc(userDoc);
     if (userSnapshot.exists()) {
         return { exists: true, type: 'client', data: userSnapshot.data() };
     }
-
     const storeDoc = doc(db, 'stores', userId);
     const storeSnapshot = await getDoc(storeDoc);
     if (storeSnapshot.exists()) {
         return { exists: true, type: 'store', data: storeSnapshot.data() };
     }
-
     return { exists: false };
 }
 
-// Función para actualizar la vista según el estado de autenticación
 async function updateView(user) {
     const userContainer = document.getElementById('user-info-container');
     if (!user || !userContainer) return;
@@ -73,21 +58,25 @@ async function updateView(user) {
             `;
         }
 
-        // Agregar listener al formulario si existe
         const userForm = document.getElementById('userForm');
         if (userForm) {
             userForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const submitButton = e.target.querySelector('button[type="submit"]');
-                
                 if (submitButton) {
                     submitButton.disabled = true;
                     submitButton.textContent = 'Guardando...';
                 }
-
                 try {
                     const name = document.getElementById('name').value;
                     const phone = document.getElementById('phone').value;
+                    const phoneRegex = /^\d{8,12}$/;
+                    if (!phoneRegex.test(phone)) {
+                        alert('Por favor, ingresa un número de teléfono válido (8-12 dígitos).');
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Guardar Perfil';
+                        return;
+                    }
                     const userData = {
                         name,
                         phone,
@@ -95,9 +84,13 @@ async function updateView(user) {
                         email: user.email,
                     };
                     await setDoc(doc(db, 'users', user.uid), userData);
-                    alert('¡Perfil de cliente creado exitosamente!');
-                    
-                    // Actualizar la vista con los datos guardados
+                    Toastify({
+                        text: '¡Perfil de cliente creado exitosamente!',
+                        duration: 3000,
+                        gravity: 'top',
+                        position: 'right',
+                        backgroundColor: '#16a34a',
+                    }).showToast();
                     if (userContainer) {
                         userContainer.innerHTML = `
                             <div class="user-data">
@@ -123,7 +116,6 @@ async function updateView(user) {
     }
 }
 
-// Función para iniciar sesión con Google
 window.loginWithGoogle = async function () {
     try {
         const result = await signInWithPopup(auth, googleProvider);
@@ -135,40 +127,32 @@ window.loginWithGoogle = async function () {
     }
 };
 
-// Función para cargar los datos del carrito
 async function initialize() {
     try {
-        // Obtener el ID de la tienda de la URL
         const params = new URLSearchParams(window.location.search);
         const storeId = params.get('storeId');
-
         if (!storeId) {
             alert('No se proporcionó un ID de tienda válido.');
             return;
         }
 
-        // Verificar si hay un usuario actualmente logueado
         const user = auth.currentUser;
         if (user) {
             updateView(user);
         }
 
-        // Agregar listener para cambios de autenticación
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 updateView(user);
-                // Ocultar el botón de Google cuando el usuario está logueado
                 const googleLoginSection = document.querySelector('.google-login-section');
                 if (googleLoginSection) {
                     googleLoginSection.classList.add('hidden');
                 }
             } else {
-                // Si no hay usuario, mostrar solo el botón de Google
                 const userContainer = document.getElementById('user-info-container');
                 if (userContainer) {
                     userContainer.innerHTML = '';
                 }
-                // Mostrar el botón de Google cuando no hay usuario
                 const googleLoginSection = document.querySelector('.google-login-section');
                 if (googleLoginSection) {
                     googleLoginSection.classList.remove('hidden');
@@ -176,18 +160,14 @@ async function initialize() {
             }
         });
 
-        // Cargar datos del carrito y sus productos
         const cartKey = `cart_${storeId}`;
         const cart = JSON.parse(localStorage.getItem(cartKey)) || [];
         const cartDetails = document.getElementById('cart-details');
         const userInfoContainer = document.getElementById('user-info-container');
         const bankDetailsContainer = document.getElementById('bank-details');
         const bankAccountsList = document.getElementById('bank-accounts-list');
-
-        cartDetails.innerHTML = '';
         let selectedFile = null;
 
-        // Función para cargar datos bancarios
         async function loadBankAccounts(selectedBank = null) {
             try {
                 const storeRef = doc(db, 'stores', storeId);
@@ -203,19 +183,16 @@ async function initialize() {
                         document.getElementById('confirm-btn').disabled = true;
                         return;
                     }
-        
+
                     const bankAccounts = storeData.bankAccounts;
-        
                     bankAccountsList.innerHTML = '';
-        
+
                     if (bankAccounts.length > 0) {
-                        
-                        // Crear select con los bancos
                         const select = document.createElement('select');
                         select.id = 'bank-select';
                         select.style = 'width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 16px;';
                         select.innerHTML = '<option value="">Selecciona un banco</option>';
-        
+
                         bankAccounts.forEach((account, index) => {
                             const option = document.createElement('option');
                             option.value = index;
@@ -225,13 +202,11 @@ async function initialize() {
                             }
                             select.appendChild(option);
                         });
-        
+
                         bankAccountsList.appendChild(select);
-        
-                        // Mostrar detalles del banco seleccionado
+
                         if (selectedBank !== null && bankAccounts[selectedBank]) {
                             const account = bankAccounts[selectedBank];
-                            
                             const accountElement = document.createElement('div');
                             accountElement.style = 'border: 1px solid #e5e7eb; padding: 16px; border-radius: 6px; margin-bottom: 16px;';
                             accountElement.innerHTML = `
@@ -240,33 +215,51 @@ async function initialize() {
                                 <p><strong>Titular:</strong> ${account.holder || 'No especificado'}</p>
                             `;
                             bankAccountsList.appendChild(accountElement);
-        
-                            // Añadir input para subir comprobante
-                            const fileInputContainer = document.createElement('div');
-                            fileInputContainer.style = 'margin-top: 16px;';
-                            fileInputContainer.innerHTML = `
-                                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 8px;">Subir comprobante de pago:</label>
-                                <input type="file" id="payment-proof" accept="image/*,application/pdf" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
-                                <p id="file-status" style="margin-top: 8px; color: #374151;"></p>
-                            `;
-                            bankAccountsList.appendChild(fileInputContainer);
-        
-                            // Event listener para el input de archivo
+
+                            // Reutilizar el input estático #payment-proof
                             const fileInput = document.getElementById('payment-proof');
+                            const fileStatus = document.createElement('p');
+                            fileStatus.id = 'file-status';
+                            fileStatus.style = 'margin-top: 8px; color: #374151;';
+                            bankAccountsList.appendChild(fileStatus);
+
                             fileInput.addEventListener('change', (e) => {
+                                console.log('Evento change en input de archivo detectado');
                                 selectedFile = e.target.files[0];
-                                const fileStatus = document.getElementById('file-status');
                                 if (selectedFile) {
+                                    console.log('Archivo seleccionado:', {
+                                        name: selectedFile.name,
+                                        type: selectedFile.type,
+                                        size: selectedFile.size,
+                                        lastModified: selectedFile.lastModified
+                                    });
+                                    const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                                    const maxSize = 5 * 1024 * 1024; // 5MB
+                                    
+                                    if (!validTypes.includes(selectedFile.type)) {
+                                        console.error('Tipo de archivo no válido:', selectedFile.type);
+                                        fileStatus.textContent = 'Por favor, selecciona una imagen (JPEG/PNG) o un PDF.';
+                                        selectedFile = null;
+                                        document.getElementById('confirm-btn').disabled = true;
+                                        return;
+                                    }
+                                    if (selectedFile.size > maxSize) {
+                                        console.error('Archivo demasiado grande:', selectedFile.size, 'bytes');
+                                        fileStatus.textContent = 'El archivo es demasiado grande. Máximo 5MB.';
+                                        selectedFile = null;
+                                        document.getElementById('confirm-btn').disabled = true;
+                                        return;
+                                    }
+                                    console.log('Archivo válido seleccionado');
                                     fileStatus.textContent = `Archivo seleccionado: ${selectedFile.name}`;
                                     document.getElementById('confirm-btn').disabled = false;
                                 } else {
-                                    fileStatus.textContent = 'No se ha seleccionado ningún archivo.';
-                                    document.getElementById('confirm-btn').disabled = true;
+                                    console.log('No se seleccionó ningún archivo');
+                                    fileStatus.textContent = '';
                                 }
                             });
                         }
-        
-                        // Event listener para el select
+
                         select.addEventListener('change', async (e) => {
                             const selectedIndex = e.target.value;
                             if (selectedIndex) {
@@ -288,9 +281,7 @@ async function initialize() {
             }
         }
 
-        // Manejar cambio en método de pago
         const paymentRadios = document.querySelectorAll('input[name="payment"]');
-        
         paymentRadios.forEach((radio) => {
             radio.addEventListener('change', async () => {
                 const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked');
@@ -311,14 +302,12 @@ async function initialize() {
             });
         });
 
-        // Cargar datos del carrito y sus productos
         async function loadCartProducts() {
             const productsData = [];
             for (const item of cart) {
                 try {
                     const productRef = doc(db, `stores/${storeId}/products`, item.productId);
                     const productDoc = await getDoc(productRef);
-
                     if (productDoc.exists()) {
                         const productData = productDoc.data();
                         productsData.push({
@@ -335,14 +324,12 @@ async function initialize() {
             return productsData;
         }
 
-        // Mostrar los productos en el carrito
         async function displayCartProducts() {
             const productsData = await loadCartProducts();
             cartDetails.innerHTML = '';
 
             const storeRef = doc(db, 'stores', storeId);
             const storeDoc = await getDoc(storeRef);
-            
             if (!storeDoc.exists()) {
                 console.error('No se encontró la tienda:', storeId);
                 return;
@@ -375,40 +362,23 @@ async function initialize() {
             if (subtotalElement) {
                 subtotalElement.textContent = `$${subtotalTotal.toFixed(2)}`;
             }
-// No actualices shipping ni total aquí, se actualizan en updateSelectedAddressView
-
-            // const shippingElement = document.getElementById('shipping');
-            // if (shippingElement) {
-            //     shippingElement.textContent = `$${shipping.toFixed(2)}`;
-            // }
-
-            // const totalElement = document.getElementById('total');
-            // if (totalElement) {
-            //     const total = subtotalTotal + shipping;
-            //     totalElement.textContent = `$${total.toFixed(2)}`;
-            // }
         }
 
-        // Inicializar la vista del carrito
         await displayCartProducts();
 
-        // Direcciones
         const savedAddressesContainer = document.getElementById('saved-addresses');
         const addAddressBtn = document.getElementById('add-address-btn');
-        const newAddressForm = document.getElementById('new-address-form');
         const addressForm = document.getElementById('addressForm');
         const getLocationBtn = document.getElementById('get-location-btn');
         const latitudeSpan = document.getElementById('latitude');
         const longitudeSpan = document.getElementById('longitude');
         const scheduledDateInput = document.getElementById('scheduled-date');
         const scheduledTimeInput = document.getElementById('scheduled-time');
-        const scheduledWarning = document.getElementById('scheduled-warning'); // <-- AGREGA ESTA LÍNEA
-
+        const scheduledWarning = document.getElementById('scheduled-warning');
         let selectedAddress = null;
         let addresses = [];
-        let storeData = null; // Declara storeData global para la función initialize
+        let storeData = null;
 
-        // Función para cargar direcciones guardadas del usuario
         async function loadSavedAddresses() {
             try {
                 const user = auth.currentUser;
@@ -420,9 +390,8 @@ async function initialize() {
                 if (userSnapshot.exists()) {
                     const userData = userSnapshot.data();
                     addresses = userData.addresses || [];
-
                     if (addresses.length > 0) {
-                        selectedAddress = addresses[addresses.length - 1]; // Seleccionar la última dirección por defecto
+                        selectedAddress = addresses[addresses.length - 1];
                         updateSelectedAddressView(selectedAddress);
                     } else {
                         savedAddressesContainer.innerHTML = '<p style="color: #374151;">No tienes direcciones guardadas.</p>';
@@ -434,7 +403,6 @@ async function initialize() {
             }
         }
 
-        // Static Maps API se usa aquí para minimizar costos ($2 por 1,000 solicitudes)
         function createAddressElement(address, index) {
             const addressElement = document.createElement('div');
             addressElement.classList.add('address-item');
@@ -443,22 +411,19 @@ async function initialize() {
             addressElement.style.gap = '14px';
             addressElement.style.marginBottom = '18px';
 
-            // Static map image (90x90) para lista de direcciones
             const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${address.latitude},${address.longitude}&zoom=16&size=90x90&markers=color:red%7C${address.latitude},${address.longitude}&key=${GOOGLE_MAPS_API_KEY}`;
             const mapImg = document.createElement('img');
             mapImg.src = staticMapUrl;
-            mapImg.alt = 'Mapa dirección';
+            mapImg.alt = `Mapa de la dirección ${address.reference}`;
             mapImg.style.width = '90px';
             mapImg.style.height = '90px';
             mapImg.style.borderRadius = '8px';
             mapImg.style.cursor = 'pointer';
             mapImg.tabIndex = 0;
 
-            // Referencia a la derecha del mapa
             const refDiv = document.createElement('div');
             refDiv.innerHTML = `<p style="margin:0;font-weight:500;cursor:pointer;" tabindex="0">${address.reference}</p>`;
 
-            // Seleccionar al hacer click en mapa o referencia
             function selectThisAddress() {
                 selectedAddress = address;
                 updateSelectedAddressView(selectedAddress);
@@ -470,17 +435,14 @@ async function initialize() {
 
             addressElement.appendChild(mapImg);
             addressElement.appendChild(refDiv);
-
             return addressElement;
         }
 
-        // Static Maps API se usa aquí para minimizar costos ($2 por 1,000 solicitudes)
         function updateSelectedAddressView(address) {
             const selectedAddressDiv = document.createElement('div');
             selectedAddressDiv.className = 'selected-address';
             const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${address.latitude},${address.longitude}&zoom=16&size=200x100&markers=color:red%7C${address.latitude},${address.longitude}&key=${GOOGLE_MAPS_API_KEY}`;
 
-            // Carga zonas y valida cobertura ANTES de armar el HTML
             const storeRef = doc(db, 'stores', storeId);
             getDoc(storeRef).then(storeDoc => {
                 if (storeDoc.exists()) {
@@ -488,11 +450,7 @@ async function initialize() {
                     const deliveryZones = Array.isArray(storeData.deliveryZones) ? storeData.deliveryZones : [];
                     if (deliveryZones.length > 0) {
                         loadGoogleMapsScript(() => {
-                            const isCovered = isPointInDeliveryZones(
-                                address.latitude,
-                                address.longitude,
-                                deliveryZones
-                            );
+                            const isCovered = isPointInDeliveryZones(address.latitude, address.longitude, deliveryZones);
                             let referenceHtml = `<strong>Referencia:</strong> ${address.reference}`;
                             if (isCovered) {
                                 referenceHtml += `
@@ -508,11 +466,9 @@ async function initialize() {
                                 <p><strong>Dirección seleccionada:</strong></p>
                                 <p>${referenceHtml}</p>
                                 <div id="coverage-message" style="margin:4px 0 8px 0;font-size:0.98em;"></div>
-                                <img src="${staticMapUrl}" alt="Mapa dirección" style="width:100%;max-width:200px;height:100px;margin:10px 0;border-radius:8px;object-fit:cover;">
+                                <img src="${staticMapUrl}" alt="Mapa de la dirección ${address.reference}" style="width:100%;max-width:200px;height:100px;margin:10px 0;border-radius:8px;object-fit:cover;">
                                 <button id="show-other-addresses-btn" class="btn">Otras direcciones</button>
                             `;
-
-                            
 
                             const coverageCheck = selectedAddressDiv.querySelector('.coverage-check');
                             if (coverageCheck) {
@@ -525,7 +481,6 @@ async function initialize() {
                                 });
                             }
 
-                            // Validar cobertura y mostrar mensaje
                             const msgDiv = selectedAddressDiv.querySelector('#coverage-message');
                             let shippingValue = 1;
                             let zone = null;
@@ -543,7 +498,6 @@ async function initialize() {
                                 document.getElementById('confirm-btn').disabled = true;
                             }
 
-                            // Actualiza el valor de envío y el total en el resumen
                             const shippingElement = document.getElementById('shipping');
                             if (shippingElement) {
                                 shippingElement.textContent = `$${shippingValue.toFixed(2)}`;
@@ -555,7 +509,6 @@ async function initialize() {
                                 totalElement.textContent = `$${(subtotal + shippingValue).toFixed(2)}`;
                             }
 
-                            // Enlace para ver zonas de cobertura
                             const showCoverageZonesLink = document.getElementById('showCoverageZonesLink');
                             if (showCoverageZonesLink) {
                                 showCoverageZonesLink.addEventListener('click', (e) => {
@@ -571,7 +524,6 @@ async function initialize() {
             const otherAddressesDiv = document.createElement('div');
             otherAddressesDiv.id = 'other-addresses';
             otherAddressesDiv.style.display = 'none';
-
             otherAddressesDiv.innerHTML = '';
             addresses.forEach((addr, idx) => {
                 if (addr !== address) {
@@ -584,11 +536,9 @@ async function initialize() {
             savedAddressesContainer.appendChild(otherAddressesDiv);
         }
 
-        // Event listeners
         if (addAddressBtn) {
             addAddressBtn.addEventListener('click', () => {
                 document.getElementById('newAddressModal').style.display = 'flex';
-                // Limpia el formulario y el mapa al abrir el modal
                 const addressForm = document.getElementById('addressForm');
                 if (addressForm) addressForm.reset();
                 const mapDiv = document.getElementById('map');
@@ -604,14 +554,12 @@ async function initialize() {
         loadGoogleMapsScript(() => {
             if (getLocationBtn) {
                 getLocationBtn.addEventListener('click', async () => {
-                    // Quitar la alerta de confirmación, cargar el mapa directamente
                     if (navigator.geolocation) {
                         navigator.geolocation.getCurrentPosition((position) => {
                             const lat = position.coords.latitude;
                             const lng = position.coords.longitude;
                             document.getElementById('latitude').value = lat.toFixed(6);
                             document.getElementById('longitude').value = lng.toFixed(6);
-                            // Cargar el mapa interactivo directamente
                             initMap(lat, lng);
                         });
                     }
@@ -651,7 +599,13 @@ async function initialize() {
                     if (user) {
                         const userDoc = doc(db, 'users', user.uid);
                         await setDoc(userDoc, { addresses }, { merge: true });
-                        alert('¡Dirección guardada exitosamente!');
+                        Toastify({
+                            text: '¡Dirección guardada exitosamente!',
+                            duration: 3000,
+                            gravity: 'top',
+                            position: 'right',
+                            backgroundColor: '#16a34a',
+                        }).showToast();
                     }
                 } catch (error) {
                     console.error('Error al guardar la dirección:', error);
@@ -659,17 +613,13 @@ async function initialize() {
                 }
 
                 updateSelectedAddressView(selectedAddress);
-
-                // Cierra el modal de nueva dirección
                 document.getElementById('newAddressModal').style.display = 'none';
-
                 addressForm.reset();
                 latitudeSpan.value = '0.000000';
                 longitudeSpan.value = '0.000000';
             });
         }
 
-        // Event listener para seleccionar una dirección existente
         savedAddressesContainer.addEventListener('click', (e) => {
             if (e.target.classList.contains('select-address-btn')) {
                 const index = parseInt(e.target.dataset.index);
@@ -678,17 +628,20 @@ async function initialize() {
             }
         });
 
-        // Cargar direcciones guardadas al inicio
         await loadSavedAddresses();
 
-        // Confirmar pedido
         const confirmBtn = document.getElementById('confirm-btn');
         if (confirmBtn) {
             confirmBtn.addEventListener('click', async () => {
-                // Verifica el tipo de entrega
-                const tipoEntrega = document.querySelector('input[name="deliveryType"]:checked')?.value;
+                console.log('Iniciando proceso de confirmación de pedido');
+                
+                // Obtener el método de pago seleccionado aquí
+                const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked');
+                console.log('Método de pago seleccionado:', selectedPaymentMethod ? selectedPaymentMethod.value : 'Ninguno');
+                
+                console.log('Archivo seleccionado:', selectedFile ? 'Sí' : 'No');
 
-                // Verifica que el perfil esté creado antes de continuar
+                const tipoEntrega = document.querySelector('input[name="deliveryType"]:checked')?.value;
                 const user = auth.currentUser;
                 if (!user) {
                     alert('Debes iniciar sesión para continuar.');
@@ -700,7 +653,6 @@ async function initialize() {
                     return;
                 }
 
-                // Solo pide dirección si es delivery
                 if (tipoEntrega === 'delivery') {
                     if (!selectedAddress) {
                         alert('Por favor, selecciona una dirección de entrega.');
@@ -708,30 +660,29 @@ async function initialize() {
                     }
                 }
 
-                const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked');
                 if (!selectedPaymentMethod) {
                     alert('Por favor, selecciona un método de pago.');
                     return;
                 }
 
-                if (selectedPaymentMethod.value === 'transferencia' && !selectedFile) {
+                if (selectedPaymentMethod.value === 'Transferencia' && !selectedFile) {
+                    console.error('Error: Se requiere comprobante para transferencia');
                     alert('Por favor, sube un comprobante de pago para transferencia.');
+                    const paymentProofInput = document.getElementById('payment-proof');
+                    if (paymentProofInput) paymentProofInput.focus();
                     return;
                 }
 
-                // Obtener tipo de entrega y calcular fecha/hora
                 const deliveryTimeType = document.querySelector('input[name="deliveryTime"]:checked').value;
                 let scheduledDate = '';
                 let scheduledTime = '';
 
                 if (deliveryTimeType === 'asap') {
-                    // Entrega inmediata: sumar 30 minutos a la hora actual
                     const now = new Date();
                     now.setMinutes(now.getMinutes() + 30);
-                    scheduledDate = now.toISOString().slice(0, 10); // YYYY-MM-DD
-                    scheduledTime = now.toTimeString().slice(0, 5); // HH:mm
+                    scheduledDate = now.toISOString().slice(0, 10);
+                    scheduledTime = now.toTimeString().slice(0, 5);
                 } else {
-                    // Programada: tomar los valores del formulario
                     scheduledDate = scheduledDateInput.value;
                     scheduledTime = scheduledTimeInput.value;
                     if (!scheduledDate || !scheduledTime) {
@@ -741,15 +692,33 @@ async function initialize() {
                 }
 
                 try {
-                    // Subir comprobante si es transferencia
                     let paymentProofUrl = null;
-                    if (selectedPaymentMethod.value === 'transferencia' && selectedFile) {
-                        const storageRef = ref(storage, `payment-proofs/${Date.now()}_${selectedFile.name}`);
-                        await uploadBytes(storageRef, selectedFile);
-                        paymentProofUrl = await getDownloadURL(storageRef);
+                    if (selectedPaymentMethod.value === 'Transferencia' && selectedFile) {
+                        console.log('Iniciando subida de comprobante...');
+                        try {
+                            console.log('Archivo seleccionado:', selectedFile);
+                            const storagePath = `payment-proofs/${user.uid}/${Date.now()}_${selectedFile.name}`;                            console.log('Ruta de almacenamiento:', storagePath);
+                            const storageRef = ref(storage, storagePath);
+                            
+                            console.log('Subiendo archivo a Firebase Storage...');
+                            const uploadResult = await uploadBytes(storageRef, selectedFile);
+                            console.log('Archivo subido exitosamente');
+                            
+                            console.log('Obteniendo URL de descarga...');
+                            paymentProofUrl = await getDownloadURL(uploadResult.ref);
+                            console.log('URL del comprobante obtenida:', paymentProofUrl);
+                            
+                        } catch (uploadError) {
+                            console.error('Error al subir el comprobante:', {
+                                name: uploadError.name,
+                                message: uploadError.message,
+                                stack: uploadError.stack
+                            });
+                            alert('Error al subir el comprobante de pago. Por favor, intenta de nuevo.');
+                            return;
+                        }
                     }
 
-                    // Crear el pedido
                     const orderData = {
                         storeId,
                         userId: auth.currentUser.uid,
@@ -757,18 +726,35 @@ async function initialize() {
                         total: parseFloat(document.getElementById('total').textContent.replace('$', '')),
                         shippingAddress: tipoEntrega === 'delivery' ? selectedAddress : null,
                         paymentMethod: selectedPaymentMethod.value,
-                        paymentProofUrl,
-                        bankIndex: selectedPaymentMethod.value === 'transferencia' ? parseInt(document.getElementById('bank-select').value) : null,
+                        paymentProofUrl: paymentProofUrl,
+                        bankIndex: selectedPaymentMethod.value === 'Transferencia' ? parseInt(document.getElementById('bank-select').value) : null,
                         status: 'Pendiente',
                         createdAt: new Date().toISOString(),
-                        deliveryType: deliveryTimeType, // "asap" o "scheduled"
-                        scheduledDate,                  // YYYY-MM-DD
-                        scheduledTime                   // HH:mm
+                        deliveryType: deliveryTimeType,
+                        scheduledDate,
+                        scheduledTime,
+                        customerName: userDoc.data()?.name || 'Cliente no especificado',
+                        customerPhone: userDoc.data()?.phone || 'No especificado'
                     };
 
-                    await addDoc(collection(db, 'orders'), orderData);
+                    console.log('Datos del pedido a guardar:', {
+                        ...orderData,
+                        paymentProofUrl: paymentProofUrl ? 'URL_DE_COMPROBANTE_PRESENTE' : null,
+                        products: `[${orderData.products.length} productos]`
+                    });
 
-                    alert('¡Pedido confirmado! Gracias por tu compra.');
+                    console.log('Guardando pedido en Firestore...');
+                    const orderRef = await addDoc(collection(db, 'orders'), orderData);
+                    console.log('Pedido guardado exitosamente con ID:', orderRef.id);
+
+                    Toastify({
+                        text: '¡Pedido confirmado! Gracias por tu compra.',
+                        duration: 3000,
+                        gravity: 'top',
+                        position: 'right',
+                        backgroundColor: '#16a34a',
+                    }).showToast();
+
                     localStorage.removeItem(cartKey);
                     window.location.href = '/my-orders.html';
                 } catch (error) {
@@ -778,7 +764,6 @@ async function initialize() {
             });
         }
 
-        // Mostrar/ocultar campos de entrega programada
         const deliveryTimeRadios = document.querySelectorAll('input[name="deliveryTime"]');
         const scheduledFields = document.getElementById('scheduled-delivery-fields');
 
@@ -791,20 +776,17 @@ async function initialize() {
             }
         }
 
-        // Solo declara y agrega listeners una vez
         deliveryTimeRadios.forEach(radio => {
             radio.addEventListener('change', updateScheduledFields);
             radio.addEventListener('change', updateEntregaInmediataTiempo);
         });
         updateScheduledFields();
 
-        // 1. Al cargar la página, selecciona "Programar entrega" por defecto
         const scheduledInput = document.querySelector('input[name="deliveryTime"][value="scheduled"]');
         if (scheduledInput) {
             scheduledInput.checked = true;
         }
 
-        // 2. Función para actualizar el estado y mensaje del botón de entrega inmediata
         function updateEntregaInmediataTiempo() {
             const entregaInmediataInput = document.querySelector('input[name="deliveryTime"][value="asap"]');
             const entregaInmediataLabel = entregaInmediataInput?.closest('label');
@@ -813,7 +795,6 @@ async function initialize() {
 
             if (!entregaInmediataInput || !optionContent || !storeData || !storeData.openingHours) return;
 
-            // Elimina texto previo si existe
             optionContent.querySelector('.entrega-tiempo')?.remove();
 
             let texto = '';
@@ -823,18 +804,13 @@ async function initialize() {
                 texto = 'Tienda cerrada';
                 entregaInmediataInput.disabled = true;
                 entregaInmediataInput.checked = false;
-                // Selecciona programada si no está seleccionada
                 if (scheduledInput && !scheduledInput.checked) {
                     scheduledInput.checked = true;
                     scheduledInput.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             } else {
                 entregaInmediataInput.disabled = false;
-                texto = tipoEntrega === 'delivery'
-                    ? 'Tiempo aproximado: 30 minutos'
-                    : tipoEntrega === 'pickup'
-                        ? 'Tiempo aproximado: 15 minutos'
-                        : '';
+                texto = tipoEntrega === 'delivery' ? 'Tiempo aproximado: 30 minutos' : tipoEntrega === 'pickup' ? 'Tiempo aproximado: 15 minutos' : '';
             }
 
             if (texto) {
@@ -848,20 +824,16 @@ async function initialize() {
             }
         }
 
-        // Listeners para tipo de entrega
         const deliveryTypeRadios = document.querySelectorAll('input[name="deliveryType"]');
         deliveryTypeRadios.forEach(radio => {
             radio.addEventListener('change', updateEntregaInmediataTiempo);
         });
 
-        // Llama a updateEntregaInmediataTiempo() y configura fecha/hora programada automáticamente después de cargar storeData
         const storeRef = doc(db, 'stores', storeId);
         const storeDoc = await getDoc(storeRef);
 
         if (storeDoc.exists()) {
             storeData = storeDoc.data();
-
-            // --- INICIO: Selección automática de fecha/hora programada ---
             if (scheduledDateInput && scheduledTimeInput && storeData.openingHours) {
                 const now = new Date();
                 const daysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -871,42 +843,35 @@ async function initialize() {
                     return d.toISOString().slice(0, 10);
                 }
 
-                for (let i = 0; i < 8; i++) { // máximo 7 días adelante
+                for (let i = 0; i < 8; i++) {
                     const testDate = new Date(now);
                     testDate.setDate(now.getDate() + i);
                     const dayOfWeek = daysMap[testDate.getDay()];
                     const hours = storeData.openingHours[dayOfWeek];
 
-                    if (hours) {
-                        let openH = parseInt(hours.open.split(':')[0], 10);
-                        let openM = parseInt(hours.open.split(':')[1], 10);
-                        let closeH = parseInt(hours.close.split(':')[0], 10);
-                        let closeM = parseInt(hours.close.split(':')[1], 10);
+                    if (!hours) {
+                        continue;
+                    }
 
-                        if (i === 0 && isNowInOpeningHours(storeData.openingHours)) {
-                            // Tienda abierta: hora actual + 1h, pero dentro del horario
-                            let target = new Date(now.getTime() + 60 * 60 * 1000);
-                            let minTime = openH * 60 + openM;
-                            let maxTime = closeH * 60 + closeM;
-                            let targetMinutes = target.getHours() * 60 + target.getMinutes();
-                            if (targetMinutes < minTime) targetMinutes = minTime;
-                            if (targetMinutes > maxTime) targetMinutes = maxTime;
-
-                            // Redondea a los 5 minutos siguientes
-                            targetMinutes = Math.ceil(targetMinutes / 5) * 5;
-                            let h = Math.floor(targetMinutes / 60);
-                            let m = targetMinutes % 60;
-                            scheduledDateInput.value = formatDate(now);
-                            scheduledTimeInput.value = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                            found = true;
-                            break;
-                        } else if (i > 0 && hours) {
-                            // Tienda cerrada: busca el próximo día con horario
-                            scheduledDateInput.value = formatDate(testDate);
-                            scheduledTimeInput.value = `${openH.toString().padStart(2, '0')}:${openM.toString().padStart(2, '0')}`;
-                            found = true;
-                            break;
-                        }
+                    if (i === 0 && isNowInOpeningHours(storeData.openingHours)) {
+                        let target = new Date(now.getTime() + 60 * 60 * 1000);
+                        let minTime = hours.open.split(':')[0] * 60 + hours.open.split(':')[1];
+                        let maxTime = hours.close.split(':')[0] * 60 + hours.close.split(':')[1];
+                        let targetMinutes = target.getHours() * 60 + target.getMinutes();
+                        if (targetMinutes < minTime) targetMinutes = minTime;
+                        if (targetMinutes > maxTime) targetMinutes = maxTime;
+                        targetMinutes = Math.ceil(targetMinutes / 5) * 5;
+                        let h = Math.floor(targetMinutes / 60);
+                        let m = targetMinutes % 60;
+                        scheduledDateInput.value = formatDate(now);
+                        scheduledTimeInput.value = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                        found = true;
+                        break;
+                    } else if (i > 0 && hours) {
+                        scheduledDateInput.value = formatDate(testDate);
+                        scheduledTimeInput.value = `${hours.open.split(':')[0].toString().padStart(2, '0')}:${hours.open.split(':')[1].toString().padStart(2, '0')}`;
+                        found = true;
+                        break;
                     }
                 }
                 if (!found) {
@@ -914,8 +879,6 @@ async function initialize() {
                     scheduledTimeInput.value = '';
                 }
             }
-            // --- FIN: Selección automática de fecha/hora programada ---
-
             updateScheduledFields();
             updateEntregaInmediataTiempo();
         } else {
@@ -923,19 +886,11 @@ async function initialize() {
             return;
         }
 
-        // --- Mapa interactivo SOLO para crear/editar dirección ---
-        /**
-         * Muestra un mapa interactivo usando Google Maps JavaScript API.
-         * Cada carga cuenta como una solicitud de $7 por 1,000 (verifica tu cuota y presupuesto).
-         * Usa solo cuando el usuario realmente necesita mover el pin.
-         */
         let map, marker;
         function initMap(lat = -1.843254, lng = -79.990611) {
             const mapDiv = document.getElementById('map');
             if (!mapDiv) return;
-
-            mapDiv.style.display = 'block'; // Mostrar el mapa
-
+            mapDiv.style.display = 'block';
             const center = { lat: parseFloat(lat), lng: parseFloat(lng) };
             map = new google.maps.Map(mapDiv, {
                 center,
@@ -944,28 +899,22 @@ async function initialize() {
                 streetViewControl: false,
                 fullscreenControl: false
             });
-
             marker = new google.maps.Marker({
                 position: center,
                 map,
                 draggable: true
             });
-
-            // Actualizar coordenadas al mover el pin
             marker.addListener('dragend', function () {
                 const pos = marker.getPosition();
                 document.getElementById('latitude').value = pos.lat().toFixed(6);
                 document.getElementById('longitude').value = pos.lng().toFixed(6);
             });
-
-            // Actualizar pin al hacer clic en el mapa
             map.addListener('click', function (e) {
                 marker.setPosition(e.latLng);
                 document.getElementById('latitude').value = e.latLng.lat().toFixed(6);
                 document.getElementById('longitude').value = e.latLng.lng().toFixed(6);
             });
         }
-        // --- Fin mapa interactivo ---
 
         function isPointInDeliveryZones(lat, lng, deliveryZones) {
             if (!window.google || !window.google.maps || !window.google.maps.geometry) return false;
@@ -986,13 +935,8 @@ async function initialize() {
             const mapDiv = document.getElementById('coverageZonesMap');
             const listDiv = document.getElementById('coverageZonesList');
             modal.style.display = 'flex';
-
-            // Limpia el mapa anterior
             mapDiv.innerHTML = '';
-
-            // Carga Google Maps y dibuja los polígonos
             loadGoogleMapsScript(() => {
-                // Centra el mapa en la primera zona o en un punto por defecto
                 let center = { lat: -1.843254, lng: -79.990611 };
                 if (deliveryZones.length > 0 && deliveryZones[0].polygon && deliveryZones[0].polygon.length > 0) {
                     center = deliveryZones[0].polygon[0];
@@ -1004,8 +948,6 @@ async function initialize() {
                     streetViewControl: false,
                     fullscreenControl: false
                 });
-
-                // Dibuja los polígonos
                 deliveryZones.forEach(zone => {
                     const polygon = new google.maps.Polygon({
                         paths: zone.polygon,
@@ -1016,20 +958,15 @@ async function initialize() {
                         map
                     });
                 });
-
-                // Lista de zonas
                 if (listDiv) {
                     listDiv.innerHTML = deliveryZones.map(z =>
-                        `<div style="margin-bottom:4px;"><b>${z.name || 'Zona'}</b> &mdash; Envío: $${z.shipping?.toFixed(2) ?? '0.00'}</div>`
+                        `<div style="margin-bottom:4px;"><b>${z.name || 'Zona'}</b> — Envío: $${z.shipping?.toFixed(2) ?? '0.00'}</div>`
                     ).join('');
                 }
             });
-
-            // Cerrar modal
             document.getElementById('closeCoverageZonesModal').onclick = () => {
                 modal.style.display = 'none';
             };
-            // Cerrar al hacer click fuera del modal
             modal.onclick = (e) => {
                 if (e.target === modal) modal.style.display = 'none';
             };
@@ -1049,26 +986,22 @@ async function initialize() {
 
         function validateScheduledDateTime() {
             if (!scheduledDateInput || !scheduledTimeInput || !scheduledWarning) return;
-            // Aquí ya tenemos storeData cargado globalmente
             const openingHours = storeData.openingHours || {};
             const dateStr = scheduledDateInput.value;
             const timeStr = scheduledTimeInput.value;
             scheduledWarning.textContent = '';
             if (!dateStr) return;
-  
             const daysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
             const [year, month, day] = dateStr.split('-').map(Number);
             const jsDate = new Date(Date.UTC(year, month - 1, day));
             const dayOfWeek = daysMap[jsDate.getUTCDay()];
             const hours = openingHours[dayOfWeek];
-  
-            console.log('dateStr:', dateStr, 'getDay:', new Date(dateStr).getDay(), 'dayOfWeek:', dayOfWeek, 'hours:', hours);
-  
+
             if (!hours) {
                 scheduledWarning.textContent = 'La tienda no atiende el día seleccionado.';
                 return;
             }
-  
+
             if (timeStr) {
                 const [h, m] = timeStr.split(':').map(Number);
                 const [openH, openM] = hours.open.split(':').map(Number);
@@ -1086,18 +1019,14 @@ async function initialize() {
         if (scheduledDateInput) scheduledDateInput.addEventListener('change', validateScheduledDateTime);
         if (scheduledTimeInput) scheduledTimeInput.addEventListener('change', validateScheduledDateTime);
 
-        // Mostrar el modal de otras direcciones
         document.addEventListener('click', function(e) {
-            // Abrir el modal al hacer click en el botón
             if (e.target && e.target.id === 'show-other-addresses-btn') {
                 const modal = document.getElementById('otherAddressesModal');
                 const listDiv = document.getElementById('otherAddressesList');
                 listDiv.innerHTML = '';
-                // Muestra todas las direcciones menos la seleccionada
                 addresses.forEach((addr, idx) => {
                     if (addr !== selectedAddress) {
                         const el = createAddressElement(addr, idx);
-                        // Al seleccionar, cambia la dirección y cierra el modal
                         el.addEventListener('click', () => {
                             selectedAddress = addr;
                             updateSelectedAddressView(selectedAddress);
@@ -1108,27 +1037,22 @@ async function initialize() {
                 });
                 modal.style.display = 'flex';
             }
-            // Cerrar el modal al hacer click en el botón de cerrar
             if (e.target && e.target.id === 'closeOtherAddressesModal') {
                 document.getElementById('otherAddressesModal').style.display = 'none';
             }
-            // Cerrar el modal al hacer click fuera del contenido
             if (e.target && e.target.id === 'otherAddressesModal') {
                 document.getElementById('otherAddressesModal').style.display = 'none';
             }
         });
 
-        // Cerrar el modal de nueva dirección al hacer clic en la X o fuera del contenido
         const newAddressModal = document.getElementById('newAddressModal');
         if (newAddressModal) {
-            // Botón de cerrar
             const closeBtn = document.getElementById('closeNewAddressModal');
             if (closeBtn) {
                 closeBtn.onclick = () => {
                     newAddressModal.style.display = 'none';
                 };
             }
-            // Cerrar al hacer clic fuera del contenido
             newAddressModal.addEventListener('mousedown', function(e) {
                 if (e.target === newAddressModal) {
                     newAddressModal.style.display = 'none';
@@ -1141,16 +1065,12 @@ async function initialize() {
     }
 }
 
-// Carga la Google Maps JavaScript API solo cuando se necesita (para el mapa interactivo)
-// Evita exponer la clave en el HTML y reduce el consumo de cuota
 function loadGoogleMapsScript(callback) {
     if (window.google && window.google.maps && window.google.maps.geometry && window.google.maps.drawing) {
         callback();
         return;
     }
-    // Evita cargar varias veces
     if (document.getElementById('google-maps-script')) {
-        // Si ya se está cargando, espera a que esté listo
         const check = setInterval(() => {
             if (window.google && window.google.maps && window.google.maps.geometry && window.google.maps.drawing) {
                 clearInterval(check);
@@ -1167,23 +1087,23 @@ function loadGoogleMapsScript(callback) {
     document.head.appendChild(script);
 }
 
-function loadGoogleMapsGeometryScript(callback) {
-    if (window.google && window.google.maps && window.google.maps.geometry) {
-        callback();
-        return;
-    }
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry&loading=async`;
-    script.async = true;
-    script.onload = callback;
-    document.head.appendChild(script);
+function isNowInOpeningHours(openingHours) {
+    const now = new Date();
+    const daysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const dayOfWeek = daysMap[now.getDay()];
+    const hours = openingHours[dayOfWeek];
+    if (!hours) return false;
+    const [openH, openM] = hours.open.split(':').map(Number);
+    const [closeH, closeM] = hours.close.split(':').map(Number);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const openMinutes = openH * 60 + openM;
+    const closeMinutes = closeH * 60 + closeM;
+    return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
 }
 
-// Inicializar la página
 document.addEventListener('DOMContentLoaded', () => {
     initialize();
 
-    // Mostrar/ocultar dirección según tipo de entrega
     const deliveryTypeRadios = document.querySelectorAll('input[name="deliveryType"]');
     const deliveryAddressSection = document.querySelector('.delivery-address');
 
@@ -1201,55 +1121,10 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', toggleAddressSection);
     });
 
-    // Inicializa el estado al cargar
     toggleAddressSection();
 
-    // Agrega el event listener para el botón de Google
     const googleLoginBtn = document.getElementById('google-login-btn');
     if (googleLoginBtn) {
         googleLoginBtn.addEventListener('click', loginWithGoogle);
     }
-
-    // Horario de atención
-    const openingHoursFields = document.getElementById('openingHoursFields');
-    if (openingHoursFields) {
-        // Días de la semana
-        const daysOfWeek = [
-            'Lunes',
-            'Martes',
-            'Miércoles',
-            'Jueves',
-            'Viernes',
-            'Sábado',
-            'Domingo'
-        ];
-
-        // Crear campos para cada día
-        daysOfWeek.forEach((day, index) => {
-            const dayDiv = document.createElement('div');
-            dayDiv.className = 'day-field';
-            dayDiv.innerHTML = `
-                <label class="block text-sm font-medium text-gray-700 mb-2">${day}</label>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="time" id="opening-time-${index}" class="time-input" placeholder="Apertura">
-                    <input type="time" id="closing-time-${index}" class="time-input" placeholder="Cierre">
-                </div>
-            `;
-            openingHoursFields.appendChild(dayDiv);
-        });
-    }
 });
-
-function isNowInOpeningHours(openingHours) {
-    const now = new Date();
-    const daysMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const dayOfWeek = daysMap[now.getDay()];
-    const hours = openingHours[dayOfWeek];
-    if (!hours) return false;
-    const [openH, openM] = hours.open.split(':').map(Number);
-    const [closeH, closeM] = hours.close.split(':').map(Number);
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const openMinutes = openH * 60 + openM;
-    const closeMinutes = closeH * 60 + closeM;
-    return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
-}
