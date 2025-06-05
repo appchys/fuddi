@@ -759,7 +759,7 @@ async function initialize() {
                         paymentMethod: selectedPaymentMethod.value,
                         paymentProofUrl,
                         bankIndex: selectedPaymentMethod.value === 'transferencia' ? parseInt(document.getElementById('bank-select').value) : null,
-                        status: 'pending',
+                        status: 'Pendiente',
                         createdAt: new Date().toISOString(),
                         deliveryType: deliveryTimeType, // "asap" o "scheduled"
                         scheduledDate,                  // YYYY-MM-DD

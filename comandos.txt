@@ -1,4 +1,4 @@
 git init
 git add .
-git commit -m "Registro"
+git commit -m "Mejoras en el estado del pedido"
 git push -u origin main
