@@ -19,7 +19,7 @@ const db = getFirestore(app);
 window.handleOrderStatus = async (orderId, currentStatus) => {
     try {
         const orderRef = docRef(db, 'orders', orderId);
-        const newStatus = currentStatus === 'pendiente' ? 'enviado' : 'pendiente';
+        const newStatus = currentStatus === 'Pendiente' ? 'enviado' : 'Pendiente';
         
         await updateDoc(orderRef, {
             status: newStatus,
@@ -37,8 +37,8 @@ window.handleOrderStatus = async (orderId, currentStatus) => {
 
             const button = orderCard.querySelector('.action-btn');
             if (button) {
-                button.textContent = newStatus === 'pendiente' ? 'Aceptar' : 'Enviado';
-                button.className = `action-btn ${newStatus === 'pendiente' ? 'accept-btn' : 'ship-btn'}`;
+                button.textContent = newStatus === 'Pendiente' ? 'Aceptar' : 'Enviado';
+                button.className = `action-btn ${newStatus === 'Pendiente' ? 'accept-btn' : 'ship-btn'}`;
             }
         }
 
@@ -85,7 +85,7 @@ function showOrderDetails(order) {
         
         <div class="order-section">
             <h4>Estado</h4>
-            <p class="status-${order.status}">${order.status === 'pendiente' ? 'Pendiente' : 'Enviado'}</p>
+            <p class="status-${order.status}">${order.status === 'Pendiente' ? 'Pendiente' : 'Enviado'}</p>
         </div>
         
         <div class="order-section">
@@ -179,9 +179,9 @@ function showOrderDetails(order) {
         </div>
         
         <div class="order-actions">
-            <button class="action-btn ${order.status === 'pendiente' ? 'accept-btn' : 'ship-btn'}" 
+            <button class="action-btn ${order.status === 'Pendiente' ? 'accept-btn' : 'ship-btn'}" 
                     onclick="handleOrderStatus('${order.id}', '${order.status}'); closeModal();">
-                ${order.status === 'pendiente' ? 'Marcar como Enviado' : 'Marcar como Pendiente'}
+                ${order.status === 'Pendiente' ? 'Marcar como Enviado' : 'Marcar como Pendiente'}
             </button>
             <button class="action-btn delete-btn" onclick="handleDeleteOrder('${order.id}'); closeModal();">
                 Eliminar Pedido
@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const paymentMethod = order.paymentMethod || 'No especificado';
                     const createdAt = order.createdAt ? new Date(order.createdAt).toLocaleString() : 'Fecha no disponible';
                     const items = Array.isArray(order.products) ? order.products : [];
-                    const status = order.status || 'pendiente';
+                    const status = order.status || 'Pendiente';
 
                     // Crear la tarjeta del pedido simplificada
                     const orderCard = document.createElement('div');
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     orderCard.innerHTML = `
                         <div class="order-header">
                             <h3 class="order-title">${clientName}</h3>
-                            <p class="status-text ${status}">${status === 'pendiente' ? 'Pendiente' : 'Enviado'}</p>
+                            <p class="status-text ${status}">${status === 'Pendiente' ? 'Pendiente' : 'Enviado'}</p>
                         </div>
                         <div class="order-summary">
                             <p>${items.length} producto${items.length !== 1 ? 's' : ''} • $${total}</p>
