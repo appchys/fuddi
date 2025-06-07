@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Productos</title>
+    <link rel="stylesheet" href="./css/store-products.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+</head>
+<body>
+    <header>
+        <button class="back-link" onclick="window.location.href = 'store.html?storeId=' + getStoreId()">
+            <i class="bi bi-arrow-left"></i> Volver al perfil
+        </button>
+    </header>
+
+    <main>
+        <section id="products-section">
+            <div class="section-header">
+                <h2><i class="bi bi-list-ul"></i> Lista de Productos</h2>
+                <button id="add-product-btn" class="btn">
+                    <i class="bi bi-plus-lg"></i> Agregar Producto
+                </button>
+            </div>
+            
+            <div id="products-list">
+                <div class="empty-state">
+                    <i class="bi bi-box-seam"></i>
+                    <p>No hay productos registrados</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para agregar/editar producto -->
+    <div id="product-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"><i class="bi bi-box-seam"></i> <span id="modal-title-text">Nuevo Producto</span></h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="productName">Nombre del Producto</label>
+                        <input type="text" id="productName" class="form-control" placeholder="Ej. Torta mojada de chocolate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productPrice">Precio</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="productPrice" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productDescription">Descripción</label>
+                        <textarea id="productDescription" class="form-control" rows="4" placeholder="Describe las características del producto..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productCollection">Colección</label>
+                        <input type="text" id="productCollection" class="form-control" placeholder="Ej. Postres" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productImage">Imagen del Producto</label>
+                        <div class="file-input-container">
+                            <div class="file-input-button">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                                <span id="file-input-label">Seleccionar imagen</span>
+                            </div>
+                            <input type="file" id="productImage" accept="image/*">
+                            <span id="file-input-name" class="file-input-name"></span>
+                        </div>
+                        <small class="form-text">Formatos aceptados: JPG, PNG, WEBP (Max. 2MB)</small>
+                        <div class="image-preview-container" id="imagePreviewContainer">
+                            <img id="imagePreview" class="image-preview" src="" alt="Vista previa">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="cancel-add-product" class="btn btn-secondary">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <button type="submit" form="productForm" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Guardar Producto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./js/store-products.js"></script>
+</body>
+</html>
+
+<script>
+    // Suponiendo que tienes una función para obtener el ID de la tienda
+    function getStoreId() {
+        // Lógica para obtener el ID de la tienda
+    }
+
+    // Ejemplo de cómo podrías estar manejando la carga de productos
+    const products = []; // Tu array de productos
+
+    function renderProducts() {
+        const productsList = document.getElementById('products-list');
+        productsList.innerHTML = ''; // Limpiar lista existente
+
+        if (products.length === 0) {
+            productsList.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-box-seam"></i>
+                    <p>No hay productos registrados</p>
+                </div>
+            `;
+            return;
+        }
+
+        products.forEach((product, idx) => {
+            const productElement = document.createElement('div');
+            productElement.className = 'product-item';
+            productElement.innerHTML = `
+                <div class="product-image-container">
+                    ${product.imageUrl ? `
+                        <img src="${product.imageUrl}" alt="${product.name}" class="product-image">
+                    ` : `
+                        <div class="placeholder-image">
+                            <span>${product.name.charAt(0).toUpperCase()}</span>
+                        </div>
+                    `}
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+                    <div class="product-info">
+                        <h3>${product.name}</h3>
+                        <p class="description">${product.description || ''}</p>
+                        <p class="price">$${product.price ? product.price.toFixed(2) : '0.00'}</p>
+                    </div>
+                    <div class="product-actions">
+                        <button class="btn move-up" data-idx="${idx}" ${idx === 0 ? 'disabled' : ''} title="Subir">
+                            <i class="bi bi-arrow-up"></i>
+                        </button>
+                        <button class="btn move-down" data-idx="${idx}" ${idx === products.length - 1 ? 'disabled' : ''} title="Bajar">
+                            <i class="bi bi-arrow-down"></i>
+                        </button>
+                        <button class="btn toggle-visibility-btn" data-id="${product.id}" title="${product.hidden ? 'Mostrar' : 'Ocultar'}">
+                            <i class="bi ${product.hidden ? 'bi-eye-slash' : 'bi-eye'}"></i>
+                        </button>
+                        <button class="btn" data-id="${product.id}">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn" data-id="${product.id}" data-image="${product.imageUrl}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            productsList.appendChild(productElement);
+        });
+    }
+
+    document.getElementById('add-product-btn').addEventListener('click', () => {
+        // Lógica para abrir el modal de agregar producto
+    });
+
+    document.getElementById('cancel-add-product').addEventListener('click', () => {
+        // Lógica para cerrar el modal
+    });
+
+    // Inicializar la lista de productos
+    renderProducts();
+</script>

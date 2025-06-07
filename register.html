@@ -5,19 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro</title>
-    <link rel="stylesheet" href="css/styles.css"> <!-- Añade tus estilos -->
     <link rel="stylesheet" href="css/register.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
     <div class="register-container">
         <h2>Completa tu registro</h2>
-        <form id="registerForm">
-            <label for="accountType">Tipo de cuenta:</label>
-            <select id="accountType" name="accountType" required>
-                <option value="" disabled selected>Selecciona una opción</option>
-                <option value="client">Cliente</option>
-                <option value="store">Tienda</option>
-            </select>
+        <button class="btn btn-google" id="googleSignInButton">
+            <i class="bi bi-google"></i> Iniciar sesión con Google
+        </button>
+        <form id="registerForm" style="display: none;">
+            <div class="register-actions">
+                <button type="button" id="clientButton" class="btn">
+                    <i class="bi bi-person"></i> Cliente
+                </button>
+                <button type="button" id="storeButton" class="btn">
+                    <i class="bi bi-shop"></i> Tienda
+                </button>
+            </div>
+            <input type="hidden" id="accountType" name="accountType" required />
 
             <label for="name">Nombre:</label>
             <input type="text" id="name" name="name" required>
@@ -25,16 +32,16 @@
             <label for="phone">Teléfono:</label>
             <input type="tel" id="phone" name="phone" required>
 
-            <label for="description">Descripción:</label>
-            <textarea id="description" name="description" required></textarea>
-
-            <!-- Campos adicionales para tiendas -->
             <div id="storeFields" style="display: none;">
-                <label for="coverImage">Imagen de portada:</label>
-                <input type="file" id="coverImage" name="coverImage" accept="image/*">
-
+                <label for="description">Descripción:</label>
+                <textarea id="description" name="description" required></textarea>
+                <label for="username">Nombre de usuario:</label>
+                <input type="text" id="username" placeholder="Ingrese un nombre de usuario único" required />
+                <input type="hidden" id="storeId" name="storeId" />
                 <label for="imageUrl">Imagen de perfil:</label>
-                <input type="file" id="imageUrl" name="imageUrl" accept="image/*">
+                <input type="file" id="imageUrl" />
+                <label for="coverImage">Imagen de portada:</label>
+                <input type="file" id="coverImage" />
             </div>
 
             <button type="submit">Registrarse</button>

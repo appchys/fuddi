@@ -3,25 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout</title>
-    <link rel="stylesheet" href="./css/styles.css"> <!-- Ruta correcta para styles.css -->
+    <title>Finalizar Compra | Tienda</title>
+    <link rel="stylesheet" href="./css/checkout.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Incluir Toastify CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 </head>
 <body>
-    <header>
-        <h1>Checkout</h1>
-    </header>
-    <main>
-        <section id="cart-items">
-            <h2>Tu Carrito</h2>
-            <div id="cart-details">
-                <!-- Los elementos del carrito se cargarán aquí dinámicamente -->
+    <div class="checkout-container">
+        <header class="checkout-header">
+            <a href="javascript:history.back()" class="back-link" style="font-size: 1rem; color: #374151; text-decoration: none; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                <i class="bi bi-arrow-left"></i> Volver atrás
+            </a>
+            <h1><i class="bi bi-bag-check"></i> Finalizar Compra</h1>
+        </header>
+
+        <main class="checkout-main">
+            <!-- Información del Cliente (mover arriba del resumen del pedido) -->
+            <section class="checkout-section customer-info">
+                <h2><i class="bi bi-person"></i> Información</h2>
+                <div id="user-info-container"></div>
+                <div class="google-login-section">
+                    <!-- Quita el onclick del botón -->
+                    <button class="btn btn-google" id="google-login-btn">
+                        <i class="bi bi-google"></i> Iniciar sesión con Google
+                    </button>
+                </div>
+            </section>
+
+            <!-- Tipo de entrega -->
+            <section class="checkout-section delivery-type">
+                <h2><i class="bi bi-shop-window"></i> ¿Cómo deseas recibir tu pedido?</h2>
+                <div class="delivery-type-options">
+                    <label class="delivery-type-option">
+                        <input type="radio" name="deliveryType" value="delivery" checked>
+                        <div class="option-content">
+                            <i class="bi bi-bicycle"></i>
+                            <span>Delivery</span>
+                        </div>
+                    </label>
+                    <label class="delivery-type-option">
+                        <input type="radio" name="deliveryType" value="pickup">
+                        <div class="option-content">
+                            <i class="bi bi-shop"></i>
+                            <span>Retiro en tienda</span>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Dirección de Entrega (oculta por defecto) -->
+            <section class="checkout-section delivery-address hidden">
+                <h2><i class="bi bi-geo-alt"></i> Dirección de Entrega</h2>
+                <div id="saved-addresses" class="address-list"></div>
+                <button id="add-address-btn" class="btn secondary">
+                    <i class="bi bi-plus-circle"></i> Agregar Dirección
+                </button>
+                
+            </section>
+
+            <!-- Nueva sección: Tiempo de entrega -->
+            <section class="checkout-section delivery-time">
+                <h2><i class="bi bi-clock"></i> ¿Cuándo deseas tu pedido?</h2>
+                <div class="delivery-time-options">
+                    <label class="delivery-time-option">
+                        <input type="radio" name="deliveryTime" value="asap">
+                        <div class="option-content">
+                            <i class="bi bi-lightning-charge"></i>
+                            <span>Entrega inmediata</span>
+                            <!-- Aquí se inserta el texto dinámicamente -->
+                        </div>
+                    </label>
+                    <label class="delivery-time-option">
+                        <input type="radio" name="deliveryTime" value="scheduled" checked>
+                        <div class="option-content">
+                            <i class="bi bi-calendar-event"></i>
+                            <span>Programar entrega</span>
+                        </div>
+                    </label>
+                </div>
+                <div id="scheduled-delivery-fields" class="scheduled-fields hidden" style="margin-top: 1rem;">
+                    <div class="form-group">
+                        <label for="scheduled-date">Día</label>
+                        <input type="date" id="scheduled-date" name="scheduled-date" min="">
+                    </div>
+                    <div class="form-group">
+                        <label for="scheduled-time">Hora</label>
+                        <input type="time" id="scheduled-time" name="scheduled-time">
+                    </div>
+                    <div id="scheduled-warning" style="color:#b91c1c;font-size:0.97em;margin-top:6px;"></div>
+                </div>
+            </section>
+
+
+            <!-- Resumen del Pedido (debe ir después de Información) -->
+            <section class="checkout-section cart-summary">
+                <h2><i class="bi bi-cart3"></i> Resumen del Pedido</h2>
+                <div id="cart-details" class="cart-items">
+                    <!-- Productos cargados dinámicamente -->
+                </div>
+                <div class="order-total">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">$0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Envío:</span>
+                        <span id="shipping">$0.00</span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span>Total:</span>
+                        <span id="total">$0.00</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Método de Pago -->
+            <section class="checkout-section payment-method">
+                <h2><i class="bi bi-credit-card"></i> Método de Pago</h2>
+                <div class="payment-options">
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="Efectivo" checked>
+                        <div class="option-content">
+                            <i class="bi bi-cash-coin"></i>
+                            <span>Efectivo</span>
+                        </div>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="Transferencia">
+                        <div class="option-content">
+                            <i class="bi bi-bank"></i>
+                            <span>Transferencia</span>
+                        </div>
+                    </label>
+                </div>
+                <div id="bank-details" class="bank-info hidden">
+                    <h3><i class="bi bi-building"></i> Datos Bancarios</h3>
+                    <div id="bank-accounts-list" class="accounts-list"></div>
+                    
+                    <!-- Input para el comprobante de pago -->
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="payment-proof">Comprobante de Pago (imagen)</label>
+                        <input type="file" id="payment-proof" accept="image/*" class="form-control" style="padding: 8px;">
+                        <small class="text-muted">Por favor, sube una imagen del comprobante de transferencia.</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Confirmación -->
+            <section class="checkout-confirm">
+                <button id="confirm-btn" class="btn confirm-btn">
+                    <i class="bi bi-check-circle-fill"></i> Confirmar Pedido
+                </button>
+            </section>
+        </main>
+    </div>
+    <!-- Incluir Toastify JS -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="module" src="./js/checkout.js"></script>
+
+    <!-- Modal de zonas de cobertura -->
+    <div id="coverageZonesModal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:400px;width:95vw;box-shadow:0 2px 16px #0002;position:relative;">
+        <button id="closeCoverageZonesModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">&times;</button>
+        <h3 style="margin-bottom:12px;font-size:1.1em;">Zonas de cobertura de la tienda</h3>
+        <div id="coverageZonesMap" style="width:100%;height:300px;border-radius:8px;"></div>
+        <div id="coverageZonesList" style="margin-top:10px;font-size:0.98em;"></div>
+      </div>
+    </div>
+
+    <!-- Modal para otras direcciones -->
+    <div id="otherAddressesModal" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:400px;width:95vw;box-shadow:0 2px 16px #0002;position:relative;">
+        <button id="closeOtherAddressesModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">&times;</button>
+        <h3 style="margin-bottom:12px;font-size:1.1em;">Otras direcciones guardadas</h3>
+        <div id="otherAddressesList"></div>
+      </div>
+    </div>
+
+    <!-- Modal para agregar nueva dirección -->
+    <div id="newAddressModal" style="display:none;position:fixed;z-index:2100;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:400px;width:95vw;box-shadow:0 2px 16px #0002;position:relative;">
+        <button id="closeNewAddressModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">&times;</button>
+        <h3 style="margin-bottom:12px;font-size:1.1em;"><i class="bi bi-pencil-square"></i> Nueva Dirección</h3>
+        <form id="addressForm">
+            <div class="form-group">
+                <label for="reference">Referencia (Ej: Casa, Oficina)</label>
+                <input type="text" id="reference" name="reference" placeholder="Ej: Frente al parque" required>
             </div>
-        </section>
-        <section id="account-section">
-            <h2>¿No tienes cuenta?</h2>
-            <button id="create-account-btn" class="btn">Crear cuenta</button>
-        </section>
-    </main>
-    <script src="./js/checkout.js"></script> <!-- Ruta correcta para checkout.js -->
+            <button type="button" id="get-location-btn" class="btn secondary">
+                <i class="bi bi-geo-alt-fill"></i> Usar mi ubicación actual
+            </button>
+            <input type="hidden" id="latitude" name="latitude" value="0.0000">
+            <input type="hidden" id="longitude" name="longitude" value="0.0000">
+            <div id="map" style="width: 100%; height: 300px; margin: 16px 0; border-radius: 8px; overflow: hidden; display: none;"></div>
+            <button type="submit" class="btn primary" style="margin-top:10px;">
+                <i class="bi bi-save2"></i> Guardar Dirección
+            </button>
+        </form>
+      </div>
+    </div>
 </body>
 </html>

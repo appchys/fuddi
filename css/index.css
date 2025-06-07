@@ -1,0 +1,286 @@
+/* Reset básico para eliminar márgenes y padding por defecto */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Estilo general del cuerpo */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+/* Limitar la descripción a 2 líneas */
+.store p {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limitar a 2 líneas */
+    line-clamp: 2; /* Standard property for compatibility */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* Estilos para el contenedor de tiendas */
+#stores-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+/* Estilos para cada tarjeta de tienda */
+.store {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.store:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.store a {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.store img {
+    pointer-events: none;
+}
+
+/* Contenedor principal de la tienda */
+.store-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Encabezado de la tienda (portada + perfil) */
+.store-header {
+    position: relative;
+    height: 90px;
+}
+
+/* Portada de la tienda */
+.store-cover {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.store-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Estilo para la imagen de portada aleatoria */
+.random-cover {
+    width: 100%;
+    height: 100px; /* Ajusta la altura según el diseño */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(15px); /* Aplica el desenfoque */
+    position: relative;
+    z-index: 1;
+}
+
+/* Estilo para el título del sitio */
+.site-title {
+    position: absolute;
+    top: 10%; /* Ajusta este valor para mover el título más arriba */
+    left: 50%; /* Centra horizontalmente */
+    transform: translate(-50%, -50%); /* Ajusta el centrado */
+    font-size: 2rem; /* Tamaño del texto */
+    color: white; /* Color del texto */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Sombra para mejor visibilidad */
+    z-index: 2; /* Asegura que el texto esté por encima de la portada */
+    text-align: center;
+    pointer-events: none; /* Evita que el texto interfiera con clics */
+}
+
+/* Contenedor de la imagen de perfil */
+.store-profile-container {
+    position: absolute;
+    bottom: -30px;
+    left: 10px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid white;
+    background: white;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Imagen de perfil */
+.store-profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Detalles de la tienda (nombre + descripción) */
+.store-details {
+    padding: 35px 10px 10px 10px;
+}
+
+.store-name {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.store-name a:hover {
+    color: #0066cc;
+}
+
+.store-description {
+    margin: 5px 0 0;
+    color: #666;
+    font-size: 0.7rem;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2; /* Standard property for compatibility */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Estilo para el contenedor de los botones en el header */
+header nav ul {
+    display: flex; /* Alinea los botones horizontalmente */
+    justify-content: center; /* Centra los botones horizontalmente */
+    align-items: center; /* Centra los botones verticalmente */
+    list-style: none; /* Elimina los puntos de la lista */
+    padding: 0; /* Elimina el padding */
+    margin: 20px 0 0; /* Agrega un margen superior de 20px */
+    gap: 10px; /* Espaciado entre los botones */
+}
+
+/* Estilo para los elementos de la lista */
+header nav ul li {
+    display: inline-block; /* Asegura que los botones se comporten como elementos en línea */
+}
+
+/* Estilo para los botones del menú en el header */
+header nav ul li button {
+    background-color: #ffffff; /* Fondo blanco */
+    border: 1px solid #e0e0e0; /* Borde gris claro */
+    border-radius: 10px; /* Esquinas redondeadas */
+    padding: 10px; /* Espaciado interno */
+    width: 80px; /* Ancho fijo */
+    height: 80px; /* Alto fijo */
+    display: flex;
+    flex-direction: column; /* Ícono y texto en columna */
+    align-items: center; /* Centrar contenido horizontalmente */
+    justify-content: center; /* Centrar contenido verticalmente */
+    font-size: 14px; /* Tamaño de fuente */
+    font-weight: 500; /* Peso de la fuente */
+    color: #333; /* Color del texto */
+    cursor: pointer; /* Cursor de pointer al pasar el mouse */
+    transition: background-color 0.3s ease; /* Transición suave para hover */
+}
+
+/* Estilo para el ícono dentro del botón */
+header nav ul li button i {
+    font-size: 24px; /* Tamaño del ícono */
+    color: #28a745; /* Color verde para el ícono */
+    margin-bottom: 5px; /* Espacio entre el ícono y el texto */
+}
+
+/* Efecto hover para los botones */
+header nav ul li button:hover {
+    background-color: #f5f5f5; /* Fondo gris claro al pasar el mouse */
+}
+
+/* Estilo para los encabezados h2 */
+h2 {
+    margin-top: 20px; /* Ajusta este valor según el espacio que desees */
+    font-size: 1.5rem; /* Tamaño de fuente (opcional) */
+    text-align: center; /* Centrado del texto (opcional) */
+}
+
+/* Estilo para el botón de seguir */
+.follow-btn {
+    background: none;
+    border: none;
+    color: #4caf50; /* Verde olivo para "Seguir" */
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 6px;
+    float: right;
+    transition: color 0.15s;
+    box-shadow: none;
+}
+
+.follow-btn i {
+    margin-right: 4px;
+    font-size: 1.1em;
+}
+
+.follow-btn.following {
+    color: #ff6f91; /* Rosa igual al botón Continuar del carrito */
+    font-weight: bold;
+}
+
+.follow-btn.following i {
+    color: #ff6f91;
+}
+
+/* Efecto hover para el botón de seguir */
+.follow-btn:hover,
+.follow-btn:focus {
+    text-decoration: underline;
+    background: none;
+    color: #388e3c; /* Un verde más oscuro para hover en "Seguir" */
+}
+
+.follow-btn.following:hover,
+.follow-btn.following:focus {
+    color: #e65b7a; /* Un rosa más oscuro para hover en "Siguiendo" */
+}
+
+/* Media query para pantallas más grandes (opcional) */
+@media (min-width: 768px) {
+    #stores-container {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .store-header {
+        height: 120px;
+    }
+    
+    .store-profile-container {
+        bottom: -40px;
+        left: 15px;
+        width: 80px;
+        height: 80px;
+    }
+    
+    .store-details {
+        padding: 50px 15px 15px 15px;
+    }
+    
+    .store-name {
+        font-size: 1.1rem;
+    }
+    
+    .store-description {
+        font-size: 0.8rem;
+    }
+}
+

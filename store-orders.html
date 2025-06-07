@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos de la Tienda</title>
+    <link rel="stylesheet" href="./css/store-orders.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+</head>
+<body>
+    <header>
+        <h1>Pedidos de la Tienda</h1>
+        <button class="back-to-profile" onclick="window.location.href = 'store.html?storeId=' + getStoreId()">
+            <i class="bi bi-arrow-left"></i> Volver al perfil
+        </button>
+    </header>
+    <main>
+        <section id="store-orders-section">
+            <h2>Órdenes Recibidas</h2>
+            <div id="store-orders-container" class="container">
+                <!-- Las órdenes se cargarán aquí dinámicamente -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para detalles del pedido -->
+    <div id="orderDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="orderDetails">
+                <!-- Los detalles del pedido se cargarán aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./js/store-orders.js"></script>
+</body>
+</html>

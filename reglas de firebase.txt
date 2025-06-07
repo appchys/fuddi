@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Reglas para la colección users
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Reglas para la colección stores
+    match /stores/{storeDocId} {
+      allow read: if true; // Permitir lectura pública de las tiendas
+      allow write: if request.auth != null && 
+                    (resource.data.owner == request.auth.uid || 
+                     !exists(/databases/$(database)/documents/stores/$(storeDocId)));
+      match /{subcollection=**} {
+        allow read: if true;
+        allow write: if request.auth != null && 
+                      get(/databases/$(database)/documents/stores/$(storeDocId)).data.owner == request.auth.uid;
+      }
+    }
+
+    // Reglas para la colección carts
+    match /carts/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Reglas para la colección orders
+    match /orders/{orderId} {
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid || // Permitir lectura a los clientes que realizaron la orden
+        exists(/databases/$(database)/documents/stores/$(resource.data.storeDocId)) && // Verificar que la tienda exista
+        get(/databases/$(database)/documents/stores/$(resource.data.storeDocId)).data.owner == request.auth.uid // Permitir lectura al dueño de la tienda
+      );
+      allow write: if request.auth != null;
+    }
+
+    // Reglas para la colección stories
+    match /stories/{storyId} {
+      allow read: if true; // Permitir lectura pública
+      allow write: if request.auth != null && 
+                    get(/databases/$(database)/documents/stores/$(resource.data.storeDocId)).data.owner == request.auth.uid;
+    }
+  }
+}

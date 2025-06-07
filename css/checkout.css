@@ -1,0 +1,351 @@
+/* Variables de diseño */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    --light-color: #ecf0f1;
+    --dark-color: #2c3e50;
+    --success-color: #27ae60;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
+
+/* Reset y estilos base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f5f7fa;
+    color: var(--dark-color);
+    line-height: 1.6;
+}
+
+.checkout-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Encabezado */
+.checkout-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.checkout-header h1 {
+    color: var(--primary-color);
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Secciones principales */
+.checkout-main {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+}
+
+@media (min-width: 992px) {
+    .checkout-main {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+.checkout-section {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 25px;
+    box-shadow: var(--box-shadow);
+    margin-bottom: 20px;
+}
+
+.checkout-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Resumen del carrito */
+.cart-summary .cart-items {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.order-total {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.grand-total {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: 10px;
+    color: var(--accent-color);
+}
+
+/* Direcciones */
+.address-list {
+    margin-bottom: 20px;
+}
+
+.address-card {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.address-card:hover {
+    border-color: var(--secondary-color);
+}
+
+.address-card.selected {
+    border-color: var(--secondary-color);
+    background-color: rgba(52, 152, 219, 0.05);
+}
+
+.address-form {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+.coordinates {
+    margin: 15px 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Opciones tipo tarjeta (agrupadas) */
+.delivery-type-options,
+.delivery-time-options,
+.payment-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.delivery-type-option,
+.delivery-time-option,
+.payment-option {
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    padding: 15px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    font-size: 1.05rem;
+    font-weight: 500;
+    gap: 10px;
+    position: relative;
+}
+
+.delivery-type-option:hover,
+.delivery-time-option:hover,
+.payment-option:hover {
+    border-color: var(--secondary-color);
+    background: #f5f7fa;
+}
+
+.delivery-type-option input,
+.delivery-time-option input,
+.payment-option input {
+    display: none;
+}
+
+.delivery-type-option input:checked + .option-content,
+.delivery-time-option input:checked + .option-content,
+.payment-option input:checked + .option-content {
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+.option-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.option-content i {
+    font-size: 1.5rem;
+}
+
+/* Botones */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn.primary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.btn.primary:hover {
+    background-color: #2980b9;
+}
+
+.btn.secondary {
+    background-color: white;
+    color: var(--secondary-color);
+    border: 1px solid var(--secondary-color);
+}
+
+.btn.secondary:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.btn.confirm-btn {
+    width: 100%;
+    background-color: var(--success-color);
+    color: white;
+    font-size: 1.1rem;
+    padding: 15px;
+}
+
+.btn.confirm-btn:hover {
+    background-color: #219653;
+}
+
+.btn-disabled {
+    background-color: #bdbdbd !important;
+    color: #fff !important;
+    cursor: not-allowed !important;
+    border: none !important;
+}
+
+/* Estilo para el botón de Google */
+.google-login-section {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.google-login-section.hidden {
+    display: none;
+}
+
+.btn-google {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 12px 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+}
+
+.btn-google:hover {
+    background-color: #f8f9fa;
+    border-color: #ccc;
+}
+
+.btn-google i {
+    color: #4285F4;
+}
+
+/* Utilidades */
+.hidden {
+    display: none !important;
+}
+
+.secure-checkout {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* Permite scroll en la lista de direcciones del modal */
+#otherAddressesList {
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .checkout-section {
+        padding: 15px;
+    }
+    .delivery-type-options,
+    .delivery-time-options,
+    .payment-options {
+        grid-template-columns: 1fr;
+    }
+}

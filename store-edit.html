@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Tienda</title>
+    <script type="module" src="js/store-edit.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            color: #3b82f6;
+            text-decoration: none;
+            margin-bottom: 1rem;
+        }
+        .back-button:hover {
+            text-decoration: underline;
+        }
+        .bank-account-entry {
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .bank-account-entry .delete-btn {
+            background: #ef4444;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .bank-account-entry .delete-btn:hover {
+            background: #dc2626;
+        }
+        .bank-account-display {
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bank-account-display p {
+            margin: 0.25rem 0;
+        }
+        /* Estilos para el modal de zona de cobertura */
+        #zoneModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
+            align-items: center;
+            justify-content: center;
+        }
+        #zoneModal .modal-content {
+            background: #fff;
+            padding: 24px 20px;
+            border-radius: 10px;
+            max-width: 350px;
+            width: 90%;
+            box-shadow: 0 2px 16px #0002;
+        }
+        #zoneModal h3 {
+            margin-bottom: 12px;
+            font-size: 1.2em;
+        }
+        #zoneModal label {
+            display: block;
+            margin-bottom: 4px;
+        }
+        #zoneModal input {
+            width: 100%;
+            padding: 6px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #zoneModal .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        #zoneModal .button-group button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #zoneModal .button-group #cancelZoneBtn {
+            background: #f3f4f6;
+            color: #111827;
+        }
+        #zoneModal .button-group #saveZoneBtn {
+            background: #2563eb;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="form-container">
+        <button class="back-button" onclick="window.location.href = 'store.html?storeId=' + getStoreId()">
+            <i class="bi bi-arrow-left"></i> Volver al perfil
+        </button>
+        <h2 class="text-2xl font-bold mb-6 text-center">Editar Tienda</h2>
+        <form id="editStoreForm" class="space-y-4">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Nombre de la tienda</label>
+                <input type="text" id="name" name="name" required
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700">Usuario</label>
+                <input type="text" id="username" name="username"
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                <input type="tel" id="phone" name="phone"
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700">Descripción</label>
+                <textarea id="description" name="description" required rows="4"
+                          class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></textarea>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Datos bancarios</label>
+                <div id="bankAccountsContainer" class="space-y-2"></div>
+                <!-- Formulario de nueva cuenta bancaria oculto por defecto -->
+                <div id="bankAccountFormWrapper" style="display: none;" class="mt-4">
+                    <div class="bank-account-entry">
+                        <div class="mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Banco</label>
+                            <input type="text" id="newBank" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div class="mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Número de cuenta</label>
+                            <input type="text" id="newAccountNumber" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div class="mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Titular</label>
+                            <input type="text" id="newHolder" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" id="saveBankAccount" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700">Guardar</button>
+                            <button type="button" id="cancelBankAccount" class="bg-gray-400 text-white px-3 py-1 rounded-md hover:bg-gray-500">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="addBankAccount" class="mt-2 bg-green-600 text-white p-2 rounded-md hover:bg-green-700">
+                    Añadir cuenta bancaria
+                </button>
+            </div>
+            <div>
+                <label for="imageUrl" class="block text-sm font-medium text-gray-700">Foto de perfil</label>
+                <input type="file" id="imageUrl" name="imageUrl" accept="image/*"
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                <img id="currentImage" class="mt-2 max-w-xs hidden" alt="Foto actual de la tienda">
+            </div>
+            <div>
+                <label for="coverImage" class="block text-sm font-medium text-gray-700">Foto de portada</label>
+                <input type="file" id="coverImage" name="coverImage" accept="image/*"
+                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                <img id="currentCoverImage" class="mt-2 max-w-xs hidden" alt="Foto actual de portada">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Zonas de cobertura (polígonos)</label>
+                <div id="deliveryZonesMap" style="width:100%;height:350px;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:10px;"></div>
+                <button type="button" id="addZoneBtn" class="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 mb-2">Agregar zona</button>
+                <div id="zonesList" class="mb-2"></div>
+            </div>
+            <!-- Horario de atención -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Horario de atención</label>
+                <div id="openingHoursFields" class="grid grid-cols-1 gap-2"></div>
+            </div>
+            <button type="submit"
+                    class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+                Guardar Cambios
+            </button>
+        </form>
+    </div>
+
+    <!-- Modal para agregar zona de cobertura -->
+    <div id="zoneModal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:350px;width:90%;box-shadow:0 2px 16px #0002;">
+        <h3 style="margin-bottom:12px;font-size:1.2em;">Nueva zona de cobertura</h3>
+        <form id="zoneForm">
+          <div style="margin-bottom:10px;">
+            <label>Nombre de la zona</label>
+            <input id="zoneName" type="text" required style="width:100%;padding:6px;margin-top:4px;">
+          </div>
+          <div style="margin-bottom:10px;">
+            <label>Valor de envío ($)</label>
+            <input id="zoneShipping" type="number" min="0" step="0.01" required style="width:100%;padding:6px;margin-top:4px;">
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button type="button" id="cancelZoneBtn" style="padding:6px 14px;">Cancelar</button>
+            <button type="submit" style="background:#2563eb;color:#fff;padding:6px 14px;border-radius:5px;">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+</body>
+</html>
