@@ -207,5 +207,17 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal de éxito de pedido -->
+    <div id="orderSuccessModal" class="hidden" style="position:fixed;z-index:3000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:32px 24px;border-radius:12px;max-width:350px;width:95vw;box-shadow:0 2px 16px #0002;position:relative;text-align:center;">
+        <h2 style="color:#16a34a;margin-bottom:12px;"><i class="bi bi-check-circle-fill"></i> ¡Orden recibida!</h2>
+        <p style="margin-bottom:18px;">Tu pedido fue recibido correctamente.<br>Puedes obtener tu comprobante por WhatsApp.</p>
+        <button id="whatsapp-receipt-btn" class="btn primary" style="width:100%;margin-bottom:10px;">
+          <i class="bi bi-whatsapp"></i> Obtener comprobante por WhatsApp
+        </button>
+        <button id="closeOrderSuccessModal" class="btn secondary" style="width:100%;">Cerrar</button>
+      </div>
+    </div>
 </body>
 </html>

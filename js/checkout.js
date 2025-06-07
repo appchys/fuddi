@@ -654,8 +654,6 @@ async function initialize() {
             }
         });
 
-        await loadSavedAddresses();
-
         const confirmBtn = document.getElementById('confirm-btn');
         if (confirmBtn) {
             confirmBtn.addEventListener('click', async () => {
@@ -787,8 +785,48 @@ async function initialize() {
                         backgroundColor: '#16a34a',
                     }).showToast();
 
+                    // Mostrar modal de éxito
+                    const orderSuccessModal = document.getElementById('orderSuccessModal');
+                    console.log('Buscando modal de éxito:', orderSuccessModal);
+                    if (orderSuccessModal) {
+                        orderSuccessModal.classList.remove('hidden');
+                        console.log('Modal de éxito mostrado');
+                        // Datos para WhatsApp
+                        let storePhone = storeData?.phone || '593XXXXXXXXX';
+                        if (storePhone.startsWith('0')) {
+                            storePhone = '593' + storePhone.substring(1);
+                        }
+                        const orderSummary = cart.map(item => `${item.quantity} x ${item.name}`).join(', ');
+                        const total = document.getElementById('total')?.textContent || '';
+                        const customerName = userDoc.data()?.name || '';
+                        const orderMsg = encodeURIComponent(
+                            `Hola, hice un pedido en la tienda.\n\nNombre: ${customerName}\nPedido: ${orderSummary}\nTotal: ${total}\n¿Me pueden enviar el comprobante?`
+                        );
+                        const waLink = `https://wa.me/${storePhone}?text=${orderMsg}`;
+
+                        // Botón WhatsApp
+                        const waBtn = document.getElementById('whatsapp-receipt-btn');
+                        if (waBtn) {
+                            waBtn.onclick = () => {
+                                window.open(waLink, '_blank');
+                            };
+                        }
+
+                        // Botón cerrar
+                        const closeBtn = document.getElementById('closeOrderSuccessModal');
+                        if (closeBtn) {
+                            closeBtn.onclick = () => {
+                                orderSuccessModal.classList.add('hidden');
+                                window.location.href = '/my-orders.html';
+                            };
+                        }
+                    } else {
+                        console.error('No se encontró el modal de éxito (orderSuccessModal)');
+                    }
+
+                    // Limpia el carrito
                     localStorage.removeItem(cartKey);
-                    window.location.href = '/my-orders.html';
+                    // NO redirigir aquí, solo mostrar el modal
                 } catch (error) {
                     console.error('Error al confirmar el pedido:', error);
                     alert(`Hubo un error al confirmar tu pedido: ${error.message}`);
