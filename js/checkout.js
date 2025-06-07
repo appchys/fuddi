@@ -1142,12 +1142,28 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleAddressSection() {
         const selected = document.querySelector('input[name="deliveryType"]:checked');
         const confirmBtn = document.getElementById('confirm-btn');
+        const shippingElement = document.getElementById('shipping');
+        const subtotalElement = document.getElementById('subtotal');
+        const serviceFeeElement = document.getElementById('service-fee');
+        const totalElement = document.getElementById('total');
+
         if (!selected || !deliveryAddressSection) return;
 
         if (selected.value === 'delivery') {
             deliveryAddressSection.classList.remove('hidden');
+            // El envío se mantiene según zona
         } else {
             deliveryAddressSection.classList.add('hidden');
+            // Envío es 0 para retiro en tienda
+            if (shippingElement) shippingElement.textContent = '$0.00';
+
+            // Recalcula el total sumando solo subtotal + cargo por servicio
+            if (subtotalElement && serviceFeeElement && totalElement) {
+                const subtotal = parseFloat(subtotalElement.textContent.replace('$', '')) || 0;
+                const serviceFee = parseFloat(serviceFeeElement.textContent.replace('$', '')) || 0.25;
+                const total = subtotal + serviceFee;
+                totalElement.textContent = `$${total.toFixed(2)}`;
+            }
             if (confirmBtn) {
                 confirmBtn.disabled = false;
             }
