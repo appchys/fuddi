@@ -337,6 +337,7 @@ async function initialize() {
 
             const storeData = storeDoc.data();
             const shipping = storeData.shippingFee || 0;
+            const serviceFee = 0.25; // Tarifa fija de servicio
 
             let subtotalTotal = 0;
             productsData.forEach(product => {
@@ -358,9 +359,30 @@ async function initialize() {
                 cartDetails.appendChild(productElement);
             });
 
+            console.log('Subtotal calculado:', subtotalTotal);
+            console.log('Envío:', shipping);
+            console.log('Cargo por servicio:', serviceFee);
+
             const subtotalElement = document.getElementById('subtotal');
             if (subtotalElement) {
                 subtotalElement.textContent = `$${subtotalTotal.toFixed(2)}`;
+            }
+
+            const shippingElement = document.getElementById('shipping');
+            if (shippingElement) {
+                shippingElement.textContent = `$${shipping.toFixed(2)}`;
+            }
+
+            const serviceFeeElement = document.getElementById('service-fee');
+            if (serviceFeeElement) {
+                serviceFeeElement.textContent = `$${serviceFee.toFixed(2)}`;
+            }
+
+            const totalElement = document.getElementById('total');
+            if (totalElement) {
+                const total = subtotalTotal + shipping + serviceFee;
+                console.log('Total calculado:', total);
+                totalElement.textContent = `$${total.toFixed(2)}`;
             }
         }
 
@@ -504,9 +526,13 @@ async function initialize() {
                             }
                             const subtotalElement = document.getElementById('subtotal');
                             const totalElement = document.getElementById('total');
+                            const serviceFeeElement = document.getElementById('service-fee');
+                            const serviceFee = serviceFeeElement ? parseFloat(serviceFeeElement.textContent.replace('$', '')) || 0.25 : 0.25;
                             if (subtotalElement && totalElement) {
                                 const subtotal = parseFloat(subtotalElement.textContent.replace('$', '')) || 0;
-                                totalElement.textContent = `$${(subtotal + shippingValue).toFixed(2)}`;
+                                const total = subtotal + shippingValue + serviceFee;
+                                console.log('Total recalculado (con cargo por servicio):', total);
+                                totalElement.textContent = `$${total.toFixed(2)}`;
                             }
 
                             const showCoverageZonesLink = document.getElementById('showCoverageZonesLink');

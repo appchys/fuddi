@@ -90,7 +90,7 @@ exports.sendOrderEmail = onDocumentCreated("orders/{orderId}", async (event) => 
 
   // Botón para ver más detalles (store-orders.html con storeId)
   const detallesBtn = `
-    <a href="https://allimarket.vercel.app/store-orders.html?storeId=${order.storeId}" target="_blank" style="display:inline-block;padding:10px 18px;background:#3366cc;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:12px;">
+    <a href="https://fuddi.shop/store-orders.html?storeId=${order.storeId}" target="_blank" style="display:inline-block;padding:10px 18px;background:#3366cc;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:12px;">
       Ver más detalles
     </a>
   `;
