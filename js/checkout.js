@@ -425,6 +425,10 @@ async function initialize() {
             }
         }
 
+        // <--- AGREGA AQUÍ
+        await loadSavedAddresses();
+
+        
         function createAddressElement(address, index) {
             const addressElement = document.createElement('div');
             addressElement.classList.add('address-item');
@@ -797,11 +801,44 @@ async function initialize() {
                             storePhone = '593' + storePhone.substring(1);
                         }
                         const orderSummary = cart.map(item => `${item.quantity} x ${item.name}`).join(', ');
-                        const total = document.getElementById('total')?.textContent || '';
                         const customerName = userDoc.data()?.name || '';
+                        const customerPhone = userDoc.data()?.phone || '';
+                        const paymentMethod = selectedPaymentMethod.value;
+                        const addressRef = selectedAddress?.reference || '';
+                        const addressLat = selectedAddress?.latitude || selectedAddress?.lat || '';
+                        const addressLng = selectedAddress?.longitude || selectedAddress?.lng || '';
+                        const mapsUrl = (addressLat && addressLng) ? `https://www.google.com/maps/place/${addressLat},${addressLng}` : '';
+                        const orderLines = cart.map(item => `${item.quantity} de ${item.name}`).join('\n');
+                        const subtotal = document.getElementById('subtotal')?.textContent?.replace('$','') || '';
+                        const shipping = document.getElementById('shipping')?.textContent?.replace('$','') || '';
+                        const serviceFee = document.getElementById('service-fee')?.textContent?.replace('$','') || '';
+                        const total = document.getElementById('total')?.textContent?.replace('$','') || '';
+
+                        let comprobanteLine = '';
+                        if (paymentMethod.toLowerCase() === 'transferencia' && paymentProofUrl) {
+                            comprobanteLine = `\n\nComprobante de pago: ${paymentProofUrl}`;
+                        }
+
                         const orderMsg = encodeURIComponent(
-                            `Hola, hice un pedido en la tienda.\n\nNombre: ${customerName}\nPedido: ${orderSummary}\nTotal: ${total}\n¿Me pueden enviar el comprobante?`
+`*Datos del cliente*
+Cliente: ${customerName}
+Celular: ${customerPhone}
+
+*Lugar de entrega*
+Referencias: ${addressRef}
+Ubicación: ${mapsUrl}
+
+*Detalle del pedido*
+${orderLines}
+
+Valor del pedido: ${subtotal}
+Envío: ${shipping}
+Cargo: ${serviceFee}
+
+Forma de pago: ${paymentMethod}
+Total a cobrar: $${total}${comprobanteLine}`
                         );
+
                         const waLink = `https://wa.me/${storePhone}?text=${orderMsg}`;
 
                         // Botón WhatsApp
