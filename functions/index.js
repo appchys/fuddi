@@ -96,7 +96,7 @@ exports.sendOrderEmail = onDocumentCreated("orders/{orderId}", async (event) => 
   `;
 
   const mailOptions = {
-    from: 'appchys.ec@gmail.com',
+    from: 'pedidos@fuddi.shop',
     to: storeEmail,
     subject: `¡Nuevo pedido de ${cliente}!`,
     html: `
