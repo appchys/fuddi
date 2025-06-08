@@ -82,17 +82,16 @@ body {
 /* Estilo para la imagen de portada aleatoria */
 .random-cover {
     width: 100%;
-    height: 100px; /* Ajusta la altura según el diseño */
+    height: 150px; /* Ajusta la altura según el diseño */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    filter: blur(15px); /* Aplica el desenfoque */
     position: relative;
     z-index: 1;
 }
 
 /* Estilo para el título del sitio */
-.site-title {
+.site-title{
     position: absolute;
     top: 10%; /* Ajusta este valor para mover el título más arriba */
     left: 50%; /* Centra horizontalmente */
@@ -103,6 +102,27 @@ body {
     z-index: 2; /* Asegura que el texto esté por encima de la portada */
     text-align: center;
     pointer-events: none; /* Evita que el texto interfiera con clics */
+}
+
+.site-slogan {
+    position: absolute;
+    top: 25%; /* Ajusta según tu diseño */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Homemade Apple', cursive;
+    font-size: 1rem;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    z-index: 2;
+    text-align: center;
+    pointer-events: none;
+    width: 100%;
+    letter-spacing: 1px;
+}
+
+/* Asegúrate de que el header tenga position: relative para posicionar el slogan */
+header {
+    position: relative;
 }
 
 /* Contenedor de la imagen de perfil */
@@ -251,6 +271,174 @@ h2 {
 .follow-btn.following:hover,
 .follow-btn.following:focus {
     color: #e65b7a; /* Un rosa más oscuro para hover en "Siguiendo" */
+}
+
+/* Carrusel horizontal para productos */
+.products-row {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 1rem 0 1rem 0.5rem;
+    scroll-snap-type: x mandatory;
+}
+
+.products-row .product {
+    min-width: 120px;
+    max-width: 140px;
+    flex: 0 0 auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    scroll-snap-align: start;
+    transition: transform 0.2s;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Forzar imágenes cuadradas en productos del carrusel */
+.products-row .product img {
+    width: 100px !important;
+    height: 100px !important;
+    aspect-ratio: 1/1 !important;
+    object-fit: cover !important;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.products-row {
+    scrollbar-width: none; /* Firefox */
+}
+.products-row::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+/* --- Productos Disponibles Rediseño --- */
+.products-section {
+    margin: 2rem 0 1rem 0;
+    padding: 0 0.5rem;
+}
+
+.products-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 0.7rem;
+    text-align: left;
+    color: #222;
+    letter-spacing: 0.5px;
+}
+
+.products-carousel {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 1.1rem;
+    padding-bottom: 0.5rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+.products-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+.product-card {
+    min-width: 130px;
+    max-width: 150px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.7rem 0.7rem 0.9rem 0.7rem;
+    scroll-snap-align: start;
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+}
+
+.product-card:hover {
+    box-shadow: 0 4px 18px rgba(0,0,0,0.13);
+    transform: translateY(-3px) scale(1.03);
+}
+
+.product-card img {
+    width: 100%;
+    aspect-ratio: 1/1;
+    height: auto;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 0.6rem;
+    background: #f3f3f3;
+    border: 1px solid #eee;
+    display: block;
+}
+
+.product-info {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.product-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-price {
+    font-size: 1.05rem;
+    color: #16a34a;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+
+.product-btn {
+    margin-top: 0.2rem;
+    background: #16a34a;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 0.45rem 1.1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s;
+    box-shadow: 0 1px 4px rgba(22,163,74,0.07);
+}
+.product-btn:hover {
+    background: #12833a;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 600px) {
+    .products-section {
+        padding: 0 0.2rem;
+    }
+    .product-card {
+        min-width: 110px;
+        max-width: 120px;
+        padding: 0.5rem 0.5rem 0.7rem 0.5rem;
+    }
+    .product-card img {
+        width: 70px;
+        height: 70px;
+    }
+    .product-name {
+        font-size: 0.93rem;
+    }
+    .product-price {
+        font-size: 0.98rem;
+    }
+    .product-btn {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.89rem;
+    }
 }
 
 /* Media query para pantallas más grandes (opcional) */

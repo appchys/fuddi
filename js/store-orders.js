@@ -265,73 +265,79 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Limpiar contenedor
                 ordersContainer.innerHTML = '';
 
-                // Renderizar las órdenes como tarjetas
+
+                /* Agrupación de órdenes por estado */
+                const groupedOrders = {
+                    Pendiente: [],
+                    Enviado: []
+                };
+
                 for (const doc of querySnapshot.docs) {
                     const order = doc.data();
-                    console.log('Pedido encontrado:', order);
+                    const status = (order.status || 'Pendiente').toLowerCase() === 'enviado' ? 'Enviado' : 'Pendiente';
+                    groupedOrders[status].push({ doc, order });
+                }
 
-                    // Obtener el nombre del cliente
-                    const userRef = docRef(db, 'users', order.userId);
-                    const userDoc = await getDoc(userRef);
-                    const clientName = userDoc.data()?.name || 'Cliente no especificado';
+                // Renderizar las órdenes como tarjetas
+                for (const status of ['Pendiente', 'Enviado']) {
+                    const orders = groupedOrders[status];
+                    if (orders.length > 0) {
+                        // Título de grupo
+                        const groupTitle = document.createElement('h3');
+                        groupTitle.textContent = status === 'Pendiente' ? 'Órdenes Pendientes' : 'Órdenes Enviadas';
+                        groupTitle.className = 'orders-group-title';
+                        ordersContainer.appendChild(groupTitle);
+                    }
+                    for (const { doc, order } of orders) {
+                        // Obtener el nombre del cliente
+                        const userRef = docRef(db, 'users', order.userId);
+                        const userDoc = await getDoc(userRef);
+                        const clientName = userDoc.data()?.name || 'Cliente no especificado';
 
-                    // Validar datos
-                    const total = typeof order.total === 'number' ? order.total.toFixed(2) : 'No disponible';
-                    const shippingAddress = order.shippingAddress || {};
-                    const reference = shippingAddress.reference || 'Dirección no disponible';
-                    const paymentMethod = order.paymentMethod || 'No especificado';
-                    const createdAt = order.createdAt ? new Date(order.createdAt).toLocaleString() : 'Fecha no disponible';
-                    const items = Array.isArray(order.products) ? order.products : [];
-                    const status = order.status || 'Pendiente';
+                        // Listado de productos
+                        const items = Array.isArray(order.products) ? order.products : [];
+                        const productsList = items.map(item => `<li>${item.quantity} x ${item.name}</li>`).join('');
 
-                    // Crear la tarjeta del pedido simplificada
-                    const orderCard = document.createElement('div');
-                    orderCard.className = 'order-card';
-                    orderCard.setAttribute('data-order-id', doc.id);
-                    orderCard.innerHTML = `
-                        <div class="order-header">
-                            <h3 class="order-title">${clientName}</h3>
-                            <p class="status-text ${status}">${status === 'Pendiente' ? 'Pendiente' : 'Enviado'}</p>
-                        </div>
-                        <div class="order-summary">
-                            <p>${items.length} producto${items.length !== 1 ? 's' : ''} • $${total}</p>
-                        </div>
-                    `;
+                        // Forma de pago
+                        const paymentMethod = order.paymentMethod || 'No especificado';
 
-                    // Agregar evento de clic para mostrar detalles
-                    orderCard.addEventListener('click', () => {
-                        console.log('Datos del pedido:', {
-                            id: doc.id,
-                            clientName,
-                            status,
-                            total,
-                            shippingAddress: order.shippingAddress || {},
-                            paymentMethod: order.paymentMethod,
-                            products: items,
-                            createdAt: order.createdAt,
-                            deliveryType: order.deliveryType,
-                            scheduledDate: order.scheduledDate,
-                            scheduledTime: order.scheduledTime,
-                            paymentProofUrl: order.paymentProofUrl
+                        // Crear la tarjeta del pedido
+                        const orderCard = document.createElement('div');
+                        orderCard.className = 'order-card';
+                        orderCard.setAttribute('data-order-id', doc.id);
+                        orderCard.innerHTML = `
+                            <div class="order-header">
+                                <h3 class="order-title">${clientName}</h3>
+                                <p class="status-text ${status}">${status}</p>
+                            </div>
+                            <div class="order-products">
+                                <ul>${productsList}</ul>
+                            </div>
+                            <div class="order-payment">
+                                <strong>Forma de pago:</strong> ${paymentMethod}
+                            </div>
+                        `;
+
+                        // Evento para mostrar detalles
+                        orderCard.addEventListener('click', () => {
+                            showOrderDetails({
+                                id: doc.id,
+                                clientName,
+                                status,
+                                total: typeof order.total === 'number' ? order.total.toFixed(2) : 'No disponible',
+                                shippingAddress: order.shippingAddress || {},
+                                paymentMethod: order.paymentMethod,
+                                products: items,
+                                createdAt: order.createdAt,
+                                deliveryType: order.deliveryType,
+                                scheduledDate: order.scheduledDate,
+                                scheduledTime: order.scheduledTime,
+                                paymentProofUrl: order.paymentProofUrl
+                            });
                         });
-                        
-                        showOrderDetails({
-                            id: doc.id,
-                            clientName,
-                            status,
-                            total,
-                            shippingAddress: order.shippingAddress || {},
-                            paymentMethod: order.paymentMethod,
-                            products: items,
-                            createdAt: order.createdAt,
-                            deliveryType: order.deliveryType,
-                            scheduledDate: order.scheduledDate,
-                            scheduledTime: order.scheduledTime,
-                            paymentProofUrl: order.paymentProofUrl
-                        });
-                    });
 
-                    ordersContainer.appendChild(orderCard);
+                        ordersContainer.appendChild(orderCard);
+                    }
                 }
 
             } catch (error) {
