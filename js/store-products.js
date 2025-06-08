@@ -19,9 +19,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isEditMode = false;
 
     // Funciones para manejar el modal
-    const openModal = () => {
+    const openModal = async () => {
+        if (!storeId) {
+            alert('No se ha cargado la tienda. Intenta recargar la página.');
+            return;
+        }
+        try {
+            const collections = await loadCollections();
+            existingCollections = collections;
+        } catch (e) {
+            existingCollections = [];
+        }
+        renderTags();
         productModal.classList.add('active');
         document.body.style.overflow = 'hidden';
+        setTimeout(() => document.getElementById('productName').focus(), 100);
     };
 
     const closeModal = () => {
@@ -314,8 +326,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('productName').value = product.name;
                 document.getElementById('productPrice').value = product.price;
                 document.getElementById('productDescription').value = product.description;
-                document.getElementById('productCollection').value = product.collection;
-                
+setCollections(product.collection);                
                 modalTitle.innerHTML = '<i class="bi bi-pencil-square"></i> Editar Producto';
                 openModal();
             }
@@ -355,7 +366,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const name = document.getElementById('productName').value;
         const price = parseFloat(document.getElementById('productPrice').value);
         const description = document.getElementById('productDescription').value;
-        const collectionName = document.getElementById('productCollection').value;
+        const collectionName = getSelectedCollections();
         const imageFile = document.getElementById('productImage').files[0];
 
         if (!name || isNaN(price) || !description || !collectionName) {
@@ -378,7 +389,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 price,
                 description,
                 collection: collectionName,
-                ...(imageUrl && { imageUrl }), // Only update imageUrl if we have a new one
+                ...(imageUrl && { imageUrl }),
                 updatedAt: new Date().toISOString()
             };
 
@@ -434,6 +445,7 @@ function openModal() {
 
 // Cargar colecciones
 async function loadCollections() {
+    if (!storeId) return [];
     const productsRef = collection(db, `stores/${storeId}/products`);
     const querySnapshot = await getDocs(productsRef);
     const collectionsSet = new Set();
@@ -449,3 +461,88 @@ async function loadCollections() {
     });
     return Array.from(collectionsSet);
 }
+
+// Simula colecciones existentes (puedes cargar esto de Firestore)
+let existingCollections = [];
+let selectedCollections = [];
+
+const tagsInputContainer = document.getElementById('collection-tags-input');
+const input = document.getElementById('productCollectionInput');
+
+// Crear contenedor para sugerencias
+const suggestionsBox = document.createElement('div');
+suggestionsBox.className = 'tags-suggestions';
+tagsInputContainer.appendChild(suggestionsBox);
+
+function renderTags() {
+    // Elimina todas las etiquetas menos el input y el suggestionsBox
+    tagsInputContainer.querySelectorAll('.tag').forEach(tag => tag.remove());
+    selectedCollections.forEach((tag, idx) => {
+        const tagEl = document.createElement('span');
+        tagEl.className = 'tag';
+        tagEl.textContent = tag;
+        const removeBtn = document.createElement('span');
+        removeBtn.className = 'tag-remove';
+        removeBtn.textContent = '×';
+        removeBtn.onclick = () => {
+            selectedCollections.splice(idx, 1);
+            renderTags();
+        };
+        tagEl.appendChild(removeBtn);
+        tagsInputContainer.insertBefore(tagEl, input);
+    });
+}
+function showSuggestions(value) {
+    suggestionsBox.innerHTML = '';
+    if (!value) return;
+    const filtered = existingCollections.filter(
+        c => c.toLowerCase().includes(value.toLowerCase()) && !selectedCollections.includes(c)
+    );
+    filtered.forEach(suggestion => {
+        const div = document.createElement('div');
+        div.textContent = suggestion;
+        div.onclick = () => {
+            selectedCollections.push(suggestion);
+            renderTags();
+            input.value = '';
+            suggestionsBox.innerHTML = '';
+        };
+        suggestionsBox.appendChild(div);
+    });
+}
+
+input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && input.value.trim()) {
+        const value = input.value.trim();
+        if (!selectedCollections.includes(value)) {
+            selectedCollections.push(value);
+            if (!existingCollections.includes(value)) {
+                existingCollections.push(value); // Añade nueva colección
+            }
+            renderTags();
+        }
+        input.value = '';
+        suggestionsBox.innerHTML = '';
+        e.preventDefault();
+    }
+});
+input.addEventListener('input', () => {
+    showSuggestions(input.value);
+});
+input.addEventListener('blur', () => {
+    setTimeout(() => suggestionsBox.innerHTML = '', 100); // Oculta sugerencias al salir
+});
+
+// Inicializa etiquetas si editas producto
+function setCollections(collections) {
+    selectedCollections = Array.isArray(collections) ? collections : [];
+    renderTags();
+}
+
+// Para obtener las colecciones seleccionadas al guardar el producto:
+function getSelectedCollections() {
+    return selectedCollections;
+}
+
+// Llama renderTags() al cargar el modal
+renderTags();

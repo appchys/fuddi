@@ -248,6 +248,8 @@ body, .product, .modal-content, .collection-title, .product-info, .product-actio
     box-shadow: 0 8px 32px rgba(0,0,0,0.18);
     position: relative;
     animation: modalIn 0.2s;
+    max-height: 90vh;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
@@ -281,6 +283,11 @@ body, .product, .modal-content, .collection-title, .product-info, .product-actio
     justify-content: flex-end;
     gap: 1rem;
     margin-top: 1.5rem;
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding-top: 1rem;
+    z-index: 2;
 }
 .modal-body {
     display: flex;
@@ -323,6 +330,55 @@ body, .product, .modal-content, .collection-title, .product-info, .product-actio
     border-radius: 8px;
     margin: 0 auto;
     display: block;
+}
+
+/* Tags input styles */
+.tags-input-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 0;
+    background: #f8f8f8;
+    border-radius: 6px;
+    min-height: 38px;
+    align-items: center;
+}
+
+.tag {
+    background: #e0e7ff;
+    color: #3730a3;
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tag-remove {
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 4px;
+    color: #a21caf;
+}
+.tags-suggestions {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    margin-top: 2px;
+    z-index: 10;
+    max-height: 120px;
+    overflow-y: auto;
+    width: 100%;
+    box-shadow: 0 2px 8px #0001;
+}
+.tags-suggestions div {
+    padding: 6px 12px;
+    cursor: pointer;
+}
+.tags-suggestions div:hover {
+    background: #f3f4f6;
 }
 
 /* Responsive */
