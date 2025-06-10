@@ -578,6 +578,33 @@ async function initialize() {
                 }
                 document.getElementById('latitude').value = '0.0000';
                 document.getElementById('longitude').value = '0.0000';
+
+                // --- NUEVO: Obtener ubicación actual automáticamente ---
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        document.getElementById('latitude').value = lat.toFixed(6);
+                        document.getElementById('longitude').value = lng.toFixed(6);
+                        // Mostrar y centrar el mapa en la ubicación actual
+                        if (mapDiv) {
+                            mapDiv.style.display = 'block';
+                            initMap(lat, lng);
+                        }
+                    }, (error) => {
+                        // Si el usuario no permite ubicación, solo muestra el mapa por defecto
+                        if (mapDiv) {
+                            mapDiv.style.display = 'block';
+                            initMap();
+                        }
+                    });
+                } else {
+                    // Si no hay geolocalización, solo muestra el mapa por defecto
+                    if (mapDiv) {
+                        mapDiv.style.display = 'block';
+                        initMap();
+                    }
+                }
             });
         }
 
