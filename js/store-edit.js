@@ -206,6 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     document.getElementById('currentLocationImage').classList.add('hidden');
                 }
+
+                // Inicializa el mapa de ubicación SOLO después de llenar los campos
+                initStoreLocationMap();
             } catch (error) {
                 alert('Error al cargar los datos de la tienda: ' + error.message);
                 window.location.href = 'index.html';
@@ -574,6 +577,16 @@ let storeMarker = null;
 function initStoreLocationMap(center = { lat: -1.843254, lng: -79.990611 }) {
     const mapDiv = document.getElementById('storeLocationMap');
     if (!mapDiv) return;
+    const latInput = document.getElementById('storeLat');
+    const lngInput = document.getElementById('storeLng');
+    let lat = parseFloat(latInput.value);
+    let lng = parseFloat(lngInput.value);
+
+    // Si hay lat/lng válidos, usa esos como centro
+    if (!isNaN(lat) && !isNaN(lng)) {
+        center = { lat, lng };
+    }
+
     const map = new google.maps.Map(mapDiv, {
         center,
         zoom: 16,
@@ -582,14 +595,8 @@ function initStoreLocationMap(center = { lat: -1.843254, lng: -79.990611 }) {
         fullscreenControl: false
     });
 
-    // Si ya hay coordenadas, pon el marcador
-    const latInput = document.getElementById('storeLat');
-    const lngInput = document.getElementById('storeLng');
-    let lat = parseFloat(latInput.value) || center.lat;
-    let lng = parseFloat(lngInput.value) || center.lng;
-
     storeMarker = new google.maps.Marker({
-        position: { lat, lng },
+        position: center,
         map,
         draggable: true,
         title: "Ubicación de la tienda"
@@ -609,7 +616,7 @@ function initStoreLocationMap(center = { lat: -1.843254, lng: -79.990611 }) {
     });
 
     // Si no hay coordenadas, intenta obtener la ubicación actual
-    if (!latInput.value || !lngInput.value) {
+    if (isNaN(lat) || isNaN(lng)) {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((position) => {
                 const pos = {
