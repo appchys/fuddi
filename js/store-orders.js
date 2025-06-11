@@ -223,74 +223,79 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Intentar obtener el storeId del localStorage
         const storedStoreId = localStorage.getItem('storeId');
         if (storedStoreId) {
-            // Redirigir con el storeId almacenado
             window.location.href = `store-orders.html?storeId=${storedStoreId}`;
             return;
         }
-        
-        // Si no hay storeId, redirigir al inicio
         alert('No se encontró un ID de tienda válido. Por favor, inicia sesión nuevamente.');
         window.location.href = 'index.html';
         return;
     }
 
-    // Almacenar el storeId en localStorage para futuras referencias
     localStorage.setItem('storeId', storeId);
-
-    // Exponer storeId al scope global
     window.getStoreId = () => storeId;
 
-    // Mostrar indicador de carga
     ordersContainer.innerHTML = '<p class="text-center text-gray-500">Cargando pedidos...</p>';
 
-    // Verificar si el usuario está autenticado
     auth.onAuthStateChanged(async (user) => {
         if (user) {
-            console.log('Usuario autenticado:', user.uid);
             try {
-                // Consultar las órdenes de la tienda
                 const ordersRef = collection(db, 'orders');
                 const q = query(ordersRef, where('storeId', '==', storeId));
-                console.log('Consulta de Firestore creada:', q);
-
                 const querySnapshot = await getDocs(q);
-                console.log('Resultados de la consulta:', querySnapshot);
 
                 if (querySnapshot.empty) {
-                    console.log('No se encontraron pedidos para la tienda con storeId:', storeId);
                     ordersContainer.innerHTML = '<p class="text-center text-gray-500">No hay pedidos para esta tienda.</p>';
                     return;
                 }
 
-                // Limpiar contenedor
                 ordersContainer.innerHTML = '';
 
-
-                /* Agrupación de órdenes por estado */
-                const groupedOrders = {
-                    Pendiente: [],
-                    Enviado: []
-                };
+                // Agrupar por fecha de entrega (scheduledDate o fecha de creación)
+                const ordersByDay = {};
 
                 for (const doc of querySnapshot.docs) {
                     const order = doc.data();
-                    const status = (order.status || 'Pendiente').toLowerCase() === 'enviado' ? 'Enviado' : 'Pendiente';
-                    groupedOrders[status].push({ doc, order });
+                    // Usa la fecha programada si existe, si no, la fecha de creación (solo yyyy-mm-dd)
+                    const deliveryDate = order.scheduledDate || (order.createdAt ? new Date(order.createdAt).toISOString().slice(0, 10) : 'Sin fecha');
+                    if (!ordersByDay[deliveryDate]) ordersByDay[deliveryDate] = [];
+                    ordersByDay[deliveryDate].push({ doc, order });
                 }
 
-                // Renderizar las órdenes como tarjetas
-                for (const status of ['Pendiente', 'Enviado']) {
-                    const orders = groupedOrders[status];
-                    if (orders.length > 0) {
-                        // Título de grupo
-                        const groupTitle = document.createElement('h3');
-                        groupTitle.textContent = status === 'Pendiente' ? 'Órdenes Pendientes' : 'Órdenes Enviadas';
-                        groupTitle.className = 'orders-group-title';
-                        ordersContainer.appendChild(groupTitle);
-                    }
+                // Ordena los días de entrega DESCENDENTE (más reciente primero)
+                const sortedDays = Object.keys(ordersByDay).sort((a, b) => {
+                    if (a === 'Sin fecha') return 1;
+                    if (b === 'Sin fecha') return -1;
+                    return new Date(b) - new Date(a);
+                });
+
+                for (const day of sortedDays) {
+                    const orders = ordersByDay[day];
+
+                    // Ordena por hora de entrega descendente (más próxima abajo, más tarde arriba)
+                    orders.sort((a, b) => {
+                        // Si ambos tienen hora programada, compara descendente
+                        if (a.order.scheduledTime && b.order.scheduledTime) {
+                            return b.order.scheduledTime.localeCompare(a.order.scheduledTime);
+                        }
+                        // Si solo uno tiene hora, ese va primero
+                        if (a.order.scheduledTime) return -1;
+                        if (b.order.scheduledTime) return 1;
+                        // Si ninguno tiene hora, compara por fecha de creación descendente
+                        return (b.order.createdAt || '').localeCompare(a.order.createdAt || '');
+                    });
+
+                    // Título del grupo por día
+                    const groupTitle = document.createElement('h3');
+                    groupTitle.textContent = day === 'Sin fecha'
+                        ? 'Órdenes sin fecha de entrega'
+                        : `Entrega: ${new Date(day).toLocaleDateString()}`;
+                    groupTitle.className = 'orders-group-title';
+                    ordersContainer.appendChild(groupTitle);
+
                     for (const { doc, order } of orders) {
                         // Obtener el nombre del cliente
                         const userRef = docRef(db, 'users', order.userId);
+                        // eslint-disable-next-line no-await-in-loop
                         const userDoc = await getDoc(userRef);
                         const clientName = userDoc.data()?.name || 'Cliente no especificado';
 
@@ -301,6 +306,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         // Forma de pago
                         const paymentMethod = order.paymentMethod || 'No especificado';
 
+                        // Hora de entrega (si existe)
+                        const horaEntrega = order.scheduledTime ? `<div class="order-hour"><strong>Hora:</strong> ${order.scheduledTime}</div>` : '';
+
                         // Crear la tarjeta del pedido
                         const orderCard = document.createElement('div');
                         orderCard.className = 'order-card';
@@ -308,7 +316,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         orderCard.innerHTML = `
                             <div class="order-header">
                                 <h3 class="order-title">${clientName}</h3>
-                                <p class="status-text ${status}">${status}</p>
+                                ${horaEntrega}
                             </div>
                             <div class="order-products">
                                 <ul>${productsList}</ul>
@@ -323,7 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             showOrderDetails({
                                 id: doc.id,
                                 clientName,
-                                status,
+                                status: order.status || 'Pendiente',
                                 total: typeof order.total === 'number' ? order.total.toFixed(2) : 'No disponible',
                                 shippingAddress: order.shippingAddress || {},
                                 paymentMethod: order.paymentMethod,
@@ -345,7 +353,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ordersContainer.innerHTML = '<p class="text-center text-red-500">Error al cargar los pedidos. Por favor, inténtalo de nuevo.</p>';
             }
         } else {
-            // Si no hay usuario autenticado, redirigir al inicio
             alert('Debes iniciar sesión para ver los pedidos.');
             window.location.href = 'index.html';
         }

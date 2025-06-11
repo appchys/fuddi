@@ -1,3 +1,3 @@
 git add .
-git commit -m "Obtener ubicación"
+git commit -m "Ajustes en ordenes de tienda y perfil de tienda"
 git push origin main

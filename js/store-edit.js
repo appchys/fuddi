@@ -194,6 +194,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         closeInput.disabled = closedCheckbox.checked;
                     });
                 });
+
+                // Cargar ubicación de la tienda
+                document.getElementById('storeLat').value = storeData.lat || '';
+                document.getElementById('storeLng').value = storeData.lng || '';
+                document.getElementById('storeReference').value = storeData.reference || '';
+                if (storeData.locationImageUrl) {
+                    const img = document.getElementById('currentLocationImage');
+                    img.src = storeData.locationImageUrl;
+                    img.classList.remove('hidden');
+                } else {
+                    document.getElementById('currentLocationImage').classList.add('hidden');
+                }
             } catch (error) {
                 alert('Error al cargar los datos de la tienda: ' + error.message);
                 window.location.href = 'index.html';
@@ -285,19 +297,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         try {
-            const storeData = {
-                name,
-                username,
-                phone,
-                description,
-                email: user.email,
-                owner: user.uid,
-                storeId,
-                
-                bankAccounts,
-                updatedAt: new Date().toISOString(),
-                openingHours, // <--- AGREGA ESTA LÍNEA
-            };
+            const lat = document.getElementById('storeLat').value;
+const lng = document.getElementById('storeLng').value;
+const reference = document.getElementById('storeReference').value;
+const locationImageFile = document.getElementById('storeLocationImage').files[0];
+
+const storeData = {
+    name,
+    username,
+    phone,
+    description,
+    email: user.email,
+    owner: user.uid,
+    storeId,
+    
+    bankAccounts,
+    updatedAt: new Date().toISOString(),
+    openingHours, // <--- AGREGA ESTA LÍNEA
+    lat,
+    lng,
+    reference,
+};
 
             if (imageUrlFile) {
                 const imageRef = ref(storage, `stores/${storeId}/profile_${Date.now()}`);
@@ -309,6 +329,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const coverRef = ref(storage, `stores/${storeId}/cover_${Date.now()}`);
                 await uploadBytes(coverRef, coverImageFile);
                 storeData.coverUrl = await getDownloadURL(coverRef);
+            }
+
+            if (locationImageFile) {
+                const locationImageRef = ref(storage, `stores/${storeId}/location_${Date.now()}`);
+                await uploadBytes(locationImageRef, locationImageFile);
+                storeData.locationImageUrl = await getDownloadURL(locationImageRef);
             }
 
             // Agregar zonas de entrega a los datos de la tienda
@@ -477,17 +503,31 @@ async function loadDeliveryZonesFromStore(storeData) {
 
 // Función para cargar el script de Google Maps
 function loadGoogleMapsScript(callback) {
+    // Si ya está cargado, solo llama al callback
     if (window.google && window.google.maps && window.google.maps.drawing) {
         callback();
         return;
     }
+    // Si ya existe un <script> con Google Maps, espera a que cargue
+    if (document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]')) {
+        // Espera hasta que google.maps esté disponible
+        const waitForGoogleMaps = () => {
+            if (window.google && window.google.maps && window.google.maps.drawing) {
+                callback();
+            } else {
+                setTimeout(waitForGoogleMaps, 50);
+            }
+        };
+        waitForGoogleMaps();
+        return;
+    }
+    // Si no existe, agrégalo
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=drawing&loading=async`;
     script.async = true;
     script.onload = () => {
-        // Espera hasta que google.maps esté realmente disponible
         const waitForGoogleMaps = () => {
-            if (window.google && window.google.maps && window.google.maps.Map && window.google.maps.drawing) {
+            if (window.google && window.google.maps && window.google.maps.drawing) {
                 callback();
             } else {
                 setTimeout(waitForGoogleMaps, 50);
@@ -527,3 +567,89 @@ if (openingHoursFields) {
         openingHoursFields.appendChild(row);
     });
 }
+
+// --- Ubicación de la tienda ---
+let storeMarker = null;
+
+function initStoreLocationMap(center = { lat: -1.843254, lng: -79.990611 }) {
+    const mapDiv = document.getElementById('storeLocationMap');
+    if (!mapDiv) return;
+    const map = new google.maps.Map(mapDiv, {
+        center,
+        zoom: 16,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false
+    });
+
+    // Si ya hay coordenadas, pon el marcador
+    const latInput = document.getElementById('storeLat');
+    const lngInput = document.getElementById('storeLng');
+    let lat = parseFloat(latInput.value) || center.lat;
+    let lng = parseFloat(lngInput.value) || center.lng;
+
+    storeMarker = new google.maps.Marker({
+        position: { lat, lng },
+        map,
+        draggable: true,
+        title: "Ubicación de la tienda"
+    });
+
+    // Actualiza inputs al mover el marcador
+    storeMarker.addListener('dragend', function (e) {
+        latInput.value = e.latLng.lat().toFixed(6);
+        lngInput.value = e.latLng.lng().toFixed(6);
+    });
+
+    // Al hacer click en el mapa, mueve el marcador
+    map.addListener('click', function (e) {
+        storeMarker.setPosition(e.latLng);
+        latInput.value = e.latLng.lat().toFixed(6);
+        lngInput.value = e.latLng.lng().toFixed(6);
+    });
+
+    // Si no hay coordenadas, intenta obtener la ubicación actual
+    if (!latInput.value || !lngInput.value) {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                map.setCenter(pos);
+                storeMarker.setPosition(pos);
+                latInput.value = pos.lat.toFixed(6);
+                lngInput.value = pos.lng.toFixed(6);
+            });
+        }
+    }
+}
+
+// Cargar el script de Google Maps y luego inicializar el mapa de ubicación
+loadGoogleMapsScript(() => {
+    initDeliveryZonesMap();
+    initStoreLocationMap();
+});
+
+document.getElementById('getCurrentLocationBtn').addEventListener('click', function () {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            document.getElementById('storeLat').value = lat.toFixed(6);
+            document.getElementById('storeLng').value = lng.toFixed(6);
+            if (storeMarker && storeMarker.setPosition) {
+                storeMarker.setPosition({ lat, lng });
+            }
+            // Centrar el mapa si existe
+            const mapDiv = document.getElementById('storeLocationMap');
+            if (mapDiv && mapDiv.__gm && mapDiv.__gm.map) {
+                mapDiv.__gm.map.setCenter({ lat, lng });
+            }
+        }, () => {
+            alert('No se pudo obtener la ubicación actual.');
+        });
+    } else {
+        alert('La geolocalización no está soportada en este navegador.');
+    }
+});
