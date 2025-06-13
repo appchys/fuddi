@@ -1,3 +1,3 @@
 git add .
-git commit -m "Ajustes en ordenes de tienda y perfil de tienda"
+git commit -m "Ordenar productos y categorias"
 git push origin main

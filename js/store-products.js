@@ -153,8 +153,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 sortedCollections.sort(([a], [b]) => a.localeCompare(b));
             }
 
+            // Sincroniza collectionsOrder con las colecciones actuales
+            const allCollectionNames = Object.keys(productsByCollection);
+            collectionsOrder = collectionsOrder.filter(col => allCollectionNames.includes(col));
+            allCollectionNames.forEach(col => {
+                if (!collectionsOrder.includes(col)) collectionsOrder.push(col);
+            });
+
             // Renderizar cada colección como lista (igual que en store.js)
             sortedCollections.forEach(([collectionName, products], colIdx) => {
+                // Ordena los productos por el campo 'order' antes de renderizar
+                products.sort((a, b) => {
+                    if (typeof a.order === 'number' && typeof b.order === 'number') {
+                        return a.order - b.order;
+                    }
+                    return a.name.localeCompare(b.name);
+                });
+
                 const collectionTitle = document.createElement('h2');
                 collectionTitle.classList.add('collection-title');
                 collectionTitle.textContent = collectionName;
@@ -184,7 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (idx > 0) {
                             [newOrder[idx - 1], newOrder[idx]] = [newOrder[idx], newOrder[idx - 1]];
                             await updateDoc(doc(db, 'stores', storeId), { collectionsOrder: newOrder });
-                            loadProducts();
+                            await loadProducts();
                         }
                     });
                     downBtn.addEventListener('click', async () => {
@@ -194,7 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (idx < newOrder.length - 1) {
                             [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
                             await updateDoc(doc(db, 'stores', storeId), { collectionsOrder: newOrder });
-                            loadProducts();
+                            await loadProducts();
                         }
                     });
                 }
@@ -258,16 +273,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Reordenar productos (agrega aquí los event listeners para mover)
                 collectionList.querySelectorAll('.move-up, .move-down').forEach(btn => {
                     btn.addEventListener('click', async (e) => {
-                        const idx = parseInt(e.currentTarget.dataset.idx);
-                        const isUp = e.currentTarget.classList.contains('move-up');
-                        const swapIdx = isUp ? idx - 1 : idx + 1;
+                        const productId = btn.closest('.product').getAttribute('data-product-id');
+                        const currentIdx = products.findIndex(p => p.id === productId);
+                        if (currentIdx === -1) return;
+
+                        const isUp = btn.classList.contains('move-up');
+                        const swapIdx = isUp ? currentIdx - 1 : currentIdx + 1;
                         if (swapIdx < 0 || swapIdx >= products.length) return;
 
-                        // 1. Intercambia los productos en el array local
+                        // Intercambia los productos en el array local
                         const newProducts = [...products];
-                        [newProducts[idx], newProducts[swapIdx]] = [newProducts[swapIdx], newProducts[idx]];
+                        [newProducts[currentIdx], newProducts[swapIdx]] = [newProducts[swapIdx], newProducts[currentIdx]];
 
-                        // 2. Reasigna el campo order a todos los productos de la colección
+                        // Reasigna el campo order a todos los productos de la colección
                         const batchUpdates = [];
                         newProducts.forEach((prod, i) => {
                             const prodRef = doc(db, `stores/${storeId}/products`, prod.id);
@@ -275,7 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         });
 
                         await Promise.all(batchUpdates);
-                        loadProducts();
+                        await loadProducts();
                     });
                 });
 
@@ -369,7 +387,7 @@ setCollections(product.collection);
         const collectionName = getSelectedCollections();
         const imageFile = document.getElementById('productImage').files[0];
 
-        if (!name || isNaN(price) || !description || !collectionName) {
+        if (!name || isNaN(price) || !description || !collectionName.length) {
             alert('Por favor complete todos los campos requeridos');
             return;
         }
@@ -545,4 +563,5 @@ function getSelectedCollections() {
 }
 
 // Llama renderTags() al cargar el modal
+selectedCollections = [];
 renderTags();

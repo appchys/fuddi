@@ -142,23 +142,35 @@ async function loadProducts() {
             collectionsOrder = storeDocSnap.data().collectionsOrder;
         }
 
+        // ...después de obtener productsByCollection y collectionsOrder...
+        const allCollectionNames = Object.keys(productsByCollection);
+        collectionsOrder = collectionsOrder.filter(col => allCollectionNames.includes(col));
+        allCollectionNames.forEach(col => {
+            if (!collectionsOrder.includes(col)) collectionsOrder.push(col);
+        });
+
+        // Ahora sí, ordena
         let sortedCollections = Object.entries(productsByCollection);
-        if (collectionsOrder.length) {
-            sortedCollections.sort(([a], [b]) => {
-                const idxA = collectionsOrder.indexOf(a);
-                const idxB = collectionsOrder.indexOf(b);
-                if (idxA === -1 && idxB === -1) return a.localeCompare(b);
-                if (idxA === -1) return 1;
-                if (idxB === -1) return -1;
-                return idxA - idxB;
-            });
-        } else {
-            sortedCollections.sort(([a], [b]) => a.localeCompare(b));
-        }
+        sortedCollections.sort(([a], [b]) => {
+            const idxA = collectionsOrder.indexOf(a);
+            const idxB = collectionsOrder.indexOf(b);
+            if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+            if (idxA === -1) return 1;
+            if (idxB === -1) return -1;
+            return idxA - idxB;
+        });
         // === FIN NUEVO ===
 
         // Renderizar cada colección
         sortedCollections.forEach(([collectionName, products]) => {
+            // Ordena los productos por el campo 'order' antes de renderizar
+            products.sort((a, b) => {
+                if (typeof a.order === 'number' && typeof b.order === 'number') {
+                    return a.order - b.order;
+                }
+                return a.name.localeCompare(b.name);
+            });
+
             // Título de la colección
             const collectionTitle = document.createElement('h2');
             collectionTitle.classList.add('collection-title');
@@ -166,7 +178,6 @@ async function loadProducts() {
             productsContainer.appendChild(collectionTitle);
 
             // Renderizar productos como lista
-            // Ya están ordenados por 'order'
             products.forEach(product => {
                 const productElement = document.createElement('div');
                 productElement.classList.add('product');
