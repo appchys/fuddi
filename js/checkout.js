@@ -9,6 +9,9 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
+// Guarda los datos de la tienda al cargar
+let storeData = null;
+
 async function checkUserExists(userId) {
     const userDoc = doc(db, 'users', userId);
     const userSnapshot = await getDoc(userDoc);
@@ -399,7 +402,6 @@ async function initialize() {
         const scheduledWarning = document.getElementById('scheduled-warning');
         let selectedAddress = null;
         let addresses = [];
-        let storeData = null;
 
         async function loadSavedAddresses() {
             try {
@@ -1243,19 +1245,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleAddressSection() {
         const selected = document.querySelector('input[name="deliveryType"]:checked');
+        const deliveryAddressSection = document.querySelector('.delivery-address');
+        const pickupSection = document.getElementById('pickup-location-section');
         const confirmBtn = document.getElementById('confirm-btn');
         const shippingElement = document.getElementById('shipping');
         const subtotalElement = document.getElementById('subtotal');
         const serviceFeeElement = document.getElementById('service-fee');
         const totalElement = document.getElementById('total');
 
-        if (!selected || !deliveryAddressSection) return;
+        if (!selected || !deliveryAddressSection || !pickupSection) return;
 
         if (selected.value === 'delivery') {
             deliveryAddressSection.classList.remove('hidden');
+            pickupSection.style.display = 'none';
             // El envío se mantiene según zona
         } else {
             deliveryAddressSection.classList.add('hidden');
+            pickupSection.style.display = 'block';
+            renderPickupLocationSection();
             // Envío es 0 para retiro en tienda
             if (shippingElement) shippingElement.textContent = '$0.00';
 
@@ -1283,3 +1290,35 @@ document.addEventListener('DOMContentLoaded', () => {
         googleLoginBtn.addEventListener('click', loginWithGoogle);
     }
 });
+
+// NUEVA FUNCIÓN: Renderiza la sección de dirección de retiro
+function renderPickupLocationSection() {
+    const section = document.getElementById('pickup-location-section');
+    if (!section || !storeData) return;
+
+    // Si no hay lat/lng ni referencia, muestra mensaje
+    if (!storeData.lat || !storeData.lng) {
+        section.innerHTML = `<div style="color:#b91c1c;">No se ha configurado la ubicación de la tienda.</div>`;
+        return;
+    }
+
+    const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${storeData.lat},${storeData.lng}&zoom=16&size=350x120&markers=color:red%7C${storeData.lat},${storeData.lng}&key=${GOOGLE_MAPS_API_KEY}`;
+    const reference = storeData.reference || 'Sin referencia';
+    const locationImage = storeData.locationImageUrl
+        ? `<img src="${storeData.locationImageUrl}" alt="Foto de la ubicación" style="width:100%;max-width:220px;border-radius:8px;margin-top:10px;">`
+        : '';
+
+    section.innerHTML = `
+        <div style="padding:16px 12px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb;">
+            <h3 style="margin-bottom:10px;font-size:1.1em;"><i class="bi bi-geo-alt"></i> Dirección de retiro</h3>
+            <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+                <img src="${staticMapUrl}" alt="Ubicación de la tienda" style="width:120px;height:80px;border-radius:8px;object-fit:cover;">
+                <div style="flex:1;">
+                    <div style="font-weight:500;margin-bottom:6px;">${reference}</div>
+                    <a href="https://maps.google.com/?q=${storeData.lat},${storeData.lng}" target="_blank" style="color:#2563eb;text-decoration:underline;font-size:0.97em;">Ver en Google Maps</a>
+                    ${locationImage}
+                </div>
+            </div>
+        </div>
+    `;
+}

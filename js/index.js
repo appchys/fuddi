@@ -109,6 +109,9 @@ async function fetchProducts() {
             const productsSnapshot = await withRetry(() => getDocs(collection(db, `stores/${storeId}/products`)));
             productsSnapshot.forEach(productDoc => {
                 const product = productDoc.data();
+                // Mostrar solo productos que NO estén ocultos
+                if (product.hidden) return; // <-- Agrega esta línea
+
                 const productElement = document.createElement('div');
                 productElement.classList.add('product');
                 productElement.innerHTML = `
