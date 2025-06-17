@@ -380,7 +380,7 @@ setCollections(product.collection);
     // Manejar envío del formulario
     productForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const name = document.getElementById('productName').value;
         const price = parseFloat(document.getElementById('productPrice').value);
         const description = document.getElementById('productDescription').value;
@@ -394,11 +394,23 @@ setCollections(product.collection);
 
         try {
             let imageUrl;
-            
-            // Only upload image if a new one was selected
+
+            // --- COMPRESIÓN DE IMAGEN ANTES DE SUBIR ---
+            let fileToUpload = imageFile;
             if (imageFile) {
+                const options = {
+                    maxSizeMB: 0.3, // Máximo 300 KB
+                    maxWidthOrHeight: 900, // Máximo 900px de ancho o alto
+                    useWebWorker: true
+                };
+                fileToUpload = await window.imageCompression(imageFile, options);
+            }
+            // --- FIN COMPRESIÓN ---
+
+            // Only upload image if a new one was selected
+            if (fileToUpload) {
                 const storageRef = ref(storage, `stores/${storeId}/products/${Date.now()}_${imageFile.name}`);
-                await uploadBytes(storageRef, imageFile);
+                await uploadBytes(storageRef, fileToUpload);
                 imageUrl = await getDownloadURL(storageRef);
             }
 
