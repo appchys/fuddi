@@ -9,6 +9,11 @@ const db = getFirestore(app);
 const pathParts = window.location.pathname.split('/').filter(Boolean);
 const storeId = pathParts[0]; // 'munchys' en /munchys
 
+if (!storeId) {
+    alert('No se proporcionó un storeId en la URL.');
+    // Opcional: redirige o muestra un mensaje de error
+}
+
 // Función auxiliar para reintentar una promesa
 async function withRetry(fn, retries = 3, delay = 1000) {
     for (let i = 0; i < retries; i++) {
