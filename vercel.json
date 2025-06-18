@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/:storeId/:productId", "destination": "/product.html" }
+    { "source": "/:storeId/:productId", "destination": "/product.html" },
+    { "source": "/:storeId", "destination": "/store-profile.html" }
   ]
 }
