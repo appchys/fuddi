@@ -7,7 +7,55 @@ const pathParts = window.location.pathname.split('/').filter(Boolean);
 const storeId = pathParts[0]; // 'munchys'
 const productId = pathParts[1]; // 'Ku3SQoPKdikbgnRudaVX'
 
-// Función para mostrar el carrito
+const main = document.getElementById('product-main');
+
+// Mostrar producto
+async function loadProduct() {
+    if (!storeId || !productId) {
+        main.innerHTML = '<p>Producto no encontrado.</p>';
+        return;
+    }
+
+    // Obtener datos del producto
+    const productDoc = await getDoc(doc(db, `stores/${storeId}/products`, productId));
+    if (!productDoc.exists()) {
+        main.innerHTML = '<p>Producto no encontrado.</p>';
+        return;
+    }
+    const product = productDoc.data();
+
+    // Obtener datos de la tienda
+    const storeDoc = await getDoc(doc(db, "stores", storeId));
+    const store = storeDoc.exists() ? storeDoc.data() : {};
+
+    main.innerHTML = `
+        <div class="product-detail-page">
+            <img src="${product.imageUrl || store.imageUrl || '/img/placeholder.png'}" alt="${product.name}" class="product-image" style="max-width:260px;display:block;margin:0 auto 18px auto;">
+            <h1>${product.name}</h1>
+            <p class="product-price" style="font-size:1.3em;color:#16a34a;font-weight:bold;">$${product.price ? product.price.toFixed(2) : 'No disponible'}</p>
+            <p class="product-description" style="margin:18px 0;">${product.description || ''}</p>
+            <div style="margin:18px 0;">
+                <a href="/${storeId}" class="btn"><i class="bi bi-shop"></i> Ver tienda</a>
+                <button class="btn" id="add-to-cart-btn"><i class="bi bi-cart-plus"></i> Añadir al carrito</button>
+            </div>
+            <hr style="margin:32px 0;">
+            <div style="text-align:center;">
+                <img src="${store.imageUrl || '/img/placeholder.png'}" alt="Logo tienda" style="width:60px;height:60px;border-radius:50%;margin-bottom:8px;">
+                <div style="font-weight:bold;">${store.name || ''}</div>
+                <div style="color:#666;">${store.description || ''}</div>
+            </div>
+        </div>
+    `;
+
+    // Botón añadir al carrito
+    document.getElementById('add-to-cart-btn').addEventListener('click', () => {
+        window.addToCart(productId);
+    });
+}
+
+loadProduct();
+
+// --- Carrito (sidebar) ---
 async function showCart() {
     if (!storeId) return;
     const cartKey = `cart_${storeId}`;
@@ -110,50 +158,3 @@ window.addToCart = async (productId) => {
         alert('Error al añadir al carrito. Por favor, inténtalo de nuevo.');
     }
 };
-
-// Obtener parámetros de la URL
-const productParams = new URLSearchParams(window.location.search);
-const currentStoreId = productParams.get('storeId');
-const currentProductId = productParams.get('productId');
-
-const main = document.getElementById('product-main');
-
-async function loadProduct() {
-    if (!currentStoreId || !currentProductId) {
-        main.innerHTML = '<p>Producto no encontrado.</p>';
-        return;
-    }
-
-    // Obtener datos del producto
-    const productDoc = await getDoc(doc(db, `stores/${currentStoreId}/products`, currentProductId));
-    if (!productDoc.exists()) {
-        main.innerHTML = '<p>Producto no encontrado.</p>';
-        return;
-    }
-    const product = productDoc.data();
-
-    // Obtener datos de la tienda
-    const storeDoc = await getDoc(doc(db, "stores", currentStoreId));
-    const store = storeDoc.exists() ? storeDoc.data() : {};
-
-    main.innerHTML = `
-        <div class="product-detail-page">
-            <img src="${product.imageUrl || store.imageUrl || 'img/placeholder.png'}" alt="${product.name}" class="product-image" style="max-width:260px;display:block;margin:0 auto 18px auto;">
-            <h1>${product.name}</h1>
-            <p class="product-price" style="font-size:1.3em;color:#16a34a;font-weight:bold;">$${product.price ? product.price.toFixed(2) : 'No disponible'}</p>
-            <p class="product-description" style="margin:18px 0;">${product.description || ''}</p>
-            <div style="margin:18px 0;">
-                <a href="store.html?storeId=${currentStoreId}" class="btn"><i class="bi bi-shop"></i> Ver tienda</a>
-                <button class="btn" onclick="window.addToCart && window.addToCart('${currentProductId}')"><i class="bi bi-cart-plus"></i> Añadir al carrito</button>
-            </div>
-            <hr style="margin:32px 0;">
-            <div style="text-align:center;">
-                <img src="${store.imageUrl || 'img/placeholder.png'}" alt="Logo tienda" style="width:60px;height:60px;border-radius:50%;margin-bottom:8px;">
-                <div style="font-weight:bold;">${store.name || ''}</div>
-                <div style="color:#666;">${store.description || ''}</div>
-            </div>
-        </div>
-    `;
-}
-
-loadProduct();
