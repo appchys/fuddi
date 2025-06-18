@@ -5,7 +5,7 @@ const db = getFirestore(app);
 // Obtener storeId y productId de la ruta amigable
 const pathParts = window.location.pathname.split('/').filter(Boolean);
 const storeId = pathParts[0]; // 'munchys'
-const productId = pathParts[1]; // 'iddelproducto'
+const productId = pathParts[1]; // 'Ku3SQoPKdikbgnRudaVX'
 
 // Función para mostrar el carrito
 async function showCart() {
