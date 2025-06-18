@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo</title>
+    <link rel="stylesheet" href="css/store.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/control-panel.css">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Catálogo">
+    <meta property="og:description" content="Mira todos nuestros productos en la tienda virtual">
+    <meta property="og:image" content="https://allimarket.vercel.app/default-image.jpg">
+    <meta property="og:url" content="https://allimarket.vercel.app/store.html">
+    <meta property="og:type" content="website">
+</head>
+<body>
+    <header>
+        <!-- Foto de portada -->
+        <div id="store-cover-image" class="store-cover"></div>
+
+        <!-- Contenedor para la foto de perfil, nombre y descripción -->
+        <div class="store-header-content">
+            <!-- Foto de perfil -->
+            <img id="store-profile-image" class="store-profile" >
+
+            <!-- Nombre y descripción de la tienda -->
+            <h1 id="store-name"></h1>
+            <p id="store-description"></p>
+        </div>
+    </header>
+    <main>
+        <!-- Botones de acción -->
+        <div id="store-actions" class="store-actions">
+            <!-- Grupo para visitantes (por defecto oculto, se muestra por JS si no es dueño) -->
+            <div id="visitor-actions" style="display:none;">
+                <button id="follow-store" class="btn">
+                    <i class="bi bi-person-plus"></i> Seguir
+                </button>
+                <button id="whatsapp-link" class="btn">
+                    <i class="bi bi-whatsapp"></i> Whatsapp
+                </button>
+                <button id="cart-button" class="btn" title="Ver Carrito">
+                    <i class="bi bi-cart"></i> Carrito
+                </button>
+            </div>
+            <!-- Grupo para propietario (por defecto oculto, se muestra por JS si es dueño) -->
+            <div id="owner-actions" style="display:none;">
+                <button id="add-product-btn" class="btn" onclick="window.location.href='store-products.html?storeId=' + storeId">
+                    <i class="bi bi-plus-circle"></i> Mis productos
+                </button>
+                <button id="view-orders-btn" class="btn" onclick="window.location.href='store-orders.html?storeId=' + storeId">
+                    <i class="bi bi-list-check"></i> Ver pedidos
+                </button>
+                <button id="edit-store-btn" class="btn" onclick="window.location.href='store-edit.html?storeId=' + storeId">
+                    <i class="bi bi-pencil-square"></i> Editar tienda
+                </button>
+            </div>
+        </div>
+        <!-- Agrega más detalles de la tienda aquí -->
+        <!-- Botón tipo hamburguesa flotante -->
+<button id="control-panel-toggle" class="hamburger-btn" onclick="toggleControlPanel()">
+    <i class="bi bi-list"></i>
+</button>
+
+    </main>
+
+    <!-- Sidebar para mostrar detalles del producto -->
+    <aside id="product-sidebar" class="sidebar hidden">
+        <button id="close-sidebar" class="close-btn">×</button>
+        <div id="product-details">
+            <!-- Detalles del producto se insertarán aquí dinámicamente -->
+        </div>
+    </aside>
+
+    <!-- Sidebar del carrito -->
+    <div id="cart-sidebar" class="sidebar hidden">
+        <button id="close-cart-sidebar" class="close-btn">Cerrar</button>
+        <h2>Carrito</h2>
+        <div id="cart-details"></div>
+    </div>
+
+    <!-- Sidebar del control panel -->
+    <div id="control-panel-container"></div>
+
+    <footer>
+        
+    </footer>
+
+    <script type="module" src="js/store.js"></script>
+    <script type="module" src="js/control-panel.js"></script>
+    <script>
+    // Obtener el storeId de la URL y hacerlo global
+    const params = new URLSearchParams(window.location.search);
+    window.storeId = params.get('storeId');
+
+    async function fetchProducts() {
+        const productsContainer = document.getElementById('products-container');
+        try {
+            const storesSnapshot = await withRetry(() => getDocs(collection(db, "stores")));
+            for (const storeDoc of storesSnapshot.docs) {
+                const storeId = storeDoc.id;
+                const storeData = storeDoc.data(); // <-- obtenemos los datos de la tienda aquí
+                const productsSnapshot = await withRetry(() => getDocs(collection(db, `stores/${storeId}/products`)));
+                productsSnapshot.forEach(productDoc => {
+                    const product = productDoc.data();
+                    // Mostrar solo productos que NO estén ocultos
+                    if (product.hidden) return;
+
+                    // Si el producto no tiene imagen, usa el logo de la tienda
+                    const imageSrc = product.imageUrl || storeData.imageUrl || 'https://via.placeholder.com/150';
+
+                    const productElement = document.createElement('div');
+                    productElement.classList.add('product');
+                    productElement.innerHTML = `
+                        <a href="store.html?storeId=${storeId}" style="text-decoration: none; color: inherit; display: block;">
+                            <img src="${imageSrc}" alt="${product.name || 'Producto sin nombre'}" style="width: 100%; height: auto; border-radius: 8px;" loading="lazy">
+                            <h3>${product.name || 'Sin nombre'}</h3>
+                            <p>${product.description || 'Sin descripción'}</p>
+                            <p><strong>Precio:</strong> $${product.price || 'No disponible'}</p>
+                        </a>
+                    `;
+                    productsContainer.appendChild(productElement);
+                });
+            }
+        } catch (error) {
+            console.error("Error al cargar los productos:", error);
+            productsContainer.innerHTML = '<p>Error al cargar los productos. Por favor, <a href="#" onclick="location.reload()">recarga la página</a>.</p>';
+        }
+    }
+</script>
+</body>
+</html>

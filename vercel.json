@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/:storeId", "destination": "/store-profile.html" }
+  ]
+}
