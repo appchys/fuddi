@@ -245,7 +245,7 @@ async function showProductDetails(productId) {
             <p><strong>Precio:</strong> $${product.price}</p>
             <button class="add-to-cart-sidebar" data-product-id="${productId}">Añadir al carrito</button>
             <div style="margin-top:10px; text-align:center;">
-                <a href="product.html?storeId=${storeId}&productId=${productId}" style="color:#2563eb;font-size:0.98em;text-decoration:underline;opacity:0.85;">
+                <a href="/${storeId}/${productId}" style="color:#2563eb;font-size:0.98em;text-decoration:underline;opacity:0.85;">
                     Ver más detalles
                 </a>
             </div>

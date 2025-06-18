@@ -2,9 +2,10 @@ import { app } from './firebase-config.js';
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const db = getFirestore(app);
 
-// Obtén storeId de la URL o pathname según tu estructura
-const params = new URLSearchParams(window.location.search);
-const storeId = params.get('storeId');
+// Obtener storeId y productId de la ruta amigable
+const pathParts = window.location.pathname.split('/').filter(Boolean);
+const storeId = pathParts[0]; // 'munchys'
+const productId = pathParts[1]; // 'iddelproducto'
 
 // Función para mostrar el carrito
 async function showCart() {
