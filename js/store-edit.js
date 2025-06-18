@@ -350,6 +350,22 @@ const storeData = {
             alert('Error al actualizar la tienda: ' + error.message);
         }
     });
+
+    const sidebar = document.querySelector('.edit-store-sidebar');
+    const buttons = sidebar.querySelectorAll('button[data-section]');
+    const sections = document.querySelectorAll('.edit-section');
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Quitar activo de todos
+            buttons.forEach(b => b.classList.remove('active'));
+            sections.forEach(s => s.classList.remove('active'));
+            // Activar el seleccionado
+            btn.classList.add('active');
+            const section = document.getElementById('section-' + btn.dataset.section);
+            if (section) section.classList.add('active');
+        });
+    });
 });
 
 // Función para eliminar una cuenta bancaria de Firestore
