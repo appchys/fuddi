@@ -103,45 +103,32 @@ async function fetchStores() {
 async function fetchProducts() {
     const productsContainer = document.getElementById('products-container');
     try {
-        const allProducts = [];
         const storesSnapshot = await withRetry(() => getDocs(collection(db, "stores")));
         for (const storeDoc of storesSnapshot.docs) {
             const storeId = storeDoc.id;
-            const storeData = storeDoc.data();
+            const storeData = storeDoc.data(); // <-- obtenemos los datos de la tienda aquí
             const productsSnapshot = await withRetry(() => getDocs(collection(db, `stores/${storeId}/products`)));
             productsSnapshot.forEach(productDoc => {
                 const product = productDoc.data();
+                // Mostrar solo productos que NO estén ocultos
                 if (product.hidden) return;
-                allProducts.push({
-                    ...product,
-                    storeId,
-                    storeImage: storeData.imageUrl || 'img/placeholder.png'
-                });
+
+                // Si el producto no tiene imagen, usa el logo de la tienda
+                const imageSrc = product.imageUrl || storeData.imageUrl || 'img/placeholder.png';
+
+                const productElement = document.createElement('div');
+                productElement.classList.add('product');
+                productElement.innerHTML = `
+                    <a href="store.html?storeId=${storeId}" style="text-decoration: none; color: inherit; display: block;">
+                        <img src="${imageSrc}" alt="${product.name || 'Producto sin nombre'}" style="width: 100%; height: auto; border-radius: 8px;" loading="lazy">
+                        <h3>${product.name || 'Sin nombre'}</h3>
+                        <p>${product.description || 'Sin descripción'}</p>
+                        <p><strong>Precio:</strong> $${product.price || 'No disponible'}</p>
+                    </a>
+                `;
+                productsContainer.appendChild(productElement);
             });
         }
-
-        // Mezclar productos aleatoriamente (Fisher-Yates shuffle)
-        for (let i = allProducts.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allProducts[i], allProducts[j]] = [allProducts[j], allProducts[i]];
-        }
-
-        // Renderizar productos mezclados
-        allProducts.forEach(product => {
-            const imageSrc = product.imageUrl || product.storeImage;
-            const productElement = document.createElement('div');
-            productElement.classList.add('product');
-            productElement.innerHTML = `
-                <a href="store.html?storeId=${product.storeId}" style="text-decoration: none; color: inherit; display: block;">
-                    <img src="${imageSrc}" alt="${product.name || 'Producto sin nombre'}" style="width: 100%; height: auto; border-radius: 8px;" loading="lazy">
-                    <h3>${product.name || 'Sin nombre'}</h3>
-                    <p>${product.description || 'Sin descripción'}</p>
-                    <p><strong>Precio:</strong> $${product.price || 'No disponible'}</p>
-                </a>
-            `;
-            productsContainer.appendChild(productElement);
-        });
-
     } catch (error) {
         console.error("Error al cargar los productos:", error);
         productsContainer.innerHTML = '<p>Error al cargar los productos. Por favor, <a href="#" onclick="location.reload()">recarga la página</a>.</p>';
