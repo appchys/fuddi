@@ -36,7 +36,7 @@ async function fetchStores() {
             const storeElement = document.createElement('div');
             storeElement.classList.add('store');
             storeElement.innerHTML = `
-                <a href="store.html?storeId=${storeId}" style="text-decoration: none; color: inherit; display: block;">
+                <a href="/${storeId}" style="text-decoration: none; color: inherit; display: block;">
                     <div class="store-container">
                         <div class="store-header">
                             <div class="store-cover" style="background-color: ${store.coverUrl ? 'transparent' : '#ccc'};">
