@@ -571,7 +571,12 @@ function setCollections(collections) {
 
 // Para obtener las colecciones seleccionadas al guardar el producto:
 function getSelectedCollections() {
-    return selectedCollections;
+    const inputValue = document.getElementById('productCollectionInput').value.trim();
+    let result = [...selectedCollections];
+    if (inputValue && !result.includes(inputValue)) {
+        result.push(inputValue);
+    }
+    return result;
 }
 
 // Llama renderTags() al cargar el modal
