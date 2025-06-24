@@ -114,13 +114,13 @@
                     const productElement = document.createElement('div');
                     productElement.classList.add('product');
                     productElement.innerHTML = `
-                        <a href="store.html?storeId=${storeId}" style="text-decoration: none; color: inherit; display: block;">
-                            <img src="${imageSrc}" alt="${product.name || 'Producto sin nombre'}" style="width: 100%; height: auto; border-radius: 8px;" loading="lazy">
-                            <h3>${product.name || 'Sin nombre'}</h3>
-                            <p>${product.description || 'Sin descripción'}</p>
-                            <p><strong>Precio:</strong> $${product.price || 'No disponible'}</p>
-                        </a>
-                    `;
+    <a href="/${storeId}/${productDoc.id}" style="text-decoration: none; color: inherit; display: block;">
+        <img src="${imageSrc}" alt="${product.name || 'Producto sin nombre'}" style="width: 100%; height: auto; border-radius: 8px;" loading="lazy">
+        <h3>${product.name || 'Sin nombre'}</h3>
+        <p>${product.description || 'Sin descripción'}</p>
+        <p><strong>Precio:</strong> $${product.price || 'No disponible'}</p>
+    </a>
+`;
                     productsContainer.appendChild(productElement);
                 });
             }
