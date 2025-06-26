@@ -206,5 +206,13 @@ export async function addToCart(productId) {
     // Guardar el carrito actualizado (ya unificado)
     localStorage.setItem(cartKey, JSON.stringify(cart));
     updateCartCount();
-    await showCart();
+
+    // --- Solución: Forzar cierre antes de mostrar ---
+    const cartSidebar = document.getElementById('cart-sidebar');
+    cartSidebar.classList.remove('visible');
+    cartSidebar.classList.add('hidden');
+    // Espera un pequeño tiempo para asegurar el cierre antes de renderizar
+    setTimeout(() => {
+        showCart();
+    }, 10);
 }
