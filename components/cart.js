@@ -9,7 +9,19 @@ export async function showCart() {
 
     const db = getFirestore();
     const cartKey = `cart_${window.storeId}`;
-    const cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+    // Unificar productos por productId (sumar cantidades)
+    const cartMap = {};
+    for (const item of cart) {
+        if (cartMap[item.productId]) {
+            cartMap[item.productId].quantity += item.quantity;
+        } else {
+            cartMap[item.productId] = { ...item };
+        }
+    }
+    cart = Object.values(cartMap);
+
     const cartSidebar = document.getElementById('cart-sidebar');
     const cartDetails = document.getElementById('cart-details');
 
