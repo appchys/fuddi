@@ -177,6 +177,17 @@ export async function addToCart(productId) {
     const cartKey = `cart_${window.storeId}`;
     let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
 
+    // Unificar productos por productId (sumar cantidades) ANTES de modificar
+    const cartMap = {};
+    for (const item of cart) {
+        if (cartMap[item.productId]) {
+            cartMap[item.productId].quantity += item.quantity;
+        } else {
+            cartMap[item.productId] = { ...item };
+        }
+    }
+    cart = Object.values(cartMap);
+
     // Añadir o incrementar cantidad
     let found = false;
     for (let item of cart) {
@@ -195,16 +206,16 @@ export async function addToCart(productId) {
         });
     }
 
-    // Unificar productos por productId (sumar cantidades)
-    const cartMap = {};
+    // Unificar de nuevo por si acaso
+    const cartMap2 = {};
     for (const item of cart) {
-        if (cartMap[item.productId]) {
-            cartMap[item.productId].quantity += item.quantity;
+        if (cartMap2[item.productId]) {
+            cartMap2[item.productId].quantity += item.quantity;
         } else {
-            cartMap[item.productId] = { ...item };
+            cartMap2[item.productId] = { ...item };
         }
     }
-    cart = Object.values(cartMap);
+    cart = Object.values(cartMap2);
 
     localStorage.setItem(cartKey, JSON.stringify(cart));
     updateCartCount();
