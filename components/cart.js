@@ -175,9 +175,8 @@ export async function addToCart(productId) {
 
     const product = productDoc.data();
     const cartKey = `cart_${window.storeId}`;
+    // Siempre lee y unifica el carrito desde localStorage
     let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
-
-    // Unificar productos por productId (sumar cantidades) ANTES de modificar
     const cartMap = {};
     for (const item of cart) {
         if (cartMap[item.productId]) {
@@ -206,7 +205,7 @@ export async function addToCart(productId) {
         });
     }
 
-    // Unificar de nuevo por si acaso
+    // Unificar de nuevo antes de guardar
     const cartMap2 = {};
     for (const item of cart) {
         if (cartMap2[item.productId]) {
@@ -217,7 +216,9 @@ export async function addToCart(productId) {
     }
     cart = Object.values(cartMap2);
 
+    // Guardar carrito limpio
     localStorage.setItem(cartKey, JSON.stringify(cart));
     updateCartCount();
-    showCart();
+    // Ahora sí, mostrar el carrito limpio
+    await showCart();
 }
