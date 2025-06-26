@@ -4,17 +4,24 @@
     <meta charset="UTF-8">
     <title>Producto</title>
     <link rel="stylesheet" href="/css/store.css">
+    <link rel="stylesheet" href="components/cart.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
     <main id="product-main"></main>
 
     <!-- Sidebar del carrito -->
-    <div id="cart-sidebar" class="cart-sidebar hidden">
-        <button id="close-cart-sidebar" class="close-cart-btn">&times;</button>
+    <div id="cart-sidebar" class="sidebar hidden">
+        <button id="close-cart-sidebar" class="close-btn">&times;</button>
+        <h2>Carrito</h2>
         <div id="cart-details"></div>
     </div>
-    <span id="cart-count" style="display:none"></span>
+
+    <!-- Botón flotante para abrir el carrito -->
+    <button id="cart-button" class="cart-fab">
+        <i class="bi bi-cart"></i>
+        <span id="cart-count" class="cart-count"></span>
+    </button>
 
     <script type="module" src="/js/product.js"></script>
 </body>

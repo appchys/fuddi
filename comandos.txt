@@ -1,3 +1,3 @@
 git add .
-git commit -m "Nav bar"
+git commit -m "Carrito en pagina de producto"
 git push origin main
