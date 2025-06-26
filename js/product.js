@@ -48,17 +48,18 @@ async function loadProduct() {
             </div>
         </div>
     `;
+
+    // Asigna el listener después de crear el botón
+    document.getElementById('add-to-cart-btn').addEventListener('click', () => {
+        addToCart(productId);
+        showCart(); // Abre el carrito automáticamente
+    });
 }
 
 loadProduct();
 
 // Asegúrate de tener window.storeId definido
 window.storeId = storeId;
-
-// Botón "Añadir al carrito"
-document.getElementById('add-to-cart-btn').addEventListener('click', () => {
-    addToCart(productId);
-});
 
 // Botón flotante para abrir el carrito
 document.getElementById('cart-button').addEventListener('click', showCart);
