@@ -10,8 +10,6 @@ export async function showCart() {
     const db = getFirestore();
     const cartKey = `cart_${window.storeId}`;
     let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
-
-    // Unificar productos por productId (sumar cantidades)
     const cartMap = {};
     for (const item of cart) {
         if (cartMap[item.productId]) {
@@ -175,8 +173,9 @@ export async function addToCart(productId) {
 
     const product = productDoc.data();
     const cartKey = `cart_${window.storeId}`;
-    // Siempre lee y unifica el carrito desde localStorage
     let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+    // Unificar productos por productId antes de modificar
     const cartMap = {};
     for (const item of cart) {
         if (cartMap[item.productId]) {
@@ -187,15 +186,14 @@ export async function addToCart(productId) {
     }
     cart = Object.values(cartMap);
 
-    // Añadir o incrementar cantidad
+    // Si el producto ya está en el carrito, incrementar la cantidad
     let found = false;
-    for (let item of cart) {
+    cart.forEach(item => {
         if (item.productId === productId) {
             item.quantity += 1;
             found = true;
-            break;
         }
-    }
+    });
     if (!found) {
         cart.push({
             productId,
@@ -205,20 +203,8 @@ export async function addToCart(productId) {
         });
     }
 
-    // Unificar de nuevo antes de guardar
-    const cartMap2 = {};
-    for (const item of cart) {
-        if (cartMap2[item.productId]) {
-            cartMap2[item.productId].quantity += item.quantity;
-        } else {
-            cartMap2[item.productId] = { ...item };
-        }
-    }
-    cart = Object.values(cartMap2);
-
-    // Guardar carrito limpio
+    // Guardar el carrito actualizado (ya unificado)
     localStorage.setItem(cartKey, JSON.stringify(cart));
     updateCartCount();
-    // Ahora sí, mostrar el carrito limpio
     await showCart();
 }
