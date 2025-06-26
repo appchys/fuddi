@@ -25,152 +25,164 @@
             <button data-section="location">Ubicación</button>
           </aside>
           <main class="edit-store-content">
-            <div id="section-general" class="edit-section active">
-              <!-- Aquí van los campos de datos generales -->
-              <h2>Datos generales</h2>
-              <form id="editStoreForm" class="space-y-4">
-                <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Nombre de la tienda</label>
-                    <input type="text" id="name" name="name" required
-                           class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                </div>
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700">Usuario</label>
-                    <input type="text" id="username" name="username"
-                           class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                </div>
-                <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-700">Teléfono</label>
-                    <input type="tel" id="phone" name="phone"
-                           class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                </div>
-                <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700">Descripción</label>
-                    <textarea id="description" name="description" required rows="4"
-                              class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></textarea>
-                </div>
-                <button type="submit"
-                        class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
-                    Guardar Cambios
-                </button>
-              </form>
-            </div>
-            <div id="section-images" class="edit-section">
-              <h2>Imágenes</h2>
-              <div>
-                <label for="imageUrl" class="block text-sm font-medium text-gray-700">Foto de perfil</label>
-                <input type="file" id="imageUrl" name="imageUrl" accept="image/*"
-                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                <img id="currentImage" class="mt-2 max-w-xs hidden" alt="Foto actual de la tienda">
-            </div>
-            <div>
-                <label for="coverImage" class="block text-sm font-medium text-gray-700">Foto de portada</label>
-                <input type="file" id="coverImage" name="coverImage" accept="image/*"
-                       class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                <img id="currentCoverImage" class="mt-2 max-w-xs hidden" alt="Foto actual de portada">
-            </div>
-            <button type="submit"
-                    class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
-                Guardar Cambios
-            </button>
-            </div>
-            <div id="section-banks" class="edit-section">
-              <h2>Bancos</h2>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Datos bancarios</label>
-                <div id="bankAccountsContainer" class="space-y-2"></div>
-                <!-- Formulario de nueva cuenta bancaria oculto por defecto -->
-                <div id="bankAccountFormWrapper" style="display: none;" class="mt-4">
-                    <div class="bank-account-entry">
-                        <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700">Banco</label>
-                            <input type="text" id="newBank" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700">Número de cuenta</label>
-                            <input type="text" id="newAccountNumber" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div class="mb-2">
-                            <label class="block text-sm font-medium text-gray-700">Titular</label>
-                            <input type="text" id="newHolder" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="button" id="saveBankAccount" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700">Guardar</button>
-                            <button type="button" id="cancelBankAccount" class="bg-gray-400 text-white px-3 py-1 rounded-md hover:bg-gray-500">Cancelar</button>
-                        </div>
-                    </div>
-                </div>
-                <button type="button" id="addBankAccount" class="mt-2 bg-green-600 text-white p-2 rounded-md hover:bg-green-700">
-                    Añadir cuenta bancaria
-                </button>
-            </div>
-            <button type="submit"
-                    class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
-                Guardar Cambios
-            </button>
-            </div>
-            <div id="section-zones" class="edit-section">
-              <h2>Zonas de cobertura</h2>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Zonas de cobertura (polígonos)</label>
-                <div id="deliveryZonesMap" style="width:100%;height:350px;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:10px;"></div>
-                <button type="button" id="addZoneBtn" class="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 mb-2">Agregar zona</button>
-                <div id="zonesList" class="mb-2"></div>
-            </div>
-            <!-- Modal para agregar zona de cobertura -->
-            <div id="zoneModal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
-              <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:350px;width:90%;box-shadow:0 2px 16px #0002;">
-                <h3 style="margin-bottom:12px;font-size:1.2em;">Nueva zona de cobertura</h3>
-                <form id="zoneForm">
-                  <div style="margin-bottom:10px;">
-                    <label>Nombre de la zona</label>
-                    <input id="zoneName" type="text" required style="width:100%;padding:6px;margin-top:4px;">
-                  </div>
-                  <div style="margin-bottom:10px;">
-                    <label>Valor de envío ($)</label>
-                    <input id="zoneShipping" type="number" min="0" step="0.01" required style="width:100%;padding:6px;margin-top:4px;">
-                  </div>
-                  <div style="display:flex;gap:10px;justify-content:flex-end;">
-                    <button type="button" id="cancelZoneBtn" style="padding:6px 14px;">Cancelar</button>
-                    <button type="submit" style="background:#2563eb;color:#fff;padding:6px 14px;border-radius:5px;">Guardar</button>
-                  </div>
-                </form>
+            <!-- Datos generales -->
+<div id="section-general" class="edit-section active">
+  <form id="editStoreForm" class="space-y-4">
+    <div>
+        <label for="name" class="block text-sm font-medium text-gray-700">Nombre de la tienda</label>
+        <input type="text" id="name" name="name" required
+               class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+    </div>
+    <div>
+        <label for="username" class="block text-sm font-medium text-gray-700">Usuario</label>
+        <input type="text" id="username" name="username"
+               class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+    </div>
+    <div>
+        <label for="phone" class="block text-sm font-medium text-gray-700">Teléfono</label>
+        <input type="tel" id="phone" name="phone"
+               class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+    </div>
+    <div>
+        <label for="description" class="block text-sm font-medium text-gray-700">Descripción</label>
+        <textarea id="description" name="description" required rows="4"
+                  class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></textarea>
+    </div>
+    <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+      Guardar Cambios
+    </button>
+  </form>
+</div>
+
+<!-- Imágenes -->
+<div id="section-images" class="edit-section">
+  <form id="editImagesForm">
+    <div>
+      <label for="imageUrl" class="block text-sm font-medium text-gray-700">Foto de perfil</label>
+      <input type="file" id="imageUrl" name="imageUrl" accept="image/*"
+             class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+      <img id="currentImage" class="mt-2 max-w-xs hidden" alt="Foto actual de la tienda">
+  </div>
+  <div>
+      <label for="coverImage" class="block text-sm font-medium text-gray-700">Foto de portada</label>
+      <input type="file" id="coverImage" name="coverImage" accept="image/*"
+             class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+      <img id="currentCoverImage" class="mt-2 max-w-xs hidden" alt="Foto actual de portada">
+  </div>
+  <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+      Guardar Cambios
+  </button>
+  </form>
+</div>
+
+<!-- Bancos -->
+<div id="section-banks" class="edit-section">
+  <form id="editBanksForm">
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Datos bancarios</label>
+      <div id="bankAccountsContainer" class="space-y-2"></div>
+      <!-- Formulario de nueva cuenta bancaria oculto por defecto -->
+      <div id="bankAccountFormWrapper" style="display: none;" class="mt-4">
+          <div class="bank-account-entry">
+              <div class="mb-2">
+                  <label class="block text-sm font-medium text-gray-700">Banco</label>
+                  <input type="text" id="newBank" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
               </div>
-            </div>
-            <button type="submit"
-                    class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
-                Guardar Cambios
-            </button>
-            </div>
-            <div id="section-hours" class="edit-section">
-              <h2>Horario</h2>
-              <!-- Aquí van los campos del horario de atención -->
-              <div id="openingHoursFields" class="grid grid-cols-1 gap-2"></div>
-            </div>
-            <div id="section-location" class="edit-section">
-              <h2>Ubicación</h2>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación de la tienda</label>
-                <div id="storeLocationMap" style="width:100%;height:250px;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:10px;"></div>
-                <div class="flex gap-2 mb-2">
-                    <!-- Oculta los campos de lat/lng y coloca el botón aquí -->
-                    <input type="text" id="storeLat" name="storeLat" class="hidden" readonly>
-                    <input type="text" id="storeLng" name="storeLng" class="hidden" readonly>
-                    <button type="button" id="getCurrentLocationBtn" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                        Obtener ubicación actual
-                    </button>
-                </div>
-                <label for="storeReference" class="block text-xs text-gray-600">Referencias</label>
-                <input type="text" id="storeReference" name="storeReference" class="block w-full p-2 border border-gray-300 rounded-md mb-2" placeholder="Ej: Frente al parque, junto a la farmacia...">
-                <label for="storeLocationImage" class="block text-xs text-gray-600">Foto de la ubicación</label>
-                <input type="file" id="storeLocationImage" name="storeLocationImage" accept="image/*" class="block w-full p-2 border border-gray-300 rounded-md">
-                <img id="currentLocationImage" class="mt-2 max-w-xs hidden" alt="Foto de la ubicación">
-            </div>
-            <button type="submit"
-                    class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
-                Guardar Cambios
-            </button>
-            </div>
+              <div class="mb-2">
+                  <label class="block text-sm font-medium text-gray-700">Número de cuenta</label>
+                  <input type="text" id="newAccountNumber" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+              </div>
+              <div class="mb-2">
+                  <label class="block text-sm font-medium text-gray-700">Titular</label>
+                  <input type="text" id="newHolder" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+              </div>
+              <div class="flex gap-2">
+                  <button type="button" id="saveBankAccount" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700">Guardar</button>
+                  <button type="button" id="cancelBankAccount" class="bg-gray-400 text-white px-3 py-1 rounded-md hover:bg-gray-500">Cancelar</button>
+              </div>
+          </div>
+      </div>
+      <button type="button" id="addBankAccount" class="mt-2 bg-green-600 text-white p-2 rounded-md hover:bg-green-700">
+          Añadir cuenta bancaria
+      </button>
+  </div>
+  <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+      Guardar Cambios
+  </button>
+  </form>
+</div>
+
+<!-- Zonas -->
+<div id="section-zones" class="edit-section">
+  <form id="editZonesForm">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Zonas de cobertura (polígonos)</label>
+      <div id="deliveryZonesMap" style="width:100%;height:350px;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:10px;"></div>
+      <button type="button" id="addZoneBtn" class="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 mb-2">Agregar zona</button>
+      <div id="zonesList" class="mb-2"></div>
+  </div>
+  <!-- Modal para agregar zona de cobertura -->
+  <div id="zoneModal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:350px;width:90%;box-shadow:0 2px 16px #0002;">
+      <h3 style="margin-bottom:12px;font-size:1.2em;">Nueva zona de cobertura</h3>
+      <form id="zoneForm">
+        <div style="margin-bottom:10px;">
+          <label>Nombre de la zona</label>
+          <input id="zoneName" type="text" required style="width:100%;padding:6px;margin-top:4px;">
+        </div>
+        <div style="margin-bottom:10px;">
+          <label>Valor de envío ($)</label>
+          <input id="zoneShipping" type="number" min="0" step="0.01" required style="width:100%;padding:6px;margin-top:4px;">
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button type="button" id="cancelZoneBtn" style="padding:6px 14px;">Cancelar</button>
+          <button type="submit" style="background:#2563eb;color:#fff;padding:6px 14px;border-radius:5px;">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+      Guardar Cambios
+  </button>
+  </form>
+</div>
+
+<!-- Horario -->
+<div id="section-hours" class="edit-section">
+  <form id="editHoursForm">
+    <!-- Aquí van los campos del horario de atención -->
+    <div id="openingHoursFields" class="grid grid-cols-1 gap-2"></div>
+    <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+      Guardar Cambios
+    </button>
+  </form>
+</div>
+
+<!-- Ubicación -->
+<div id="section-location" class="edit-section">
+  <form id="editLocationForm">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación de la tienda</label>
+      <div id="storeLocationMap" style="width:100%;height:250px;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:10px;"></div>
+      <div class="flex gap-2 mb-2">
+          <!-- Oculta los campos de lat/lng y coloca el botón aquí -->
+          <input type="text" id="storeLat" name="storeLat" class="hidden" readonly>
+          <input type="text" id="storeLng" name="storeLng" class="hidden" readonly>
+          <button type="button" id="getCurrentLocationBtn" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+              Obtener ubicación actual
+          </button>
+      </div>
+      <label for="storeReference" class="block text-xs text-gray-600">Referencias</label>
+      <input type="text" id="storeReference" name="storeReference" class="block w-full p-2 border border-gray-300 rounded-md mb-2" placeholder="Ej: Frente al parque, junto a la farmacia...">
+      <label for="storeLocationImage" class="block text-xs text-gray-600">Foto de la ubicación</label>
+      <input type="file" id="storeLocationImage" name="storeLocationImage" accept="image/*" class="block w-full p-2 border border-gray-300 rounded-md">
+      <img id="currentLocationImage" class="mt-2 max-w-xs hidden" alt="Foto de la ubicación">
+  </div>
+  <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+      Guardar Cambios
+  </button>
+  </form>
+</div>
           </main>
         </div>
     </div>

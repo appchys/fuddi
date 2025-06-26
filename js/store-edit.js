@@ -366,6 +366,164 @@ const storeData = {
             if (section) section.classList.add('active');
         });
     });
+
+    // --- DATOS GENERALES ---
+document.getElementById('editStoreForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const storeId = window.getStoreId();
+  const name = document.getElementById('name').value;
+  const username = document.getElementById('username').value;
+  const phone = document.getElementById('phone').value;
+  const description = document.getElementById('description').value;
+
+  // Validación básica
+  if (!name || !username) {
+    alert('Nombre y usuario son obligatorios.');
+    return;
+  }
+
+  // Verificar si el username ya está en uso (excepto si es el mismo)
+  try {
+    const storesRef = collection(db, 'stores');
+    const q = query(storesRef, where('username', '==', username));
+    const querySnapshot = await getDocs(q);
+    let found = false;
+    querySnapshot.forEach((docu) => {
+      if (docu.id !== storeId) found = true;
+    });
+    if (found) {
+      alert('El nombre de usuario ya está en uso. Por favor, elija otro.');
+      return;
+    }
+  } catch (error) {
+    alert('Error al verificar el nombre de usuario.');
+    return;
+  }
+
+  try {
+    await setDoc(doc(db, 'stores', storeId), {
+      name,
+      username,
+      phone,
+      description,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+    alert('Datos generales guardados correctamente.');
+  } catch (error) {
+    alert('Error al guardar datos generales: ' + error.message);
+  }
+});
+
+// --- IMÁGENES ---
+document.getElementById('editImagesForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const storeId = window.getStoreId();
+  const imageUrlFile = document.getElementById('imageUrl').files[0];
+  const coverImageFile = document.getElementById('coverImage').files[0];
+  let updates = {};
+
+  if (imageUrlFile) {
+    const imageRef = ref(storage, `stores/${storeId}/profile_${Date.now()}`);
+    await uploadBytes(imageRef, imageUrlFile);
+    updates.imageUrl = await getDownloadURL(imageRef);
+  }
+  if (coverImageFile) {
+    const coverRef = ref(storage, `stores/${storeId}/cover_${Date.now()}`);
+    await uploadBytes(coverRef, coverImageFile);
+    updates.coverUrl = await getDownloadURL(coverRef);
+  }
+  if (Object.keys(updates).length > 0) {
+    await setDoc(doc(db, 'stores', storeId), updates, { merge: true });
+    alert('Imágenes actualizadas correctamente.');
+  } else {
+    alert('No seleccionaste ninguna imagen.');
+  }
+});
+
+// --- BANCOS ---
+document.getElementById('editBanksForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const storeId = window.getStoreId();
+  // Recolectar cuentas bancarias de los inputs
+  const bankAccounts = [];
+  document.querySelectorAll('.bank-account-entry').forEach(entry => {
+    const bank = entry.querySelector('input[name="bank"]').value;
+    const accountNumber = entry.querySelector('input[name="accountNumber"]').value;
+    const holder = entry.querySelector('input[name="holder"]').value;
+    if (bank || accountNumber || holder) {
+      bankAccounts.push({ bank, accountNumber, holder });
+    }
+  });
+  try {
+    await setDoc(doc(db, 'stores', storeId), { bankAccounts }, { merge: true });
+    alert('Cuentas bancarias guardadas correctamente.');
+  } catch (error) {
+    alert('Error al guardar bancos: ' + error.message);
+  }
+});
+
+// --- ZONAS ---
+document.getElementById('editZonesForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const storeId = window.getStoreId();
+  // deliveryZones debe estar en memoria (ya lo tienes en tu código)
+  try {
+    await setDoc(doc(db, 'stores', storeId), { deliveryZones }, { merge: true });
+    alert('Zonas de cobertura guardadas correctamente.');
+  } catch (error) {
+    alert('Error al guardar zonas: ' + error.message);
+  }
+});
+
+// --- HORARIO ---
+document.getElementById('editHoursForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const storeId = window.getStoreId();
+  // Recolectar horario de atención
+  const openingHours = {};
+  daysOfWeek.forEach(day => {
+    const openInput = openingHoursFields.querySelector(`input.open-time[data-day="${day.key}"]`);
+    const closeInput = openingHoursFields.querySelector(`input.close-time[data-day="${day.key}"]`);
+    const closedCheckbox = openingHoursFields.querySelector(`input.closed-checkbox[data-day="${day.key}"]`);
+    if (!closedCheckbox.checked && openInput.value && closeInput.value) {
+      openingHours[day.key] = {
+        open: openInput.value,
+        close: closeInput.value
+      };
+    } else {
+      openingHours[day.key] = null;
+    }
+  });
+  try {
+    await setDoc(doc(db, 'stores', storeId), { openingHours }, { merge: true });
+    alert('Horario guardado correctamente.');
+  } catch (error) {
+    alert('Error al guardar horario: ' + error.message);
+  }
+});
+
+// --- UBICACIÓN ---
+document.getElementById('editLocationForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const storeId = window.getStoreId();
+  const lat = document.getElementById('storeLat').value;
+  const lng = document.getElementById('storeLng').value;
+  const reference = document.getElementById('storeReference').value;
+  const locationImageFile = document.getElementById('storeLocationImage').files[0];
+  let updates = { lat, lng, reference };
+
+  if (locationImageFile) {
+    const locationImageRef = ref(storage, `stores/${storeId}/location_${Date.now()}`);
+    await uploadBytes(locationImageRef, locationImageFile);
+    updates.locationImageUrl = await getDownloadURL(locationImageRef);
+  }
+  try {
+    await setDoc(doc(db, 'stores', storeId), updates, { merge: true });
+    alert('Ubicación guardada correctamente.');
+  } catch (error) {
+    alert('Error al guardar ubicación: ' + error.message);
+  }
+});
 });
 
 // Función para eliminar una cuenta bancaria de Firestore
