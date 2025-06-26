@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css?family=Homemade+Apple&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div id="navbar-container"></div>
     <header>
         <div id="random-cover" class="random-cover"></div> <!-- Contenedor para la imagen de portada aleatoria -->
         <h1 class="site-title">Fuddi</h1> <!-- Título separado del contenedor de la portada -->
@@ -61,21 +62,50 @@
 
         
 
-        <!-- Botón tipo hamburguesa flotante -->
-        <button id="control-panel-toggle" class="hamburger-btn" onclick="toggleControlPanel()">
-            <i class="bi bi-list"></i>
-        </button>
-    </main>
-
     <!-- Sidebar del control panel -->
     <div id="control-panel-container"></div>
 
     <footer>
-        <p>© 2025 Allimarket. Todos los derechos reservados.</p>
+        <p>© 2025 Fuddi.</p>
     </footer>
 
+    <script>
+  // Cargar el CSS solo si no está ya cargado
+  if (!document.getElementById('navbar-css')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'components/navbar.css';
+    link.id = 'navbar-css';
+    document.head.appendChild(link);
+  }
+  // Cargar el HTML del navbar
+  fetch('components/navbar.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('navbar-container').innerHTML = html;
+    });
+</script>
     <script type="module" src="js/firebase-config.js"></script>
     <script type="module" src="js/index.js"></script>
     <script type="module" src="js/control-panel.js"></script> <!-- Script del control panel -->
+    <script type="module">
+  import { auth, db, doc, getDoc } from './js/firebase-config.js';
+
+  auth.onAuthStateChanged(async (user) => {
+    const greeting = document.getElementById('navbar-greeting');
+    if (user && greeting) {
+      // Busca el nombre en la colección users
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        greeting.textContent = `Hola, ${userData.name || user.displayName || 'Cliente'}.`;
+      } else {
+        greeting.textContent = `Hola.`;
+      }
+    } else if (greeting) {
+      greeting.textContent = '';
+    }
+  });
+</script>
 </body>
 </html>

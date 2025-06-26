@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const sortedDays = Object.keys(ordersByDay).sort((a, b) => {
                     if (a === 'Sin fecha') return 1;
                     if (b === 'Sin fecha') return -1;
-                    return new Date(b) - new Date(a);
+                    return b.localeCompare(a); // <-- Cambiado, ya no usa new Date()
                 });
 
                 for (const day of sortedDays) {
@@ -285,10 +285,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
 
                     // Título del grupo por día
+                    let fechaFormateada = '';
+                    if (day === 'Sin fecha') {
+                        fechaFormateada = 'Órdenes sin fecha de entrega';
+                    } else if (/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+                        // Formato YYYY-MM-DD
+                        const [year, month, dayNum] = day.split('-');
+                        fechaFormateada = `Entrega: ${dayNum}/${month}/${year}`;
+                    } else {
+                        // Fallback por si acaso
+                        fechaFormateada = `Entrega: ${day}`;
+                    }
                     const groupTitle = document.createElement('h3');
-                    groupTitle.textContent = day === 'Sin fecha'
-                        ? 'Órdenes sin fecha de entrega'
-                        : `Entrega: ${new Date(day).toLocaleDateString()}`;
+                    groupTitle.textContent = fechaFormateada;
                     groupTitle.className = 'orders-group-title';
                     ordersContainer.appendChild(groupTitle);
 

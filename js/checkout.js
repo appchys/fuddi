@@ -883,7 +883,7 @@ Total a cobrar: $${total}${comprobanteLine}`
                         if (closeBtn) {
                             closeBtn.onclick = () => {
                                 orderSuccessModal.classList.add('hidden');
-                                window.location.href = '/my-orders.html';
+                                window.location.href = '/index.html'; // <--- Ahora va a index.html
                             };
                         }
                     } else {
