@@ -39,6 +39,7 @@ async function loadProduct() {
             <div style="margin:18px 0;">
                 <a href="/${storeId}" class="btn"><i class="bi bi-shop"></i> Ver tienda</a>
                 <button class="btn" id="add-to-cart-btn"><i class="bi bi-cart-plus"></i> Añadir al carrito</button>
+                <button class="btn" id="share-btn"><i class="bi bi-share"></i> Compartir</button>
             </div>
             <hr style="margin:32px 0;">
             <div style="text-align:center;">
@@ -53,6 +54,19 @@ async function loadProduct() {
     document.getElementById('add-to-cart-btn').addEventListener('click', () => {
         addToCart(productId);
         showCart(); // Abre el carrito automáticamente
+    });
+
+    document.getElementById('share-btn').addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            // Puedes mostrar un mensaje visual si quieres
+            document.getElementById('share-btn').textContent = '¡Enlace copiado!';
+            setTimeout(() => {
+                document.getElementById('share-btn').innerHTML = '<i class="bi bi-share"></i> Compartir';
+            }, 1500);
+        } catch (err) {
+            alert('No se pudo copiar el enlace');
+        }
     });
 }
 
