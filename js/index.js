@@ -6,7 +6,7 @@ import { getTotalPoints } from './rewards.js'; // Asegúrate de que la ruta sea 
 
 // Initialize Firestore
 const db = getFirestore(app);
-const auth = getAuth();
+const auth = getAuth(app);
 
 // Función auxiliar para reintentar una promesa
 async function withRetry(fn, retries = 3, delay = 1000) {
