@@ -14,7 +14,39 @@ const main = document.getElementById('product-main');
 // Mostrar producto
 async function loadProduct() {
     if (!storeId || !productId) {
-        main.innerHTML = '<p>Producto no encontrado.</p>';
+        main.innerHTML = `
+        <div class="product-detail-page">
+            <img src="/img/placeholder.png" alt="Producto de ejemplo" class="product-image" style="max-width:260px;display:block;margin:0 auto 18px auto;">
+            <h1>Producto de ejemplo</h1>
+            <p class="product-price" style="font-size:1.3em;color:#16a34a;font-weight:bold;">$99.99</p>
+            <p class="product-description" style="margin:18px 0;">
+                Esta es una descripción de ejemplo para el producto. Aquí puedes mostrar las características, beneficios y detalles relevantes del producto.
+            </p>
+            <div class="product-btns-row">
+                <a href="#" class="product-menu-btn"><i class="bi bi-shop"></i>Ver tienda</a>
+                <button class="product-menu-btn" id="add-to-cart-btn" disabled><i class="bi bi-cart-plus"></i>Añadir al carrito</button>
+                <button class="product-menu-btn" id="share-btn"><i class="bi bi-share"></i>Compartir</button>
+            </div>
+            <hr style="margin:32px 0;">
+            <div style="text-align:center;">
+                <img src="/img/placeholder.png" alt="Logo tienda" style="width:60px;height:60px;border-radius:50%;margin-bottom:8px;">
+                <div style="font-weight:bold;">Tienda de ejemplo</div>
+                <div style="color:#666;">Descripción breve de la tienda de ejemplo.</div>
+            </div>
+        </div>
+        `;
+        // Habilita compartir aunque sea ejemplo
+        document.getElementById('share-btn').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                document.getElementById('share-btn').textContent = '¡Enlace copiado!';
+                setTimeout(() => {
+                    document.getElementById('share-btn').innerHTML = '<i class="bi bi-share"></i> Compartir';
+                }, 1500);
+            } catch (err) {
+                alert('No se pudo copiar el enlace');
+            }
+        });
         return;
     }
 
@@ -36,10 +68,10 @@ async function loadProduct() {
             <h1>${product.name}</h1>
             <p class="product-price" style="font-size:1.3em;color:#16a34a;font-weight:bold;">$${product.price ? product.price.toFixed(2) : 'No disponible'}</p>
             <p class="product-description" style="margin:18px 0;">${product.description || ''}</p>
-            <div style="margin:18px 0;">
-                <a href="/${storeId}" class="btn"><i class="bi bi-shop"></i> Ver tienda</a>
-                <button class="btn" id="add-to-cart-btn"><i class="bi bi-cart-plus"></i> Añadir al carrito</button>
-                <button class="btn" id="share-btn"><i class="bi bi-share"></i> Compartir</button>
+            <div class="product-btns-row">
+                <a href="#" class="product-menu-btn"><i class="bi bi-shop"></i>Ver tienda</a>
+                <button class="product-menu-btn" id="add-to-cart-btn" disabled><i class="bi bi-cart-plus"></i>Añadir al carrito</button>
+                <button class="product-menu-btn" id="share-btn"><i class="bi bi-share"></i>Compartir</button>
             </div>
             <hr style="margin:32px 0;">
             <div style="text-align:center;">
