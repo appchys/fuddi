@@ -1335,28 +1335,3 @@ function renderPickupLocationSection() {
         </div>
     `;
 }
-
-// Registra puntos en el historial del usuario si la orden está completada/entregada
-export async function addPointsForOrder({ userId, orderId, amount, status }) {
-    const db = getFirestore(app);
-    if (!userId || !orderId || typeof amount !== 'number') return;
-
-    // Solo sumar puntos si la orden está completada o entregada
-    if (!['Completado', 'Entregado'].includes(status)) return;
-
-    // Verifica si ya se sumaron puntos por esta orden
-    const pointsHistoryRef = collection(db, `users/${userId}/pointsHistory`);
-    const q = query(pointsHistoryRef, where("orderId", "==", orderId));
-    const existing = await getDocs(q);
-    if (!existing.empty) return; // Ya se sumaron puntos por esta orden
-
-    const points = Math.floor(amount); // 1 punto por cada dólar entero
-
-    await addDoc(pointsHistoryRef, {
-        orderId,
-        points,
-        amount,
-        type: "compra",
-        timestamp: new Date().toISOString()
-    });
-}
