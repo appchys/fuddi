@@ -63,23 +63,23 @@ async function loadProduct() {
     const store = storeDoc.exists() ? storeDoc.data() : {};
 
     main.innerHTML = `
-        <div class="product-detail-page">
-            <img src="${product.imageUrl || store.imageUrl || '/img/placeholder.png'}" alt="${product.name}" class="product-image" style="max-width:260px;display:block;margin:0 auto 18px auto;">
-            <h1>${product.name}</h1>
-            <p class="product-price" style="font-size:1.3em;color:#16a34a;font-weight:bold;">$${product.price ? product.price.toFixed(2) : 'No disponible'}</p>
-            <p class="product-description" style="margin:18px 0;">${product.description || ''}</p>
-            <div class="product-btns-row">
-                <a href="/${storeId}" class="product-menu-btn"><i class="bi bi-shop"></i>Ver tienda</a>
-                <button class="product-menu-btn" id="add-to-cart-btn" disabled><i class="bi bi-cart-plus"></i>Añadir al carrito</button>
-                <button class="product-menu-btn" id="share-btn"><i class="bi bi-share"></i>Compartir</button>
-            </div>
-            <hr style="margin:32px 0;">
-            <div style="text-align:center;">
-                <img src="${store.imageUrl || '/img/placeholder.png'}" alt="Logo tienda" style="width:60px;height:60px;border-radius:50%;margin-bottom:8px;">
-                <div style="font-weight:bold;">${store.name || ''}</div>
-                <div style="color:#666;">${store.description || ''}</div>
-            </div>
+    <div class="product-detail-page">
+        <img src="${product.imageUrl || store.imageUrl || '/img/placeholder.png'}" alt="${product.name}" class="product-image" style="max-width:260px;display:block;margin:0 auto 18px auto;">
+        <h1>${product.name}</h1>
+        <p class="product-price" style="font-size:1.3em;color:#16a34a;font-weight:bold;">$${product.price ? product.price.toFixed(2) : 'No disponible'}</p>
+        <p class="product-description" style="margin:18px 0;">${product.description || ''}</p>
+        <div class="product-btns-row">
+            <a href="/${storeId}" class="product-menu-btn"><i class="bi bi-shop"></i>Ver tienda</a>
+            <button class="product-menu-btn" id="add-to-cart-btn"><i class="bi bi-cart-plus"></i>Añadir al carrito</button>
+            <button class="product-menu-btn" id="share-btn"><i class="bi bi-share"></i>Compartir</button>
         </div>
+        <hr style="margin:32px 0;">
+        <div style="text-align:center;">
+            <img src="${store.imageUrl || '/img/placeholder.png'}" alt="Logo tienda" style="width:60px;height:60px;border-radius:50%;margin-bottom:8px;">
+            <div style="font-weight:bold;">${store.name || ''}</div>
+            <div style="color:#666;">${store.description || ''}</div>
+        </div>
+    </div>
     `;
 
     // Asigna el listener después de crear el botón
