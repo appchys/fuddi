@@ -2,6 +2,7 @@
 import { app } from './firebase-config.js';
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getTotalPoints } from './rewards.js'; // Asegúrate de que la ruta sea correcta
 
 // Initialize Firestore
 const db = getFirestore(app);
@@ -234,9 +235,23 @@ function toggleRegisterButton() {
     });
 }
 
+// Actualiza los puntos en la navbar
+async function updateNavbarPoints() {
+    const user = auth.currentUser;
+    const pointsSpan = document.getElementById('navbar-points');
+    if (!pointsSpan) return;
+    if (user) {
+        const totalPoints = await getTotalPoints(user.uid);
+        pointsSpan.innerHTML = `<i class="bi bi-star-fill" style="color:#fbbf24"></i> ${totalPoints} puntos`;
+    } else {
+        pointsSpan.textContent = '';
+    }
+}
+
 // Detectar login y mostrar seguidos
 onAuthStateChanged(auth, () => {
     fetchFollowedStores();
+    updateNavbarPoints();
 });
 
 // Load data on page load

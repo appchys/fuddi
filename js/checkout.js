@@ -3,6 +3,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstati
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { app } from './firebase-config.js';
 import { GOOGLE_MAPS_API_KEY } from './config.js';
+import { addPointsForOrder, getTotalPoints } from './rewards.js';
 
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -810,20 +811,32 @@ async function initialize() {
                     const orderRef = await addDoc(collection(db, 'orders'), orderData);
                     console.log('Pedido guardado exitosamente con ID:', orderRef.id);
 
-                    Toastify({
-                        text: '¡Pedido confirmado! Gracias por tu compra.',
-                        duration: 3000,
-                        gravity: 'top',
-                        position: 'right',
-                        backgroundColor: '#16a34a',
-                    }).showToast();
+                    // Calcula los puntos de este pedido
+                    const pointsThisOrder = Math.floor(orderData.total);
 
-                    // Mostrar modal de éxito
+                    // Suma los puntos al historial del usuario (como la orden está "Pendiente", puedes hacerlo aquí o cuando cambie a "Entregado"/"Completado")
+                    await addPointsForOrder({
+                        userId: orderData.userId,
+                        orderId: orderRef.id,
+                        amount: orderData.total,
+                        status: "Completado" // O "Entregado" si prefieres
+                    });
+
+                    const totalPoints = await getTotalPoints(orderData.userId);
+
                     const orderSuccessModal = document.getElementById('orderSuccessModal');
-                    console.log('Buscando modal de éxito:', orderSuccessModal);
                     if (orderSuccessModal) {
                         orderSuccessModal.classList.remove('hidden');
-                        console.log('Modal de éxito mostrado');
+                        // Busca el contenedor donde va el mensaje principal del modal
+                        const mainMsg = orderSuccessModal.querySelector('.modal-main-message');
+                        // Si no tienes esa clase, usa el div donde va el texto principal del modal
+                        if (mainMsg) {
+                            // Inserta el mensaje de puntos justo después del texto principal
+                            const pointsMsg = document.createElement('div');
+                            pointsMsg.style = "margin:18px 0;font-size:1.1em;color:#16a34a;text-align:center;";
+                            pointsMsg.innerHTML = `Este pedido suma <b>${pointsThisOrder}</b> puntos<br>Tu total de puntos es <b>${totalPoints}</b>`;
+                            mainMsg.insertAdjacentElement('afterend', pointsMsg);
+                        }
                         // Datos para WhatsApp
                         let storePhone = storeData?.phone || '593XXXXXXXXX';
                         if (storePhone.startsWith('0')) {
@@ -1321,4 +1334,29 @@ function renderPickupLocationSection() {
             </div>
         </div>
     `;
+}
+
+// Registra puntos en el historial del usuario si la orden está completada/entregada
+export async function addPointsForOrder({ userId, orderId, amount, status }) {
+    const db = getFirestore(app);
+    if (!userId || !orderId || typeof amount !== 'number') return;
+
+    // Solo sumar puntos si la orden está completada o entregada
+    if (!['Completado', 'Entregado'].includes(status)) return;
+
+    // Verifica si ya se sumaron puntos por esta orden
+    const pointsHistoryRef = collection(db, `users/${userId}/pointsHistory`);
+    const q = query(pointsHistoryRef, where("orderId", "==", orderId));
+    const existing = await getDocs(q);
+    if (!existing.empty) return; // Ya se sumaron puntos por esta orden
+
+    const points = Math.floor(amount); // 1 punto por cada dólar entero
+
+    await addDoc(pointsHistoryRef, {
+        orderId,
+        points,
+        amount,
+        type: "compra",
+        timestamp: new Date().toISOString()
+    });
 }
