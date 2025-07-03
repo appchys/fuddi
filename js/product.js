@@ -23,7 +23,7 @@ async function loadProduct() {
                 Esta es una descripción de ejemplo para el producto. Aquí puedes mostrar las características, beneficios y detalles relevantes del producto.
             </p>
             <div class="product-btns-row">
-                <a href="#" class="product-menu-btn"><i class="bi bi-shop"></i>Ver tienda</a>
+                <a href="/${storeId}" class="product-menu-btn"><i class="bi bi-shop"></i>Ver tienda</a>
                 <button class="product-menu-btn" id="add-to-cart-btn" disabled><i class="bi bi-cart-plus"></i>Añadir al carrito</button>
                 <button class="product-menu-btn" id="share-btn"><i class="bi bi-share"></i>Compartir</button>
             </div>
@@ -69,7 +69,7 @@ async function loadProduct() {
             <p class="product-price" style="font-size:1.3em;color:#16a34a;font-weight:bold;">$${product.price ? product.price.toFixed(2) : 'No disponible'}</p>
             <p class="product-description" style="margin:18px 0;">${product.description || ''}</p>
             <div class="product-btns-row">
-                <a href="#" class="product-menu-btn"><i class="bi bi-shop"></i>Ver tienda</a>
+                <a href="/${storeId}" class="product-menu-btn"><i class="bi bi-shop"></i>Ver tienda</a>
                 <button class="product-menu-btn" id="add-to-cart-btn" disabled><i class="bi bi-cart-plus"></i>Añadir al carrito</button>
                 <button class="product-menu-btn" id="share-btn"><i class="bi bi-share"></i>Compartir</button>
             </div>
