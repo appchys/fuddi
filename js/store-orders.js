@@ -50,6 +50,9 @@ window.handleOrderStatus = async (orderId, currentStatus, nextStatus) => {
                     <h3 class="order-title">${clientName}</h3>
                     ${horaEntrega}
                 </div>
+                <div class="order-status status-${order.status.replace(/\s/g, '-')}">
+                    ${order.status}
+                </div>
                 <div class="order-products">
                     <ul>${productsList}</ul>
                 </div>
@@ -376,11 +379,16 @@ async function loadOrders() {
                         <h3 class="order-title">${clientName}</h3>
                         ${horaEntrega}
                     </div>
+                    
                     <div class="order-products">
                         <ul>${productsList}</ul>
                     </div>
                     <div class="order-payment">
                         <strong>Forma de pago:</strong> ${paymentMethod}
+                    </div>
+
+                    <div class="order-status status-${order.status.replace(/\s/g, '-')}">
+                        ${order.status}
                     </div>
                 `;
 

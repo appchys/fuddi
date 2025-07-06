@@ -172,14 +172,37 @@ main {
     color: #333;
 }
 
-.status-Pendiente {
-    color: #e67e22;
+.order-status {
     font-weight: bold;
+    margin-bottom: 0.7rem;
+    padding: 0.3em 0.8em;
+    border-radius: 16px;
+    display: inline-block;
+    font-size: 1rem;
 }
 
-.status-enviado {
+.status-Pendiente {
+    background: #fff7e6;
+    color: #e67e22;
+    border: 1px solid #f5c16c;
+}
+
+.status-En-preparación {
+    background: #e6f7ff;
+    color: #3498db;
+    border: 1px solid #6ec1e4;
+}
+
+.status-En-camino {
+    background: #e6f4ea;
     color: #27ae60;
-    font-weight: bold;
+    border: 1px solid #6ee4a6;
+}
+
+.status-Entregado {
+    background: #e6ffe6;
+    color: #16a34a;
+    border: 1px solid #6ee46e;
 }
 
 .products-list {
@@ -309,3 +332,4 @@ main {
 .text-red-500 {
     color: #e74c3c;
 }
+
