@@ -106,14 +106,46 @@ div[style="text-align:center;"] div:last-of-type {
 
 .product-reviews-section {
     margin-top: 32px;
-    background: #fafbfc;
+    background-color: #fff;
     border-radius: 10px;
-    padding: 18px 12px;
-    box-shadow: 0 2px 8px #0001;
+    padding: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
 }
 
 .review-form {
-    margin-bottom: 18px;
+    margin-bottom: 16px;
+}
+
+.review-form-horizontal {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.review-profile-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #f5f5f5;
+    margin-top: 4px;
+}
+
+.review-form-fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#star-rating {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 2px;
+    margin-top: 0;
+    justify-content: flex-start;
 }
 
 #star-rating i {
@@ -132,21 +164,73 @@ div[style="text-align:center;"] div:last-of-type {
 #review-comment {
     width: 100%;
     min-height: 60px;
-    margin: 10px 0;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid #ddd;
-    padding: 8px;
+    padding: 10px;
     font-size: 1em;
+    box-sizing: border-box;
+    resize: vertical;
 }
 
 .review-item {
     border-top: 1px solid #eee;
-    padding: 10px 0;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.review-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.review-header img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #f5f5f5;
+}
+
+.review-author {
+    font-weight: bold;
+    color: #333;
+    font-size: 1em;
+}
+
+.review-date {
+    color: #666;
+    font-size: 0.85em;
 }
 
 .review-stars {
     color: #f5b301;
     font-size: 1.1em;
+    margin-top: 4px;
+}
+
+.review-text {
+    color: #666;
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+.review-submit-btn {
+    background-color: #16a34a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-self: flex-end;
+}
+
+.review-submit-btn:hover {
+    background-color: #14532d;
 }
 
 /* Mobile-specific adjustments */
@@ -200,5 +284,63 @@ div[style="text-align:center;"] div:last-of-type {
 
     div[style="text-align:center;"] div:last-of-type {
         font-size: 0.8em;
+    }
+
+    .product-reviews-section {
+        padding: 12px;
+        margin-top: 24px;
+    }
+
+    #star-rating i {
+        font-size: 1.3em;
+    }
+
+    #review-comment {
+        min-height: 60px;
+        padding: 8px;
+    }
+
+    .review-item {
+        padding: 10px 0;
+    }
+
+    .review-header img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .review-author {
+        font-size: 0.95em;
+    }
+
+    .review-date {
+        font-size: 0.8em;
+    }
+
+    .review-stars {
+        font-size: 1em;
+    }
+
+    .review-text {
+        font-size: 0.9em;
+    }
+
+    .review-submit-btn {
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+
+    .review-form-horizontal {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .review-profile-img {
+        margin: 0 auto;
+    }
+
+    .review-form-fields {
+        gap: 6px;
     }
 }

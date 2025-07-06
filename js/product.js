@@ -131,24 +131,28 @@ updateCartCount();
 // Renderiza la sección de reviews después de mostrar el producto
 function renderReviewsSection() {
     if (document.getElementById('product-reviews-section')) return; // Ya existe
+
+    // Puedes obtener la imagen del usuario autenticado o usar un placeholder
+    const user = auth.currentUser;
+    const userImg = user && user.photoURL ? user.photoURL : '/img/user-placeholder.png';
+
     const reviewsSection = document.createElement('div');
     reviewsSection.id = 'product-reviews-section';
     reviewsSection.className = 'product-reviews-section';
     reviewsSection.innerHTML = `
-        <h2>Calificaciones y comentarios</h2>
-        <form id="review-form" class="review-form">
-            <label>
-                Tu calificación:
-                <span id="star-rating">
+        <form id="review-form" class="review-form-horizontal">
+            <img src="${userImg}" alt="Tu perfil" class="review-profile-img">
+            <div class="review-form-fields">
+                <div id="star-rating">
                     <i class="bi bi-star" data-value="1"></i>
                     <i class="bi bi-star" data-value="2"></i>
                     <i class="bi bi-star" data-value="3"></i>
                     <i class="bi bi-star" data-value="4"></i>
                     <i class="bi bi-star" data-value="5"></i>
-                </span>
-            </label>
-            <textarea id="review-comment" placeholder="Escribe tu comentario..." required></textarea>
-            <button type="submit">Enviar</button>
+                </div>
+                <textarea id="review-comment" placeholder="Escribe tu comentario..." required></textarea>
+                <button type="submit" class="review-submit-btn">Enviar</button>
+            </div>
         </form>
         <div id="reviews-list"></div>
     `;
