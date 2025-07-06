@@ -16,36 +16,16 @@ import { GOOGLE_MAPS_API_KEY } from './config.js';
 const db = getFirestore(app);
 
 // Función para manejar el cambio de estado del pedido
-window.handleOrderStatus = async (orderId, currentStatus) => {
+window.handleOrderStatus = async (orderId, currentStatus, nextStatus) => {
     try {
         const orderRef = docRef(db, 'orders', orderId);
-        const newStatus = currentStatus === 'Pendiente' ? 'enviado' : 'Pendiente';
-        
         await updateDoc(orderRef, {
-            status: newStatus,
+            status: nextStatus,
             updatedAt: new Date().toISOString()
         });
-
-        // Actualizar la vista
-        const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
-        if (orderCard) {
-            const statusElement = orderCard.querySelector('.status-text');
-            if (statusElement) {
-                statusElement.textContent = newStatus;
-                statusElement.className = `status-text ${newStatus}`;
-            }
-
-            const button = orderCard.querySelector('.action-btn');
-            if (button) {
-                button.textContent = newStatus === 'Pendiente' ? 'Aceptar' : 'Enviado';
-                button.className = `action-btn ${newStatus === 'Pendiente' ? 'accept-btn' : 'ship-btn'}`;
-            }
-        }
-
-        alert(`El estado del pedido ha sido actualizado a: ${newStatus}`);
+        window.location.reload();
     } catch (error) {
         console.error('Error al actualizar el estado del pedido:', error);
-        alert('Error al actualizar el estado del pedido. Por favor, inténtalo de nuevo.');
     }
 };
 
@@ -329,6 +309,37 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <strong>Forma de pago:</strong> ${paymentMethod}
                             </div>
                         `;
+
+                        // Determina el texto y el siguiente estado
+                        let actionBtnText = '';
+                        let nextStatus = '';
+                        let showActionBtn = true;
+
+                        switch (order.status) {
+                            case 'Pendiente':
+                                actionBtnText = 'Aceptar';
+                                nextStatus = 'En preparación';
+                                break;
+                            case 'En preparación':
+                                actionBtnText = 'En camino';
+                                nextStatus = 'En camino';
+                                break;
+                            case 'En camino':
+                                actionBtnText = 'Entregado';
+                                nextStatus = 'Entregado';
+                                break;
+                            case 'Entregado':
+                                showActionBtn = false;
+                                break;
+                            default:
+                                showActionBtn = false;
+                        }
+
+                        orderCard.innerHTML += showActionBtn ? `
+    <button class="action-btn" onclick="event.stopPropagation(); handleOrderStatus('${doc.id}', '${order.status}', '${nextStatus}')">
+        ${actionBtnText}
+    </button>
+` : '';
 
                         // Evento para mostrar detalles
                         orderCard.addEventListener('click', () => {
