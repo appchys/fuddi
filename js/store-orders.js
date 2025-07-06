@@ -85,7 +85,7 @@ function showOrderDetails(order) {
         
         <div class="order-section">
             <h4>Fecha y Hora</h4>
-            <p>${formattedDate}</p>
+            
             ${order.deliveryType === 'scheduled' ? `
                 <p><strong>Programado para:</strong> ${order.scheduledDate} a las ${order.scheduledTime}</p>
             ` : ''}
@@ -99,7 +99,7 @@ function showOrderDetails(order) {
             <!-- Mapa de ubicación -->
             ${order.shippingAddress && (order.shippingAddress.lat || order.shippingAddress.latitude) && (order.shippingAddress.lng || order.shippingAddress.longitude) ? `
                 <div class="map-container">
-                    <h4>Ubicación en el mapa</h4>
+                    
                     ${(() => {
                         const lat = order.shippingAddress.lat || order.shippingAddress.latitude;
                         const lng = order.shippingAddress.lng || order.shippingAddress.longitude;
@@ -109,7 +109,7 @@ function showOrderDetails(order) {
                         console.log('Generando mapa con URL:', mapUrl);
                         
                         return `
-                            <p>Coordenadas: ${lat}, ${lng}</p>
+                            
                             <a href="${mapsUrl}" target="_blank" style="display: block; margin-bottom: 10px;">
                                 <img 
                                     src="${mapUrl}" 
