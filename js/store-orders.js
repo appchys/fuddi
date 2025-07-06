@@ -368,7 +368,44 @@ async function loadOrders() {
             return b.localeCompare(a);
         });
 
+        // Función para formatear la fecha
+        function getFechaFormateada(fechaISO) {
+            const meses = [
+                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ];
+            const hoy = new Date();
+            const fecha = new Date(fechaISO);
+
+            // Normaliza a solo fecha (sin hora)
+            hoy.setHours(0,0,0,0);
+            fecha.setHours(0,0,0,0);
+
+            const diffDias = Math.round((fecha - hoy) / (1000 * 60 * 60 * 24));
+
+            if (diffDias === 0) return 'Hoy';
+            if (diffDias === -1) return 'Ayer';
+            if (diffDias === 1) return 'Mañana';
+
+            // Si no es hoy, ayer o mañana, muestra 8/Julio/2025
+            return `${fecha.getDate()}/${meses[fecha.getMonth()]}/${fecha.getFullYear()}`;
+        }
+
         for (const day of sortedDays) {
+            let fechaFormateada = '';
+            if (day === 'Sin fecha') {
+                fechaFormateada = 'Órdenes sin fecha de entrega';
+            } else if (/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+                fechaFormateada = getFechaFormateada(day);
+            } else {
+                fechaFormateada = day;
+            }
+            // Título del grupo por día
+            const groupTitle = document.createElement('h3');
+            groupTitle.textContent = fechaFormateada;
+            groupTitle.className = 'orders-group-title';
+            ordersContainer.appendChild(groupTitle);
+
             const orders = ordersByDay[day];
 
             // Ordena por hora de entrega descendente
@@ -380,21 +417,6 @@ async function loadOrders() {
                 if (b.order.scheduledTime) return 1;
                 return (b.order.createdAt || '').localeCompare(a.order.createdAt || '');
             });
-
-            // Título del grupo por día
-            let fechaFormateada = '';
-            if (day === 'Sin fecha') {
-                fechaFormateada = 'Órdenes sin fecha de entrega';
-            } else if (/^\d{4}-\d{2}-\d{2}$/.test(day)) {
-                const [year, month, dayNum] = day.split('-');
-                fechaFormateada = `Entrega: ${dayNum}/${month}/${year}`;
-            } else {
-                fechaFormateada = `Entrega: ${day}`;
-            }
-            const groupTitle = document.createElement('h3');
-            groupTitle.textContent = fechaFormateada;
-            groupTitle.className = 'orders-group-title';
-            ordersContainer.appendChild(groupTitle);
 
             for (const { doc, order } of orders) {
                 // Obtener el nombre del cliente

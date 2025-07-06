@@ -106,33 +106,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const items = Array.isArray(order.products) ? order.products : [];
                     const status = order.status || 'pendiente';
 
+                    // Mapea el estado a progreso y color
+                    const progressMap = {
+                        'pendiente': { percent: 25, color: '#e74c3c' },
+                        'en preparación': { percent: 50, color: '#f39c12' },
+                        'en camino': { percent: 75, color: '#27ae60' },
+                        'entregado': { percent: 100, color: '#8e44ad' },
+                        'recibido': { percent: 100, color: '#8e44ad' }
+                    };
+                    const progress = progressMap[status.toLowerCase()] || progressMap['pendiente'];
+
                     const orderElement = document.createElement('div');
-                    orderElement.classList.add('order-item');
+                    orderElement.classList.add('order-card', 'order-item');
                     orderElement.dataset.orderId = doc.id;
                     orderElement.innerHTML = `
                         <div class="order-header">
                             <div class="order-title-container">
                                 <h3 class="store-name">${storeName}</h3>
-                                <p class="order-date">${createdAt}</p>
-                            </div>
-                            <div class="order-status-container">
-                                <h4>Estado:</h4>
-                                <p class="status-${status.toLowerCase()}">${status}</p>
                             </div>
                         </div>
-                        
-                        <div class="order-client">
-                            <h4>Cliente:</h4>
-                            <p>${clientName}</p>
-                        </div>
-
+                        ${order.scheduledDate ? `
+                            <div class="order-scheduled">
+                                <strong>Entrega:</strong> ${getFechaFormateada(order.scheduledDate)}${order.scheduledTime ? `, ${order.scheduledTime}` : ''}
+                            </div>
+                        ` : ''}
                         <div class="order-address">
-                            <h4>Dirección de entrega:</h4>
-                            <p>${reference}</p>
+                            <strong>Dirección de entrega:</strong> ${reference}
                         </div>
-
                         <div class="order-products">
-                            <h4>Productos:</h4>
                             <ul class="products-list">
                                 ${items.map(item => `
                                     <li>
@@ -143,32 +144,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 `).join('')}
                             </ul>
                         </div>
-
                         <div class="order-total">
-                            <h4>Total:</h4>
-                            <p>$${total}</p>
+                            <strong>Total:</strong> $${total}
                         </div>
-
                         <div class="order-payment">
-                            <h4>Método de pago:</h4>
-                            <p>${paymentMethod}</p>
+                            <strong>Forma de pago:</strong> ${paymentMethod}
                         </div>
-
-                        <div class="order-actions">
-                            <button class="mark-received-btn" ${status === 'recibido' ? 'disabled' : ''} onclick="updateOrderStatus('${doc.id}')">
-                                ${status === 'recibido' ? 'Recibido' : 'Marcar como recibido'}
-                            </button>
+                        <div class="order-status" style="margin-top:1.2em; margin-bottom:0.3em; font-weight:bold; background:none; border:none;">
+                            ${status.charAt(0).toUpperCase() + status.slice(1)}
+                        </div>
+                        <div class="order-progress-bar-with-btn">
+                            <div class="order-progress-bar">
+                                <div class="order-progress-fill" style="width: ${progress.percent}%; background: ${progress.color};"></div>
+                            </div>
                         </div>
                     `;
                     ordersContainer.appendChild(orderElement);
 
-                    // Añadir evento al botón de Recibido
-                    const receivedBtn = orderElement.querySelector('.mark-received-btn');
-                    if (receivedBtn && !receivedBtn.disabled) {
-                        receivedBtn.addEventListener('click', () => {
-                            updateOrderStatus(doc.id);
-                        });
-                    }
+                    
                 });
 
             } catch (error) {
@@ -182,3 +175,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 });
+
+function getFechaFormateada(fechaISO) {
+    const meses = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const hoy = new Date();
+    const fecha = new Date(fechaISO);
+
+    hoy.setHours(0,0,0,0);
+    fecha.setHours(0,0,0,0);
+
+    const diffDias = Math.round((fecha - hoy) / (1000 * 60 * 60 * 24));
+
+    if (diffDias === 0) return 'Hoy';
+    if (diffDias === -1) return 'Ayer';
+    if (diffDias === 1) return 'Mañana';
+
+    return `${fecha.getDate()}/${meses[fecha.getMonth()]}/${fecha.getFullYear()}`;
+}

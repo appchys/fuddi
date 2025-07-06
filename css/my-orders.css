@@ -170,3 +170,44 @@ header h1 {
     
 }
 
+/* Order Progress Bar Styles */
+.order-progress-bar-with-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 12px;
+}
+
+.order-progress-bar {
+    flex: 1;
+    height: 12px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.order-progress-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.4s cubic-bezier(.4,2,.6,1);
+}
+
+.order-action-btn {
+    margin-left: 0.5rem;
+    background: #fff;
+    border: none;
+    border-radius: 50%;
+    padding: 0.4em 0.5em;
+    font-size: 1.3em;
+    box-shadow: 0 1px 4px #0001;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.order-action-btn:hover {
+    background: #f0f0f0;
+}
