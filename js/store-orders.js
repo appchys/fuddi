@@ -50,14 +50,24 @@ window.handleOrderStatus = async (orderId, currentStatus, nextStatus) => {
                     <h3 class="order-title">${clientName}</h3>
                     ${horaEntrega}
                 </div>
-                <div class="order-status status-${order.status.replace(/\s/g, '-')}">
-                    ${order.status}
-                </div>
                 <div class="order-products">
                     <ul>${productsList}</ul>
                 </div>
                 <div class="order-payment">
                     <strong>Forma de pago:</strong> ${paymentMethod}
+                </div>
+                <div class="order-status" style="margin-top:1.2em; margin-bottom:0.3em; font-weight:bold; background:none; border:none;">
+                    ${order.status}
+                </div>
+                <div class="order-progress-bar-with-btn">
+                    <div class="order-progress-bar">
+                        <div class="order-progress-fill" style="width: ${getProgress(order.status)}%; background: ${getProgressColor(order.status)};"></div>
+                    </div>
+                    ${nextStatus !== 'Entregado' ? `
+                        <button type="button" class="action-btn order-action-btn" onclick="event.stopPropagation(); handleOrderStatus('${orderId}', '${nextStatus}', '${getNextStatus(nextStatus)}')">
+                            ${getActionIcon(nextStatus)}
+                        </button>
+                    ` : ''}
                 </div>
                 ${nextStatus !== 'Entregado' ? `
                     <button type="button" class="action-btn" onclick="event.stopPropagation(); handleOrderStatus('${orderId}', '${nextStatus}', '${getNextStatus(nextStatus)}')">
@@ -106,6 +116,39 @@ function getNextStatus(status) {
         case 'Pendiente': return 'En preparación';
         case 'En preparación': return 'En camino';
         case 'En camino': return 'Entregado';
+        default: return '';
+    }
+}
+
+// Función auxiliar para obtener el progreso
+function getProgress(status) {
+    switch (status) {
+        case 'Pendiente': return 25;
+        case 'En preparación': return 50;
+        case 'En camino': return 75;
+        case 'Entregado': return 100;
+        default: return 0;
+    }
+}
+
+// Función auxiliar para obtener el color del progreso
+function getProgressColor(status) {
+    switch (status) {
+        case 'Pendiente': return '#e74c3c'; // rojo
+        case 'En preparación': return '#f39c12'; // naranja
+        case 'En camino': return '#27ae60'; // verde
+        case 'Entregado': return '#8e44ad'; // morado
+        default: return '#e74c3c';
+    }
+}
+
+// Función auxiliar para obtener el ícono de acción
+function getActionIcon(status) {
+    switch (status) {
+        case 'Pendiente': return '<i class="bi bi-check-circle"></i>';
+        case 'En preparación': return '<i class="bi bi-truck"></i>';
+        case 'En camino': return '<i class="bi bi-box-seam"></i>';
+        case 'Entregado': return '';
         default: return '';
     }
 }
@@ -374,54 +417,62 @@ async function loadOrders() {
                 const orderCard = document.createElement('div');
                 orderCard.className = 'order-card';
                 orderCard.setAttribute('data-order-id', doc.id);
+                
+                // Determina el texto y el siguiente estado
+                let showActionBtn = true;
+                let nextStatus = '';
+                let actionIcon = '';
+
+                switch (order.status) {
+                    case 'Pendiente':
+                        showActionBtn = true;
+                        nextStatus = 'En preparación';
+                        actionIcon = '<i class="bi bi-check-circle"></i>';
+                        break;
+                    case 'En preparación':
+                        showActionBtn = true;
+                        nextStatus = 'En camino';
+                        actionIcon = '<i class="bi bi-truck"></i>';
+                        break;
+                    case 'En camino':
+                        showActionBtn = true;
+                        nextStatus = 'Entregado';
+                        actionIcon = '<i class="bi bi-box-seam"></i>';
+                        break;
+                    case 'Entregado':
+                        showActionBtn = false;
+                        actionIcon = '';
+                        break;
+                    default:
+                        showActionBtn = false;
+                        actionIcon = '';
+                }
+
                 orderCard.innerHTML = `
                     <div class="order-header">
                         <h3 class="order-title">${clientName}</h3>
                         ${horaEntrega}
                     </div>
-                    
                     <div class="order-products">
                         <ul>${productsList}</ul>
                     </div>
                     <div class="order-payment">
                         <strong>Forma de pago:</strong> ${paymentMethod}
                     </div>
-
-                    <div class="order-status status-${order.status.replace(/\s/g, '-')}">
+                    <div class="order-status" style="margin-top:1.2em; margin-bottom:0.3em; font-weight:bold; background:none; border:none;">
                         ${order.status}
                     </div>
+                    <div class="order-progress-bar-with-btn">
+                        <div class="order-progress-bar">
+                            <div class="order-progress-fill" style="width: ${getProgress(order.status)}%; background: ${getProgressColor(order.status)};"></div>
+                        </div>
+                        ${showActionBtn ? `
+                            <button type="button" class="action-btn order-action-btn" onclick="event.stopPropagation(); handleOrderStatus('${doc.id}', '${order.status}', '${nextStatus}')">
+                                ${actionIcon}
+                            </button>
+                        ` : ''}
+                    </div>
                 `;
-
-                // Determina el texto y el siguiente estado
-                let actionBtnText = '';
-                let nextStatus = '';
-                let showActionBtn = true;
-
-                switch (order.status) {
-                    case 'Pendiente':
-                        actionBtnText = 'Aceptar';
-                        nextStatus = 'En preparación';
-                        break;
-                    case 'En preparación':
-                        actionBtnText = 'En camino';
-                        nextStatus = 'En camino';
-                        break;
-                    case 'En camino':
-                        actionBtnText = 'Entregado';
-                        nextStatus = 'Entregado';
-                        break;
-                    case 'Entregado':
-                        showActionBtn = false;
-                        break;
-                    default:
-                        showActionBtn = false;
-                }
-
-                orderCard.innerHTML += showActionBtn ? `
-                    <button type="button" class="action-btn" onclick="event.stopPropagation(); handleOrderStatus('${doc.id}', '${order.status}', '${nextStatus}')">
-                        ${actionBtnText}
-                    </button>
-                ` : '';
 
                 // Evento para mostrar detalles
                 orderCard.addEventListener('click', () => {
