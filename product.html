@@ -12,7 +12,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-    <main id="product-main"></main>
+    <main id="product-main">
+        <!-- Agrega esto dentro de product-main desde JS, después de mostrar el producto -->
+        <div id="product-reviews-section" class="product-reviews-section">
+            <h2>Calificaciones y comentarios</h2>
+            <form id="review-form" class="review-form">
+                <label>
+                    Tu calificación:
+                    <span id="star-rating">
+                        <i class="bi bi-star" data-value="1"></i>
+                        <i class="bi bi-star" data-value="2"></i>
+                        <i class="bi bi-star" data-value="3"></i>
+                        <i class="bi bi-star" data-value="4"></i>
+                        <i class="bi bi-star" data-value="5"></i>
+                    </span>
+                </label>
+                <textarea id="review-comment" placeholder="Escribe tu comentario..." required></textarea>
+                <button type="submit">Enviar</button>
+            </form>
+            <div id="reviews-list"></div>
+        </div>
+    </main>
 
     <!-- Sidebar del carrito -->
     <div id="cart-sidebar" class="sidebar hidden">

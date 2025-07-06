@@ -104,6 +104,51 @@ div[style="text-align:center;"] div:last-of-type {
     font-size: 0.85em;
 }
 
+.product-reviews-section {
+    margin-top: 32px;
+    background: #fafbfc;
+    border-radius: 10px;
+    padding: 18px 12px;
+    box-shadow: 0 2px 8px #0001;
+}
+
+.review-form {
+    margin-bottom: 18px;
+}
+
+#star-rating i {
+    font-size: 1.5em;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+#star-rating i.selected,
+#star-rating i:hover,
+#star-rating i:hover ~ i {
+    color: #f5b301;
+}
+
+#review-comment {
+    width: 100%;
+    min-height: 60px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    padding: 8px;
+    font-size: 1em;
+}
+
+.review-item {
+    border-top: 1px solid #eee;
+    padding: 10px 0;
+}
+
+.review-stars {
+    color: #f5b301;
+    font-size: 1.1em;
+}
+
 /* Mobile-specific adjustments */
 @media (max-width: 600px) {
     .product-detail-page {

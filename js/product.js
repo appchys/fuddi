@@ -1,5 +1,5 @@
 import { app } from './firebase-config.js';
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { showCart, setupCartSidebarClose, addToCart, updateCartCount } from '../components/cart.js';
 
 const db = getFirestore(app);
@@ -10,6 +10,9 @@ const storeId = pathParts[0]; // 'munchys'
 const productId = pathParts[1]; // 'Ku3SQoPKdikbgnRudaVX'
 
 const main = document.getElementById('product-main');
+
+// Renderiza la sección de reviews SIEMPRE
+renderReviewsSection();
 
 // Mostrar producto
 async function loadProduct() {
@@ -100,6 +103,8 @@ async function loadProduct() {
             alert('No se pudo copiar el enlace');
         }
     });
+
+    renderReviewsSection();
 }
 
 loadProduct();
@@ -115,3 +120,97 @@ setupCartSidebarClose();
 
 // Actualizar contador al cargar la página
 updateCartCount();
+
+
+// Renderiza la sección de reviews después de mostrar el producto
+function renderReviewsSection() {
+    if (document.getElementById('product-reviews-section')) return; // Ya existe
+    const reviewsSection = document.createElement('div');
+    reviewsSection.id = 'product-reviews-section';
+    reviewsSection.className = 'product-reviews-section';
+    reviewsSection.innerHTML = `
+        <h2>Calificaciones y comentarios</h2>
+        <form id="review-form" class="review-form">
+            <label>
+                Tu calificación:
+                <span id="star-rating">
+                    <i class="bi bi-star" data-value="1"></i>
+                    <i class="bi bi-star" data-value="2"></i>
+                    <i class="bi bi-star" data-value="3"></i>
+                    <i class="bi bi-star" data-value="4"></i>
+                    <i class="bi bi-star" data-value="5"></i>
+                </span>
+            </label>
+            <textarea id="review-comment" placeholder="Escribe tu comentario..." required></textarea>
+            <button type="submit">Enviar</button>
+        </form>
+        <div id="reviews-list"></div>
+    `;
+    main.appendChild(reviewsSection);
+
+    setupReviewForm();
+    loadReviews();
+}
+
+// Manejo de estrellas
+function setupReviewForm() {
+    let selectedRating = 0;
+    const stars = document.querySelectorAll('#star-rating i');
+    stars.forEach(star => {
+        star.addEventListener('mouseenter', function() {
+            const val = parseInt(this.dataset.value);
+            stars.forEach((s, i) => s.classList.toggle('selected', i < val));
+        });
+        star.addEventListener('mouseleave', function() {
+            stars.forEach((s, i) => s.classList.toggle('selected', i < selectedRating));
+        });
+        star.addEventListener('click', function() {
+            selectedRating = parseInt(this.dataset.value);
+            stars.forEach((s, i) => s.classList.toggle('selected', i < selectedRating));
+        });
+    });
+
+    document.getElementById('review-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const comment = document.getElementById('review-comment').value.trim();
+        if (!selectedRating || !comment) return alert('Por favor, selecciona una calificación y escribe un comentario.');
+        try {
+            await addDoc(collection(db, `stores/${storeId}/products/${productId}/reviews`), {
+                rating: selectedRating,
+                comment,
+                createdAt: serverTimestamp()
+            });
+            document.getElementById('review-form').reset();
+            selectedRating = 0;
+            stars.forEach(s => s.classList.remove('selected'));
+            loadReviews();
+        } catch (err) {
+            alert('No se pudo enviar tu comentario');
+        }
+    });
+}
+
+// Cargar y mostrar reviews
+async function loadReviews() {
+    const reviewsList = document.getElementById('reviews-list');
+    reviewsList.innerHTML = '<div style="color:#888;">Cargando comentarios...</div>';
+    const q = query(
+        collection(db, `stores/${storeId}/products/${productId}/reviews`),
+        orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) {
+        reviewsList.innerHTML = '<div style="color:#888;">Sé el primero en comentar este producto.</div>';
+        return;
+    }
+    reviewsList.innerHTML = '';
+    snapshot.forEach(doc => {
+        const data = doc.data();
+        reviewsList.innerHTML += `
+            <div class="review-item">
+                <div class="review-stars">${'★'.repeat(data.rating)}${'☆'.repeat(5 - data.rating)}</div>
+                <div class="review-comment">${data.comment}</div>
+            </div>
+        `;
+    });
+}
