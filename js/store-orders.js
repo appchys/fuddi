@@ -69,11 +69,7 @@ window.handleOrderStatus = async (orderId, currentStatus, nextStatus) => {
                         </button>
                     ` : ''}
                 </div>
-                ${nextStatus !== 'Entregado' ? `
-                    <button type="button" class="action-btn" onclick="event.stopPropagation(); handleOrderStatus('${orderId}', '${nextStatus}', '${getNextStatus(nextStatus)}')">
-                        ${getButtonText(nextStatus)}
-                    </button>
-                ` : ''}
+                
             `;
 
             // Reasignar el evento de clic para abrir el modal
@@ -357,6 +353,9 @@ async function loadOrders() {
 
         for (const doc of querySnapshot.docs) {
             const order = doc.data();
+            // Solo incluir pedidos que NO están entregados
+            if (order.status === 'Entregado') continue;
+
             const deliveryDate = order.scheduledDate || (order.createdAt ? new Date(order.createdAt).toISOString().slice(0, 10) : 'Sin fecha');
             if (!ordersByDay[deliveryDate]) ordersByDay[deliveryDate] = [];
             ordersByDay[deliveryDate].push({ doc, order });
