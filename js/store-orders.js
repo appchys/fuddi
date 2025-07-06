@@ -76,12 +76,7 @@ function showOrderDetails(order) {
     
     // Crear el contenido del modal
     orderDetails.innerHTML = `
-        <h3>Detalles del Pedido #${order.id}</h3>
-        
-        <div class="order-section">
-            <h4>Cliente</h4>
-            <p>${order.clientName}</p>
-        </div>
+        <h3>${order.clientName}</h3>
         
         <div class="order-section">
             <h4>Estado</h4>
