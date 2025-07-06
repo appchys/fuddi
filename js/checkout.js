@@ -784,10 +784,11 @@ async function initialize() {
                         total: parseFloat(document.getElementById('total').textContent.replace('$', '')),
                         shippingAddress: tipoEntrega === 'delivery' ? {
                             ...selectedAddress,
-                            lat: selectedAddress.lat || null,
-                            lng: selectedAddress.lng || null,
-                            latitude: selectedAddress.lat ? parseFloat(selectedAddress.lat) : null,
-                            longitude: selectedAddress.lng ? parseFloat(selectedAddress.lng) : null
+                            // Normaliza lat/lng para que siempre existan y sean números
+                            lat: selectedAddress.lat ?? selectedAddress.latitude ?? null,
+                            lng: selectedAddress.lng ?? selectedAddress.longitude ?? null,
+                            latitude: selectedAddress.latitude ?? selectedAddress.lat ?? null,
+                            longitude: selectedAddress.longitude ?? selectedAddress.lng ?? null
                         } : null,
                         paymentMethod: selectedPaymentMethod.value,
                         paymentProofUrl: paymentProofUrl,
