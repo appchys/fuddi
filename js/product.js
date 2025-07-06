@@ -1,8 +1,10 @@
 import { app } from './firebase-config.js';
 import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { showCart, setupCartSidebarClose, addToCart, updateCartCount } from '../components/cart.js';
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const db = getFirestore(app);
+const auth = getAuth();
 
 // Obtener storeId y productId de la ruta amigable
 const pathParts = window.location.pathname.split('/').filter(Boolean);
@@ -50,6 +52,8 @@ async function loadProduct() {
                 alert('No se pudo copiar el enlace');
             }
         });
+        // Renderiza la sección de reviews después de mostrar el producto de ejemplo
+        renderReviewsSection();
         return;
     }
 
@@ -57,6 +61,8 @@ async function loadProduct() {
     const productDoc = await getDoc(doc(db, `stores/${storeId}/products`, productId));
     if (!productDoc.exists()) {
         main.innerHTML = '<p>Producto no encontrado.</p>';
+        // Renderiza la sección de reviews aunque no exista el producto
+        renderReviewsSection();
         return;
     }
     const product = productDoc.data();
@@ -175,10 +181,16 @@ function setupReviewForm() {
         const comment = document.getElementById('review-comment').value.trim();
         if (!selectedRating || !comment) return alert('Por favor, selecciona una calificación y escribe un comentario.');
         try {
+            const user = auth.currentUser;
+            let displayName = "Anónimo";
+            if (user) {
+                displayName = user.displayName || user.email || "Usuario";
+            }
             await addDoc(collection(db, `stores/${storeId}/products/${productId}/reviews`), {
                 rating: selectedRating,
                 comment,
-                createdAt: serverTimestamp()
+                createdAt: serverTimestamp(),
+                userName: displayName
             });
             document.getElementById('review-form').reset();
             selectedRating = 0;
@@ -200,7 +212,14 @@ async function loadReviews() {
     );
     const snapshot = await getDocs(q);
     if (snapshot.empty) {
-        reviewsList.innerHTML = '<div style="color:#888;">Sé el primero en comentar este producto.</div>';
+        reviewsList.innerHTML = `
+            <div class="review-item">
+                <div class="review-stars">★★★★★</div>
+                <div class="review-comment">¡Este producto es excelente! Muy recomendado.</div>
+                <div class="review-user" style="color:#888;font-size:0.95em;">Cliente de ejemplo</div>
+            </div>
+            <div style="color:#888;">Sé el primero en comentar este producto.</div>
+        `;
         return;
     }
     reviewsList.innerHTML = '';
@@ -210,6 +229,7 @@ async function loadReviews() {
             <div class="review-item">
                 <div class="review-stars">${'★'.repeat(data.rating)}${'☆'.repeat(5 - data.rating)}</div>
                 <div class="review-comment">${data.comment}</div>
+                <div class="review-user" style="color:#888;font-size:0.95em;">${data.userName || 'Anónimo'}</div>
             </div>
         `;
     });
