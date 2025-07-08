@@ -150,8 +150,12 @@ function renderReviewsSection() {
                     <i class="bi bi-star" data-value="4"></i>
                     <i class="bi bi-star" data-value="5"></i>
                 </div>
-                <textarea id="review-comment" placeholder="Escribe tu comentario..." required></textarea>
-                <button type="submit" class="review-submit-btn">Enviar</button>
+                <div class="review-comment-box">
+                    <textarea id="review-comment" placeholder="Escribe tu comentario..." required></textarea>
+                    <button type="submit" class="review-submit-btn" title="Enviar">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
             </div>
         </form>
         <div id="reviews-list"></div>
@@ -202,6 +206,21 @@ function setupReviewForm() {
             loadReviews();
         } catch (err) {
             alert('No se pudo enviar tu comentario');
+        }
+    });
+
+    const reviewComment = document.getElementById('review-comment');
+    const reviewSubmitBtn = document.querySelector('.review-submit-btn');
+
+    // Oculta el botón inicialmente
+    reviewSubmitBtn.style.display = 'none';
+
+    // Muestra el botón solo si hay texto
+    reviewComment.addEventListener('input', function() {
+        if (this.value.trim().length > 0) {
+            reviewSubmitBtn.style.display = 'flex';
+        } else {
+            reviewSubmitBtn.style.display = 'none';
         }
     });
 }
