@@ -1,5 +1,5 @@
 import { app } from './firebase-config.js';
-import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { showCart, setupCartSidebarClose, addToCart, updateCartCount } from '../components/cart.js';
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
@@ -168,20 +168,24 @@ function renderReviewsSection() {
 
 // Manejo de estrellas
 function setupReviewForm() {
+    const starRating = document.getElementById('star-rating');
+    const stars = starRating.querySelectorAll('i');
     let selectedRating = 0;
-    const stars = document.querySelectorAll('#star-rating i');
+
     stars.forEach(star => {
         star.addEventListener('mouseenter', function() {
             const val = parseInt(this.dataset.value);
             stars.forEach((s, i) => s.classList.toggle('selected', i < val));
         });
-        star.addEventListener('mouseleave', function() {
-            stars.forEach((s, i) => s.classList.toggle('selected', i < selectedRating));
-        });
         star.addEventListener('click', function() {
             selectedRating = parseInt(this.dataset.value);
             stars.forEach((s, i) => s.classList.toggle('selected', i < selectedRating));
         });
+    });
+
+    // Cuando el mouse sale del área de estrellas, muestra solo las seleccionadas
+    starRating.addEventListener('mouseleave', function() {
+        stars.forEach((s, i) => s.classList.toggle('selected', i < selectedRating));
     });
 
     document.getElementById('review-form').addEventListener('submit', async (e) => {
@@ -191,14 +195,18 @@ function setupReviewForm() {
         try {
             const user = auth.currentUser;
             let displayName = "Anónimo";
+            let photoURL = "/img/user-placeholder.png";
             if (user) {
                 displayName = user.displayName || user.email || "Usuario";
+                photoURL = user.photoURL || "/img/user-placeholder.png";
             }
             await addDoc(collection(db, `stores/${storeId}/products/${productId}/reviews`), {
                 rating: selectedRating,
                 comment,
                 createdAt: serverTimestamp(),
-                userName: displayName
+                userName: displayName,
+                userPhoto: photoURL,
+                userId: user.uid // <--- importante
             });
             document.getElementById('review-form').reset();
             selectedRating = 0;
@@ -246,14 +254,39 @@ async function loadReviews() {
         return;
     }
     reviewsList.innerHTML = '';
+    const user = auth.currentUser;
+
     snapshot.forEach(doc => {
         const data = doc.data();
+        const isOwn = user && (user.uid === data.userId); // userId debe guardarse en cada review
         reviewsList.innerHTML += `
-            <div class="review-item">
-                <div class="review-stars">${'★'.repeat(data.rating)}${'☆'.repeat(5 - data.rating)}</div>
+            <div class="review-item" data-review-id="${doc.id}">
+                <div class="review-header">
+                    <img src="${data.userPhoto || '/img/user-placeholder.png'}" alt="Perfil" class="review-header-img">
+                    <div>
+                        <div class="review-author">${data.userName || 'Anónimo'}</div>
+                        <div class="review-stars">${'★'.repeat(data.rating)}${'☆'.repeat(5 - data.rating)}</div>
+                    </div>
+                    ${isOwn ? `
+                        <button class="review-delete-btn" title="Eliminar comentario">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    ` : ''}
+                </div>
                 <div class="review-comment">${data.comment}</div>
-                <div class="review-user" style="color:#888;font-size:0.95em;">${data.userName || 'Anónimo'}</div>
             </div>
         `;
+    });
+
+    document.querySelectorAll('.review-delete-btn').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const reviewItem = this.closest('.review-item');
+            const reviewId = reviewItem.getAttribute('data-review-id');
+            if (confirm('¿Eliminar este comentario?')) {
+                await deleteDoc(doc(db, `stores/${storeId}/products/${productId}/reviews`, reviewId));
+                loadReviews();
+            }
+        });
     });
 }

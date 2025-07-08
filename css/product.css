@@ -211,9 +211,10 @@ div[style="text-align:center;"] div:last-of-type {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-bottom: 2px;
 }
 
-.review-header img {
+.review-header-img {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -242,6 +243,22 @@ div[style="text-align:center;"] div:last-of-type {
     color: #666;
     font-size: 0.95em;
     line-height: 1.5;
+}
+
+.review-delete-btn {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    font-size: 1.2em;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.review-delete-btn:hover {
+    color: #b91c1c;
 }
 
 /* Mobile-specific adjustments */
