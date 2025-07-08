@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                             if (userSnapshot.exists()) {
                                 const userData = userSnapshot.data();
-                                const profilePic = userData.profilePic || ''; // Asumimos que hay un campo profilePic
+                                const profilePic = userData.profilePic || '';
                                 clientInfo = `
                                     <div class="client-info">
                                         <h3>Perfil</h3>
@@ -127,6 +127,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                         </ul>
                                     </div>
                                 `;
+
+                                // --- ACTUALIZA EL SALUDO AQUÍ ---
+                                const panelProfilePic = document.getElementById('panel-profile-pic');
+                                const panelHeaderText = document.querySelector('.panel-header-text');
+                                if (panelProfilePic && userData.profilePic) {
+                                    panelProfilePic.src = userData.profilePic;
+                                }
+                                if (panelHeaderText && userData.name) {
+                                    panelHeaderText.textContent = `Hola, ${userData.name}`;
+                                }
                             } else {
                                 clientInfo = `
                                     <div class="client-info">

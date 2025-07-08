@@ -189,3 +189,24 @@
 .hamburger-btn i {
     font-size: 24px; /* Tamaño del ícono */
 }
+
+/* Estilo para el encabezado del panel */
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.panel-profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #f5f5f5;
+}
+.panel-header-text {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #333;
+}
