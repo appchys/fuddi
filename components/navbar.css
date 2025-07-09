@@ -80,3 +80,71 @@
 .navbar-hamburger-btn i {
   font-size: 1.3em;
 }
+
+.navbar-active-orders {
+   
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Barra de progreso para pedidos en el navbar */
+.navbar-active-orders .order-progress-bar {
+  flex: 1;
+  height: 12px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 0.5rem;
+}
+
+.navbar-active-orders .order-progress-fill {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.4s cubic-bezier(.4,2,.6,1);
+}
+
+/* Colores de progreso basados en el estado */
+.navbar-active-orders .order-progress-fill.pendiente {
+  background: #e74c3c; /* Rojo */
+}
+
+.navbar-active-orders .order-progress-fill.en-preparacion {
+  background: #f39c12; /* Naranja */
+}
+
+.navbar-active-orders .order-progress-fill.en-camino {
+  background: #2ecc71; /* Verde */
+}
+
+.navbar-active-orders .order-progress-fill.entregado {
+  background: #9b59b6; /* Morado */
+}
+
+/* Estilo para los elementos de la lista de pedidos */
+.order-card {
+  display: flex; /* Flexbox para alinear la imagen y los datos */
+  align-items: center; /* Centrar verticalmente */
+  gap: 1rem; /* Espaciado entre la imagen y los datos */
+  padding: 0.5rem 0; /* Espaciado interno */
+}
+
+/* Estilo para la imagen de la tienda */
+.order-card img.store-profile-img {
+  flex-shrink: 0; /* Evita que la imagen se reduzca */
+  width: 50px; /* Ancho fijo */
+  height: 50px; /* Alto fijo */
+  border-radius: 50%; /* Imagen circular */
+  object-fit: cover; /* Ajusta la imagen sin distorsión */
+}
+
+/* Estilo para los datos de la tienda */
+.order-card .order-details {
+  flex-grow: 1; /* Permite que los datos ocupen el espacio restante */
+  display: flex;
+  flex-direction: column; /* Alinea los datos en columna */
+  gap: 0.25rem; /* Espaciado entre las líneas de texto */
+}
+
+

@@ -1,3 +1,3 @@
 git add .
-git commit -m "Panel de control"
+git commit -m "Navbar"
 git push origin main
