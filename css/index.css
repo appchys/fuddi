@@ -86,8 +86,7 @@ header nav ul {
     justify-content: center; /* Centra los botones horizontalmente */
     align-items: center; /* Centra los botones verticalmente */
     list-style: none; /* Elimina los puntos de la lista */
-    padding: 0; /* Elimina el padding */
-    margin: 0; /* Elimina el margen */
+padding-top: 10px;    margin: 0; /* Elimina el margen */
     gap: 10px; /* Espaciado entre los botones */
 }
 
