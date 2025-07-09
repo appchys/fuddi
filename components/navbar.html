@@ -1,21 +1,33 @@
-<nav class="main-navbar">
-  <div class="navbar-row">
-    <!-- Sección izquierda: Botón de hamburguesa -->
-    <div class="navbar-section navbar-left">
-      <button id="control-panel-toggle" class="navbar-hamburger-btn" onclick="toggleControlPanel()">
-        <i class="bi bi-list"></i>
-      </button>
-    </div>
-    <!-- Sección central: Título y slogan -->
-    <div class="navbar-section navbar-center">
-      <h1 class="navbar-title">Fuddi</h1>
-      <p class="navbar-slogan">Are you hungry?</p>
-    </div>
-    <!-- Sección derecha: Imágenes de las tiendas -->
-    <div class="navbar-section navbar-right">
-      <div id="active-store-images" class="active-store-images"></div>
-    </div>
-  </div>
-  <!-- Segunda fila: Contenedor para pedidos activos -->
-  <div id="navbar-active-orders" class="navbar-active-orders" style="display: none;"></div>
-</nav>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poetsen+One&family=Dongle:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="main-navbar">
+      <div class="navbar-row">
+        <!-- Sección izquierda: Botón de hamburguesa -->
+        <div class="navbar-section navbar-left">
+          <button id="control-panel-toggle" class="navbar-hamburger-btn" onclick="toggleControlPanel()">
+            <i class="bi bi-list"></i>
+          </button>
+        </div>
+        <!-- Sección central: Título y slogan -->
+        <div class="navbar-section navbar-center">
+          <h1 class="navbar-title">Fuddi</h1>
+          <p class="navbar-slogan">Are you hungry?</p>
+        </div>
+        <!-- Sección derecha: Imágenes de las tiendas -->
+        <div class="navbar-section navbar-right">
+          <div id="active-store-images" class="active-store-images"></div>
+        </div>
+      </div>
+      <!-- Segunda fila: Contenedor para pedidos activos -->
+      <div id="navbar-active-orders" class="navbar-active-orders" style="display: none;"></div>
+    </nav>
+</body>
+</html>
