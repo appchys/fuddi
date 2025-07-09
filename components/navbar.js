@@ -93,8 +93,129 @@ const generateOrdersDropdown = (activeOrders) => {
     activeOrders.forEach((order, index) => {
         ordersHtml += generateOrderHtml(order, index, activeOrders.length);
     });
-    ordersHtml += `</ul>`; // Cierra el dropdown sin agregar el enlace
+    ordersHtml += `</ul>`;
     return ordersHtml;
+};
+
+// Función para actualizar la imagen de perfil de la tienda
+const updateStoreProfileImage = (activeOrders) => {
+    const storeProfileImg = document.getElementById('store-profile-img');
+    if (!storeProfileImg) return;
+
+    // Obtén la primera tienda con pedidos activos
+    if (activeOrders.length > 0) {
+        const firstOrder = activeOrders[0];
+        storeProfileImg.src = firstOrder.storeImage || 'https://via.placeholder.com/40';
+        storeProfileImg.alt = firstOrder.storeName || 'Tienda';
+        storeProfileImg.title = firstOrder.storeName || 'Tienda';
+    } else {
+        // Imagen predeterminada si no hay pedidos activos
+        storeProfileImg.src = 'https://via.placeholder.com/40';
+        storeProfileImg.alt = 'Sin pedidos activos';
+        storeProfileImg.title = 'Sin pedidos activos';
+    }
+};
+
+// Función para actualizar las imágenes de las tiendas con pedidos activos
+const updateActiveStoreImages = (activeOrders) => {
+    const activeStoreImagesContainer = document.getElementById('active-store-images');
+    if (!activeStoreImagesContainer) return;
+
+    // Limpia el contenedor antes de agregar nuevas imágenes
+    activeStoreImagesContainer.innerHTML = '';
+
+    // Agrega una imagen por cada tienda con pedidos activos
+    const storeImages = new Set(); // Usamos un Set para evitar duplicados
+    activeOrders.forEach((order) => {
+        if (order.storeImage && !storeImages.has(order.storeImage)) {
+            storeImages.add(order.storeImage);
+            const imgElement = document.createElement('img');
+            imgElement.src = order.storeImage;
+            imgElement.alt = order.storeName;
+            imgElement.title = order.storeName; // Muestra el nombre de la tienda al pasar el mouse
+            imgElement.classList.add('store-image'); // Clase para estilos adicionales
+
+            // Agrega un evento onclick para mostrar el contenedor de pedidos activos
+            imgElement.addEventListener('click', () => showActiveOrder(order));
+
+            activeStoreImagesContainer.appendChild(imgElement);
+        }
+    });
+};
+
+// Función para mostrar/ocultar el contenedor de pedidos activos con los datos del pedido
+const showActiveOrder = (order) => {
+    const activeOrdersContainer = document.getElementById('navbar-active-orders');
+    if (!activeOrdersContainer) return;
+
+    // Si el contenedor ya está visible y muestra el mismo pedido, ocúltalo
+    if (activeOrdersContainer.classList.contains('show') && activeOrdersContainer.dataset.orderId === order.id) {
+        activeOrdersContainer.classList.remove('show');
+        activeOrdersContainer.style.display = 'none';
+        return;
+    }
+
+    // Genera el contenido del pedido
+    const orderTime = new Date(order.createdAt).toLocaleString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+    });
+    const statusBadge = getStatusBadge(order.status);
+    const progress = calculateProgress(order.status);
+    const progressClass = order.status.toLowerCase().replace(' ', '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    activeOrdersContainer.innerHTML = `
+        <div class="order-card">
+            <h3>${order.storeName}</h3>
+            <p><strong>Total:</strong> $${order.total.toFixed(2)}</p>
+            <p><strong>Hora:</strong> ${orderTime}</p>
+            <div class="order-status text-center mt-2">
+                <span class="badge ${statusBadge.class}">${statusBadge.text}</span>
+            </div>
+            <div class="order-progress-bar">
+                <div class="order-progress-fill ${progressClass}" style="width: ${progress}%;"></div>
+            </div>
+        </div>
+    `;
+
+    // Muestra el contenedor y guarda el ID del pedido actual
+    activeOrdersContainer.dataset.orderId = order.id;
+    activeOrdersContainer.classList.add('show');
+    activeOrdersContainer.style.display = 'block';
+};
+
+// Función para actualizar la tarjeta del pedido
+const updateOrderCard = (order) => {
+    const orderCard = document.querySelector('.order-card'); // Selecciona la tarjeta del pedido existente
+    if (!orderCard) return;
+
+    // Actualiza el contenido de la tarjeta con los datos del pedido
+    const orderTime = new Date(order.createdAt).toLocaleString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+    });
+    const statusBadge = getStatusBadge(order.status);
+    const progress = calculateProgress(order.status);
+    const progressClass = order.status.toLowerCase().replace(' ', '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    orderCard.innerHTML = `
+        <img src="${order.storeImage}" alt="${order.storeName}" class="navbar-store-profile-img">
+        <div class="order-details">
+            <div class="fw-bold text-dark">${order.storeName}</div>
+            <small class="text-muted">Total: $${order.total.toFixed(2)}</small>
+            <small class="text-muted">Hora: ${orderTime}</small>
+            <div class="order-status text-center mt-2">
+                <span class="badge ${statusBadge.class}">${statusBadge.text}</span>
+            </div>
+            <div class="order-progress-bar">
+                <div class="order-progress-fill ${progressClass}" style="width: ${progress}%;"></div>
+            </div>
+        </div>
+    `;
 };
 
 // Configura el listener de autenticación y pedidos
@@ -131,7 +252,7 @@ const setupAuthListener = (activeOrdersSpan) => {
                         total: order.total || 0,
                         createdAt: order.createdAt || new Date().toISOString(),
                         customerName: order.customerName || 'Cliente',
-                        storeImage: storeData?.imageUrl || 'https://via.placeholder.com/50',
+                        storeImage: storeData?.imageUrl || 'https://via.placeholder.com/40',
                     });
                 }
             }
@@ -140,11 +261,13 @@ const setupAuthListener = (activeOrdersSpan) => {
             const ordersHtml = generateOrdersDropdown(activeOrders);
             activeOrdersSpan.innerHTML = ordersHtml;
 
-            // Elimina esta parte que genera el contador
             if (activeOrders.length > 0) {
                 activeOrdersSpan.classList.add('dropdown');
                 activeOrdersSpan.innerHTML = ordersHtml;
             }
+
+            // Actualiza las imágenes de las tiendas con pedidos activos
+            updateActiveStoreImages(activeOrders);
         }, (error) => {
             console.error('Error in orders snapshot:', error);
             activeOrdersSpan.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle"></i> Error al cargar pedidos</span>';
@@ -176,10 +299,7 @@ const initializeWithRetry = () => {
         if (initializeNavbar() || authInitialized || attempts >= maxAttempts) {
             clearInterval(interval);
             if (attempts >= maxAttempts) {
-                const span = document.getElementById('navbar-active-orders');
-                if (span) {
-                    span.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle"></i> Error al cargar pedidos</span>';
-                }
+                console.error('Error: No se pudo inicializar la barra de navegación.');
             }
         }
     }, 500);
@@ -198,8 +318,21 @@ const cleanupListeners = () => {
     }
 };
 
+// Función para alternar la visibilidad de los detalles del pedido
+const toggleOrderDetails = (imageElement) => {
+    const details = imageElement.nextElementSibling;
+    if (details.style.display === 'none' || details.style.display === '') {
+        details.style.display = 'block';
+    } else {
+        details.style.display = 'none';
+    }
+};
+
 // Inicialización y eventos
 initializeWithRetry();
 window.addEventListener('popstate', handleNavigation);
 window.addEventListener('hashchange', handleNavigation);
 window.addEventListener('beforeunload', cleanupListeners);
+
+// Exportar la función para uso externo
+window.toggleOrderDetails = toggleOrderDetails;

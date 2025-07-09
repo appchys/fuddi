@@ -1,14 +1,21 @@
-<!-- components/navbar.html -->
 <nav class="main-navbar">
-  <div class="navbar-content">
-    <button id="control-panel-toggle" class="navbar-hamburger-btn" onclick="toggleControlPanel()">
-      <i class="bi bi-list"></i>
-    </button>
-    <!-- Contenedor para el título y el slogan -->
-    <div class="navbar-brand">
+  <div class="navbar-row">
+    <!-- Sección izquierda: Botón de hamburguesa -->
+    <div class="navbar-section navbar-left">
+      <button id="control-panel-toggle" class="navbar-hamburger-btn" onclick="toggleControlPanel()">
+        <i class="bi bi-list"></i>
+      </button>
+    </div>
+    <!-- Sección central: Título y slogan -->
+    <div class="navbar-section navbar-center">
       <h1 class="navbar-title">Fuddi</h1>
       <p class="navbar-slogan">Are you hungry?</p>
     </div>
-    <span id="navbar-active-orders" class="navbar-active-orders">Cargando pedidos...</span>
+    <!-- Sección derecha: Imágenes de las tiendas -->
+    <div class="navbar-section navbar-right">
+      <div id="active-store-images" class="active-store-images"></div>
+    </div>
   </div>
+  <!-- Segunda fila: Contenedor para pedidos activos -->
+  <div id="navbar-active-orders" class="navbar-active-orders" style="display: none;"></div>
 </nav>
