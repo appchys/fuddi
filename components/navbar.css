@@ -3,8 +3,8 @@
     display: flex;
     flex-direction: column; /* Organiza en filas */
     padding-top: 30px;
-    padding-left: 25px;
-    padding-right: 25px;
+    padding-left: 15px;
+    padding-right: 15px;
     gap: 10px; /* Espaciado entre filas */
 }
 
@@ -58,7 +58,7 @@
     font-size: 1.4rem;
     color: #666;
     font-family: 'Dongle', sans-serif;
-    margin: 0;
+    margin-top: -5px; /* Reduce el espacio entre el título y el slogan */
 }
 
 /* Contenedor de las imágenes de las tiendas */

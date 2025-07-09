@@ -10,8 +10,8 @@ body {
     font-family: 'Arial', sans-serif;
     background-color: #f5f5f5;
     color: #333;
-    padding-left: 25px;
-    padding-right: 25px;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 /* Limitar la descripción a 2 líneas */
@@ -100,8 +100,8 @@ header nav ul li {
 
 /* Estilo para los botones del menú en el header */
 header nav ul li button {
-    background-color: #ffffff; /* Fondo blanco */
-    border: 1px solid #e0e0e0; /* Borde gris claro */
+    background-color: transparent; /* Fondo blanco */
+    border: 0px solid #e0e0e0; /* Borde gris claro */
     border-radius: 10px; /* Esquinas redondeadas */
     padding: 10px; /* Espaciado interno */
     width: 80px; /* Ancho fijo */
@@ -110,17 +110,19 @@ header nav ul li button {
     flex-direction: column; /* Ícono y texto en columna */
     align-items: center; /* Centrar contenido horizontalmente */
     justify-content: center; /* Centrar contenido verticalmente */
-    font-size: 14px; /* Tamaño de fuente */
+    font-size: 22px; /* Tamaño de fuente */
     font-weight: 500; /* Peso de la fuente */
     color: #333; /* Color del texto */
     cursor: pointer; /* Cursor de pointer al pasar el mouse */
     transition: background-color 0.3s ease; /* Transición suave para hover */
+    font-family: 'Dongle', sans-serif; /* Fuente Dongle */
+    font-weight: 700; /* Bold */
 }
 
 /* Estilo para el ícono dentro del botón */
 header nav ul li button i {
     font-size: 24px; /* Tamaño del ícono */
-    color: #28a745; /* Color verde para el ícono */
+    color: #333; /* Color verde para el ícono */
     margin-bottom: 5px; /* Espacio entre el ícono y el texto */
 }
 
@@ -197,9 +199,25 @@ header nav ul li button:hover {
 
 /* Estilo para los encabezados h2 */
 h2 {
-    margin-top: 20px; /* Ajusta este valor según el espacio que desees */
-    font-size: 1.5rem; /* Tamaño de fuente (opcional) */
-    text-align: center; /* Centrado del texto (opcional) */
+    font-family: 'Dongle', sans-serif; /* Aplica la fuente Dongle */
+    font-weight: 700; /* Aplica el peso Bold */
+    font-size: 1.8rem; /* Ajusta el tamaño según sea necesario */
+    color: #333; /* Color del texto */
+    text-align: left; /* Alinea el texto a la izquierda */
+    margin-bottom: 0.5rem; /* Espaciado inferior */
+    margin-top: 1rem; /* Espaciado superior */
+}
+
+/* Estilo global para los títulos de las secciones */
+.stores-section h2 {
+    font-family: 'Dongle', sans-serif; /* Fuente Dongle */
+    font-weight: 700; /* Bold */
+    font-size: 1.8rem; /* Tamaño uniforme */
+    color: #333; /* Color del texto */
+    text-align: left; /* Alineación a la izquierda */
+    margin-bottom: 0.5rem; /* Espaciado inferior */
+    margin-top: 1rem; /* Espaciado superior */
+    margin-left: 10px;
 }
 
 /* Estilo para el botón de seguir */
@@ -294,13 +312,7 @@ h2 {
     padding: 0 0.5rem;
 }
 
-.products-section h2 {
-    font-size: 1.3rem;
-    margin-bottom: 0.7rem;
-    text-align: left;
-    color: #222;
-    letter-spacing: 0.5px;
-}
+
 
 .products-carousel {
     display: flex;
