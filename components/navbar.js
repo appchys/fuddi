@@ -122,7 +122,7 @@ const setupAuthListener = (activeOrdersSpan) => {
 
                         ordersHtml += `
     <li class="dropdown-item-text order-card">
-        <img src="${order.storeImage}" alt="${order.storeName}" class="store-profile-img">
+        <img src="${order.storeImage}" alt="${order.storeName}" class="navbar-store-profile-img">
         <div class="order-details">
             <div class="fw-bold text-dark">${order.storeName}</div>
             <small class="text-muted">Total: $${order.total.toFixed(2)}</small>

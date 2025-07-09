@@ -44,7 +44,7 @@ async function fetchStores() {
                                 ${store.coverUrl ? `<img src="${store.coverUrl}" alt="Portada de la tienda ${store.name}" class="store-cover-img" loading="lazy">` : ''}
                             </div>
                             <div class="store-profile-container">
-                                <img src="${store.imageUrl || 'default-profile.png'}" alt="Imagen de perfil de la tienda ${store.name}" class="store-profile-img" loading="lazy">
+                                <img src="${store.imageUrl || 'default-profile.png'}" alt="Imagen de perfil de la tienda ${store.name}" class="index-store-profile-img" loading="lazy">
                             </div>
                         </div>
                         <div class="store-details" style="position:relative;">
@@ -193,7 +193,7 @@ async function fetchFollowedStores() {
                                 ${store.coverUrl ? `<img src="${store.coverUrl}" alt="Portada de la tienda ${store.name}" class="store-cover-img" loading="lazy">` : ''}
                             </div>
                             <div class="store-profile-container">
-                                <img src="${store.imageUrl || 'default-profile.png'}" alt="Imagen de perfil de la tienda ${store.name}" class="store-profile-img" loading="lazy">
+                                <img src="${store.imageUrl || 'default-profile.png'}" alt="Imagen de perfil de la tienda ${store.name}" class="followed-store-profile-img" loading="lazy">
                             </div>
                         </div>
                         <div class="store-details">
