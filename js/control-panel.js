@@ -254,4 +254,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            const userDoc = doc(db, 'users', user.uid);
+            const userSnapshot = await getDoc(userDoc);
+
+            if (userSnapshot.exists()) {
+                const userData = userSnapshot.data();
+
+                // Actualizar la foto de perfil en el panel de control
+                const panelProfilePic = document.getElementById('panel-profile-pic');
+                if (panelProfilePic && userData.profileUrl) {
+                    panelProfilePic.src = userData.profileUrl;
+                }
+
+                // Actualizar el saludo con el primer nombre del cliente
+                const panelFirstName = document.getElementById('panel-first-name');
+                if (panelFirstName && userData.name) {
+                    const firstName = userData.name.split(' ')[0]; // Extraer solo el primer nombre
+                    panelFirstName.textContent = firstName;
+                }
+            } else {
+                console.error('No se encontraron datos del cliente en Firestore.');
+            }
+        } else {
+            console.error('No hay un usuario autenticado.');
+        }
+    });
 });

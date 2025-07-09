@@ -190,23 +190,36 @@
     font-size: 24px; /* Tamaño del ícono */
 }
 
-/* Estilo para el encabezado del panel */
+/* Estilo para la cabecera del panel */
 .panel-header {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
 
 .panel-profile-pic {
-    width: 40px;
-    height: 40px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
+    margin-bottom: 10px;
     object-fit: cover;
-    background: #f5f5f5;
 }
+
 .panel-header-text {
-    font-size: 1.1em;
-    font-weight: 600;
+    text-align: center;
+    font-size: 16px;
     color: #333;
+}
+
+#panel-greeting {
+    display: block;
+    font-weight: normal;
+    margin-bottom: 5px;
+}
+
+#panel-first-name {
+    display: block;
+    font-weight: bold;
+    font-size: 18px;
 }

@@ -37,21 +37,8 @@
     background-color: #f3f4f6;
 }
 
-/* Saludo en la navbar */
-.navbar-greeting {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #1f2937;
-    white-space: nowrap;
-}
 
-/* Puntos en la navbar */
-#navbar-points {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #16a34a;
-    white-space: nowrap;
-}
+
 
 /* Contenedor de pedidos activos */
 .navbar-active-orders {

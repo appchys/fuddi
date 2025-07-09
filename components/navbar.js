@@ -93,14 +93,7 @@ const generateOrdersDropdown = (activeOrders) => {
     activeOrders.forEach((order, index) => {
         ordersHtml += generateOrderHtml(order, index, activeOrders.length);
     });
-    ordersHtml += `
-        <li><hr class="dropdown-divider"></li>
-        <li>
-            <a class="dropdown-item text-primary" href="my-orders.html">
-                <i class="bi bi-list-ul"></i> Ver todos los pedidos
-            </a>
-        </li>
-    </ul>`;
+    ordersHtml += `</ul>`; // Cierra el dropdown sin agregar el enlace
     return ordersHtml;
 };
 
