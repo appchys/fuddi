@@ -37,8 +37,31 @@
     background-color: #f3f4f6;
 }
 
+/* Contenedor del título y el slogan */
+.navbar-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Alinea el texto a la izquierda */
+    margin-left: 1rem; /* Espaciado a la izquierda */
+}
 
+/* Estilo para el título en la NavBar */
+.navbar-title {
+    font-size: 1.5rem; /* Tamaño del texto */
+    color: #333; /* Color del texto */
+    font-family: 'Poetsen One', sans-serif; /* Aplica la fuente Poetsen One */
+    margin: 0; /* Elimina márgenes adicionales */
+    line-height: 1.2; /* Ajusta el espaciado entre líneas */
+}
 
+/* Estilo para el slogan en la NavBar */
+.navbar-slogan {
+    font-size: 0.9rem; /* Tamaño del texto */
+    color: #666; /* Color del texto */
+    font-family: 'Dongle', sans-serif; /* Aplica la fuente Dongle */
+    margin: 0; /* Elimina márgenes adicionales */
+    line-height: 1.2; /* Ajusta el espaciado entre líneas */
+}
 
 /* Contenedor de pedidos activos */
 .navbar-active-orders {

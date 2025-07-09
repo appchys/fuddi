@@ -257,5 +257,5 @@ onAuthStateChanged(auth, () => {
 // Load data on page load
 fetchStores();
 fetchProducts();
-setRandomCover();
+
 toggleRegisterButton();
