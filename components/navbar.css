@@ -46,7 +46,7 @@
   position: relative;
   font-size: 0.95rem;
   font-weight: 500;
-  color: #0d6efd;
+  color: #2e2e2e;
   cursor: pointer;
 }
 
@@ -64,10 +64,14 @@
   align-items: flex-start;
   gap: 0.8rem;
   padding: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: wrap;
 }
 
 /* Imagen del restaurante */
 .store-profile-img {
+  flex-shrink: 0;
   width: 50px;
   height: 50px;
   object-fit: cover;
@@ -79,6 +83,15 @@
 .order-details {
   flex-grow: 1;
   font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Estado del pedido */
+.order-status {
+  font-weight: bold;
+  margin-top: 0.5rem;
 }
 
 /* Barra de progreso */
@@ -110,6 +123,26 @@
 
 .entregado {
   background-color: #9b59b6; /* Morado */
+}
+
+/* Estilo para el enlace "Ver todos los pedidos" */
+.navbar-active-orders .dropdown-item.text-primary {
+  font-weight: bold;
+  color: #007bff; /* Azul predeterminado */
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.navbar-active-orders .dropdown-item.text-primary:hover {
+  background-color: #007bff; /* Azul de fondo al pasar el mouse */
+  color: #ffffff; /* Texto blanco al pasar el mouse */
+  text-decoration: none; /* Quita el subrayado */
+}
+
+.navbar-active-orders .dropdown-item.text-primary i {
+  margin-right: 0.5rem; /* Espaciado entre el ícono y el texto */
 }
 
 /* Responsive: Colapsar si es móvil */

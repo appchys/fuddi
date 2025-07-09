@@ -1,10 +1,6 @@
 import { getFirestore, collection, query, where, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { app, auth } from '../js/firebase-config.js';
 
-console.log('navbar.js cargado');
-console.log('auth:', auth);
-console.log('auth.currentUser inicial:', auth.currentUser);
-
 // Variable para almacenar el listener de Firestore
 let unsubscribeSnapshot = null;
 let authInitialized = false;
@@ -17,11 +13,9 @@ const getStoreData = async (storeId) => {
         if (storeDoc.exists()) {
             return storeDoc.data();
         } else {
-            console.warn(`Tienda con storeId "${storeId}" no encontrada.`);
             return null;
         }
     } catch (error) {
-        console.error(`Error al obtener datos de la tienda "${storeId}":`, error);
         return null;
     }
 };
@@ -75,28 +69,23 @@ const getProgress = (status) => {
 // Función para configurar el listener de autenticación y pedidos
 const setupAuthListener = (activeOrdersSpan) => {
     if (unsubscribeSnapshot) {
-        console.log('Limpiando listener onSnapshot anterior');
         unsubscribeSnapshot();
         unsubscribeSnapshot = null;
     }
 
     auth.onAuthStateChanged((user) => {
-        console.log('onAuthStateChanged ejecutado, user:', user);
         authInitialized = true;
         if (user) {
-            console.log('Usuario autenticado, UID:', user.uid);
             const db = getFirestore(app);
             const ordersRef = collection(db, 'orders');
             const q = query(ordersRef, where('userId', '==', user.uid));
             const estadosActivos = ['pendiente', 'en preparación', 'en camino'];
 
             unsubscribeSnapshot = onSnapshot(q, async (querySnapshot) => {
-                console.log('Snapshot recibido, documentos:', querySnapshot.size);
                 let activeOrders = [];
                 for (const doc of querySnapshot.docs) {
                     const order = doc.data();
                     const status = (order.status || '').toLowerCase().trim();
-                    console.log('Pedido ID:', doc.id, 'Status:', status, 'UserId:', order.userId);
                     if (estadosActivos.includes(status)) {
                         const storeData = await getStoreData(order.storeId);
                         const storeImage = storeData?.imageUrl || 'https://via.placeholder.com/50';
@@ -130,23 +119,22 @@ const setupAuthListener = (activeOrdersSpan) => {
                         });
                         const progress = getProgress(order.status);
                         const progressClass = order.status.toLowerCase().replace(' ', '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                        console.log('Clase de progreso:', progressClass, 'Ancho de progreso:', progress);
 
                         ordersHtml += `
-                            <li class="dropdown-item-text order-card">
-                                <img src="${order.storeImage}" alt="${order.storeName}" class="store-profile-img">
-                                <div class="order-details">
-                                    <div class="fw-bold text-dark">${order.storeName}</div>
-                                    <div class="d-flex align-items-center gap-2 mt-1">
-                                        <span class="badge ${statusBadge.class} small">${statusBadge.text}</span>
-                                        <small class="text-muted">$${order.total.toFixed(2)}</small>
-                                    </div>
-                                    <small class="text-muted">${orderTime}</small>
-                                    <div class="order-progress-bar">
-                                        <div class="order-progress-fill ${progressClass}" style="width: ${progress}%;"></div>
-                                    </div>
-                                </div>
-                            </li>`;
+    <li class="dropdown-item-text order-card">
+        <img src="${order.storeImage}" alt="${order.storeName}" class="store-profile-img">
+        <div class="order-details">
+            <div class="fw-bold text-dark">${order.storeName}</div>
+            <small class="text-muted">Total: $${order.total.toFixed(2)}</small>
+            <small class="text-muted">Hora: ${orderTime}</small>
+            <div class="order-status text-center mt-2">
+                <span class="badge ${statusBadge.class}">${statusBadge.text}</span>
+            </div>
+            <div class="order-progress-bar">
+                <div class="order-progress-fill ${progressClass}" style="width: ${progress}%;"></div>
+            </div>
+        </div>
+    </li>`;
                         if (index < activeOrders.length - 1) {
                             ordersHtml += `<li><hr class="dropdown-divider my-1"></li>`;
                         }
@@ -154,15 +142,16 @@ const setupAuthListener = (activeOrdersSpan) => {
 
                     ordersHtml += `
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-center text-primary" href="my-orders.html">
-                            <i class="bi bi-list-ul"></i> Ver todos los pedidos
-                        </a></li>
-                    </ul>`;
+                        <li>
+        <a class="dropdown-item text-primary" href="my-orders.html">
+            <i class="bi bi-list-ul"></i> Ver todos los pedidos
+        </a>
+    </li>
+</ul>`;
                 } else {
                     ordersHtml = '<span class="text-muted"><i class="bi bi-bag"></i> No hay pedidos activos</span>';
                 }
 
-                console.log('HTML generado para pedidos:', ordersHtml);
                 activeOrdersSpan.innerHTML = ordersHtml;
 
                 // Activar el dropdown de Bootstrap
@@ -176,15 +165,12 @@ const setupAuthListener = (activeOrdersSpan) => {
                     `;
                 }
             }, (error) => {
-                console.error('Error al escuchar pedidos:', error);
                 activeOrdersSpan.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle"></i> Error al cargar pedidos</span>';
             });
         } else {
-            console.log('No hay usuario autenticado');
             activeOrdersSpan.innerHTML = '<span class="text-muted"><i class="bi bi-person"></i> Inicia sesión para ver pedidos</span>';
         }
     }, (error) => {
-        console.error('Error en onAuthStateChanged:', error);
         activeOrdersSpan.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle"></i> Error en autenticación</span>';
         authInitialized = true;
     });
@@ -192,10 +178,8 @@ const setupAuthListener = (activeOrdersSpan) => {
 
 // Función para inicializar la navbar
 const initializeNavbar = () => {
-    console.log('Inicializando navbar');
     const activeOrdersSpan = document.getElementById('navbar-active-orders');
     if (!activeOrdersSpan) {
-        console.warn('Error: #navbar-active-orders no encontrado');
         return false;
     }
 
@@ -208,11 +192,9 @@ const maxAttempts = 10;
 let attempts = 0;
 const initInterval = setInterval(() => {
     attempts++;
-    console.log(`Intento de inicialización ${attempts}/${maxAttempts}`);
     if (initializeNavbar() || authInitialized || attempts >= maxAttempts) {
         clearInterval(initInterval);
         if (attempts >= maxAttempts) {
-            console.error('Máximo de intentos alcanzado, elemento o autenticación no disponibles');
             const span = document.getElementById('navbar-active-orders');
             if (span) span.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle"></i> Error al cargar pedidos</span>';
         }
@@ -221,19 +203,16 @@ const initInterval = setInterval(() => {
 
 // Manejar navegación en SPA o páginas
 window.addEventListener('popstate', () => {
-    console.log('Evento popstate detectado, reinicializando navbar');
     initializeNavbar();
 });
 
 window.addEventListener('hashchange', () => {
-    console.log('Evento hashchange detectado, reinicializando navbar');
     initializeNavbar();
 });
 
 // Limpiar listener al salir de la página
 window.addEventListener('beforeunload', () => {
     if (unsubscribeSnapshot) {
-        console.log('Limpiando listener onSnapshot al salir');
         unsubscribeSnapshot();
         unsubscribeSnapshot = null;
     }
