@@ -2,9 +2,9 @@
 .main-navbar {
     display: flex;
     flex-direction: column; /* Organiza en filas */
-    background-color: #fff;
-    padding: 10px 20px;
-    border-bottom: 1px solid #e0e0e0;
+    padding-top: 30px;
+    padding-left: 25px;
+    padding-right: 25px;
     gap: 10px; /* Espaciado entre filas */
 }
 
@@ -47,7 +47,7 @@
 
 /* Estilo para el título */
 .navbar-title {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     color: #333;
     font-family: 'Poetsen One', sans-serif;
     margin: 0;
@@ -55,7 +55,7 @@
 
 /* Estilo para el slogan */
 .navbar-slogan {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     color: #666;
     font-family: 'Dongle', sans-serif;
     margin: 0;
