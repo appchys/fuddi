@@ -5,7 +5,7 @@
     left: -300px;
     width: 300px;
     height: 100%;
-    background-color: #fff;
+    background-color: #ffffff;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     transition: left 0.3s ease;
     padding: 20px;
@@ -192,34 +192,38 @@
 
 /* Estilo para la cabecera del panel */
 .panel-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
+    display: flex; /* Alinea los elementos en una fila */
+    align-items: center; /* Centra verticalmente los elementos */
+    gap: 10px; /* Espaciado entre la imagen y el saludo */
+    margin-bottom: 20px; /* Espaciado inferior */
 }
 
 .panel-profile-pic {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    margin-bottom: 10px;
-    object-fit: cover;
+    width: 50px; /* Ajusta el tamaño de la imagen */
+    height: 50px;
+    border-radius: 50%; /* Hace la imagen circular */
+    object-fit: cover; /* Asegura que la imagen se ajuste correctamente */
+    margin-top: 5px;
+    margin-left: 10px;
 }
 
 .panel-header-text {
-    text-align: center;
-    font-size: 16px;
-    color: #333;
+    text-align: left; /* Alinea el texto a la izquierda */
+    display: flex; /* Usa flexbox para organizar los elementos */
+    flex-direction: column; /* Coloca los elementos en una columna */
+    gap: 2px; /* Reduce el espacio entre "Hola" y el nombre */
 }
 
 #panel-greeting {
-    display: block;
-    font-weight: normal;
-    margin-bottom: 5px;
+    font-size: 2rem; /* Tamaño de fuente */
+    color: #373636; /* Color del texto */
+    font-family: 'Dongle', sans-serif; /* Fuente */
+    margin: 0; /* Sin margen */
 }
 
 #panel-first-name {
-    display: block;
-    font-weight: bold;
-    font-size: 18px;
+    font-size: 1.8rem; /* Tamaño de fuente */
+    color: #292929; /* Color del texto */
+    font-family: 'Poetsen One', sans-serif; /* Fuente */
+    margin-top: -20px;
 }

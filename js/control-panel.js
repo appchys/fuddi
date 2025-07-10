@@ -127,16 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                         </ul>
                                     </div>
                                 `;
-
-                                // --- ACTUALIZA EL SALUDO AQUÍ ---
-                                const panelProfilePic = document.getElementById('panel-profile-pic');
-                                const panelHeaderText = document.querySelector('.panel-header-text');
-                                if (panelProfilePic && userData.profilePic) {
-                                    panelProfilePic.src = userData.profilePic;
-                                }
-                                if (panelHeaderText && userData.name) {
-                                    panelHeaderText.textContent = `Hola, ${userData.name}`;
-                                }
                             } else {
                                 clientInfo = `
                                     <div class="client-info">
@@ -257,26 +247,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     auth.onAuthStateChanged(async (user) => {
         if (user) {
-            const userDoc = doc(db, 'users', user.uid);
-            const userSnapshot = await getDoc(userDoc);
+            try {
+                const userDoc = doc(db, 'users', user.uid);
+                const userSnapshot = await getDoc(userDoc);
 
-            if (userSnapshot.exists()) {
-                const userData = userSnapshot.data();
+                if (userSnapshot.exists()) {
+                    const userData = userSnapshot.data();
 
-                // Actualizar la foto de perfil en el panel de control
-                const panelProfilePic = document.getElementById('panel-profile-pic');
-                if (panelProfilePic && userData.profileUrl) {
-                    panelProfilePic.src = userData.profileUrl;
+                    // Actualizar la foto de perfil
+                    const panelProfilePic = document.getElementById('panel-profile-pic');
+                    if (panelProfilePic && userData.profileUrl) {
+                        panelProfilePic.src = userData.profileUrl;
+                    }
+
+                    // Actualizar el saludo con el primer nombre del cliente
+                    const panelFirstName = document.getElementById('panel-first-name');
+                    if (panelFirstName && userData.name) {
+                        const firstName = userData.name.split(' ')[0]; // Extraer solo el primer nombre
+                        panelFirstName.textContent = ` ${firstName}`;
+                    }
+                } else {
+                    console.error('No se encontraron datos del cliente en Firestore.');
                 }
-
-                // Actualizar el saludo con el primer nombre del cliente
-                const panelFirstName = document.getElementById('panel-first-name');
-                if (panelFirstName && userData.name) {
-                    const firstName = userData.name.split(' ')[0]; // Extraer solo el primer nombre
-                    panelFirstName.textContent = firstName;
-                }
-            } else {
-                console.error('No se encontraron datos del cliente en Firestore.');
+            } catch (error) {
+                console.error('Error al obtener los datos del usuario:', error);
             }
         } else {
             console.error('No hay un usuario autenticado.');
