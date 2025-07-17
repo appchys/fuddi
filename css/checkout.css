@@ -16,6 +16,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    padding-top: 200px;
 }
 
 /* Estilo para el encabezado fijo */
@@ -33,10 +34,6 @@ body {
     transition: none; /* Elimina cualquier transición */
 }
 
-/* Espaciado para evitar que el contenido quede debajo del encabezado */
-.checkout-container {
-    padding-top: 80px; /* Ajusta según la altura del encabezado */
-}
 
 /* Encabezado */
 .checkout-header {

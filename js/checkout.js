@@ -1380,12 +1380,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const timeIndicator = document.getElementById('time-indicator'); // Inmediato/Programada
     const paymentIndicatorElem = document.getElementById('payment-indicator'); // Efectivo/Transferencia
 
+    const headerHeight = 200; // Altura aproximada del header
+
     if (profileIndicator) {
         profileIndicator.style.cursor = 'pointer';
         profileIndicator.addEventListener('click', () => {
             const customerInfoSection = document.querySelector('.customer-info');
             if (customerInfoSection) {
-                customerInfoSection.scrollIntoView({ behavior: 'smooth' });
+                const offsetTop = customerInfoSection.offsetTop - headerHeight;
+                window.scrollTo({ top: offsetTop, behavior: 'smooth' });
             }
         });
     }
@@ -1395,7 +1398,8 @@ document.addEventListener('DOMContentLoaded', () => {
         deliveryIndicator.addEventListener('click', () => {
             const deliveryTypeSection = document.querySelector('.delivery-type');
             if (deliveryTypeSection) {
-                deliveryTypeSection.scrollIntoView({ behavior: 'smooth' });
+                const offsetTop = deliveryTypeSection.offsetTop - headerHeight;
+                window.scrollTo({ top: offsetTop, behavior: 'smooth' });
             }
         });
     }
@@ -1405,7 +1409,8 @@ document.addEventListener('DOMContentLoaded', () => {
         timeIndicator.addEventListener('click', () => {
             const deliveryTimeSection = document.querySelector('.delivery-time');
             if (deliveryTimeSection) {
-                deliveryTimeSection.scrollIntoView({ behavior: 'smooth' });
+                const offsetTop = deliveryTimeSection.offsetTop - headerHeight;
+                window.scrollTo({ top: offsetTop, behavior: 'smooth' });
             }
         });
     }
@@ -1415,7 +1420,8 @@ document.addEventListener('DOMContentLoaded', () => {
         paymentIndicatorElem.addEventListener('click', () => {
             const paymentMethodSection = document.querySelector('.payment-method');
             if (paymentMethodSection) {
-                paymentMethodSection.scrollIntoView({ behavior: 'smooth' });
+                const offsetTop = paymentMethodSection.offsetTop - headerHeight;
+                window.scrollTo({ top: offsetTop, behavior: 'smooth' });
             }
         });
     }
