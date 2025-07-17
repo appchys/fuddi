@@ -1220,6 +1220,8 @@ Total a cobrar: $${total}${comprobanteLine}`
                 }
             });
         }
+
+        
     } catch (error) {
         console.error('Error al inicializar:', error);
         alert('Error al inicializar la página. Por favor, recarga la página.');
@@ -1375,7 +1377,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Agregar eventos de clic a los indicadores para navegar a las secciones correspondientes
     const profileIndicator = document.querySelector('.indicator:nth-child(1)'); // Perfil
     const deliveryIndicator = document.getElementById('delivery-indicator'); // Delivery/Retiro
-    const timeIndicator = document.getElementById('time-indicator'); // Inmediata/Programada
+    const timeIndicator = document.getElementById('time-indicator'); // Inmediato/Programada
     const paymentIndicatorElem = document.getElementById('payment-indicator'); // Efectivo/Transferencia
 
     if (profileIndicator) {
@@ -1426,14 +1428,5 @@ document.addEventListener('DOMContentLoaded', () => {
     const header = document.querySelector('.checkout-header');
     let lastScrollY = window.scrollY;
 
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > lastScrollY) {
-            // Oculta el encabezado al hacer scroll hacia abajo
-            header.style.transform = 'translateY(-100%)';
-        } else {
-            // Muestra el encabezado al hacer scroll hacia arriba
-            header.style.transform = 'translateY(0)';
-        }
-        lastScrollY = window.scrollY;
-    });
+    
 });

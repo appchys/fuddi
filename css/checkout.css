@@ -26,8 +26,11 @@ body {
     width: 100%;
     z-index: 1000;
     background-color: white; /* Fondo blanco para que sea visible */
-    transition: transform 0.3s ease-in-out; /* Transición para mostrar/ocultar */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
+    padding: 10px 20px;
+    text-align: center;
+    transform: translateY(0); /* Asegúrate de que esté visible */
+    transition: none; /* Elimina cualquier transición */
 }
 
 /* Espaciado para evitar que el contenido quede debajo del encabezado */
