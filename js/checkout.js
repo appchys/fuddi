@@ -59,8 +59,8 @@ async function updateView(user) {
                 <div class="user-data">
                     <img src="${profileUrl}" alt="Foto de perfil">
                     <div>
-                        <p><strong>Nombre:</strong> ${userData.name}</p>
-                        <p><strong>Whatsapp:</strong> ${userData.phone}</p>
+                        <p class="paragraph"><strong class="paragraph-strong">Nombre:</strong> ${userData.name}</p>
+                        <p class="paragraph"><strong class="paragraph-strong">Whatsapp:</strong> ${userData.phone}</p>
                     </div>
                 </div>
             `;

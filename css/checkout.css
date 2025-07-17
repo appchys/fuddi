@@ -3,14 +3,12 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 
 .checkout-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
     padding-top: 200px;
 }
 
@@ -145,53 +143,7 @@
     color: #666;
 }
 
-/* Opciones tipo tarjeta (agrupadas) */
-.delivery-type-options,
-.delivery-time-options,
-.payment-options {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px;
-    margin-bottom: 20px;
-}
 
-.delivery-type-option,
-.delivery-time-option,
-.payment-option {
-    border: 1px solid #ddd;
-    border-radius: var(--border-radius);
-    padding: 15px;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    font-size: 1.05rem;
-    font-weight: 500;
-    gap: 10px;
-    position: relative;
-}
-
-.delivery-type-option:hover,
-.delivery-time-option:hover,
-.payment-option:hover {
-    border-color: var(--secondary-color);
-    background: #f5f7fa;
-}
-
-.delivery-type-option input,
-.delivery-time-option input,
-.payment-option input {
-    display: none;
-}
-
-.delivery-type-option input:checked + .option-content,
-.delivery-time-option input:checked + .option-content,
-.payment-option input:checked + .option-content {
-    color: var(--secondary-color);
-    font-weight: bold;
-}
 
 .option-content {
     display: flex;
@@ -356,13 +308,7 @@
     color: #333; /* Color del texto */
 }
 
-.user-profile-pic {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%; /* Hace la imagen circular */
-    object-fit: cover; /* Ajusta la imagen dentro del contenedor */
-    margin-bottom: 10px;
-}
+
 
 /* Subsección de dirección de entrega */
 #delivery-address-section {
@@ -434,21 +380,13 @@
 }
 
 .user-data img {
-    width: 80px; /* Tamaño de la imagen */
-    height: 80px;
+    width: 60px; /* Tamaño de la imagen */
+    height: 60px;
     border-radius: 50%; /* Hace la imagen circular */
     object-fit: cover; /* Ajusta la imagen dentro del contenedor */
 }
 
-.user-data p {
-    margin: 0; /* Elimina márgenes de los párrafos */
-    font-size: 1rem; /* Tamaño de fuente */
-    color: #333; /* Color del texto */
-}
 
-.user-data p strong {
-    font-weight: bold; /* Resalta los títulos */
-}
 
 .checkout-option-button {
     display: flex; /* Alinea el contenido en una fila */
@@ -460,11 +398,13 @@
     cursor: pointer; /* Cambia el cursor a "pointer" */
     transition: all 0.3s ease; /* Transición suave para cambios de estilo */
     background: #fff; /* Fondo blanco */
-    font-size: 1rem; /* Tamaño de fuente */
+    font-size: 1.5rem; /* Tamaño de fuente */
     font-weight: 500; /* Peso de fuente medio */
-    gap: 10px; /* Espaciado entre los elementos internos */
+    font-family: 'Dongle', sans-serif; /* Fuente Dongle */
     flex: 1; /* Permite que los botones ocupen el mismo ancho */
     text-align: center; /* Centra el texto */
+    color:#333; /* Color del texto */
+    
 }
 
 .checkout-option-button:hover {
