@@ -395,8 +395,6 @@ async function initialize() {
             }
         }
 
-        await displayCartProducts();
-
         const savedAddressesContainer = document.getElementById('saved-addresses');
         const addAddressBtn = document.getElementById('add-address-btn');
         const addressForm = document.getElementById('addressForm');
@@ -1358,14 +1356,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updatePaymentIndicator() {
         const selected = document.querySelector('input[name="payment"]:checked');
-        if (!selected || !paymentIndicator || !paymentIcon || !paymentText) return;
+        const paymentIcon = document.getElementById('payment-icon');
+        const paymentText = document.getElementById('payment-text');
+        const paymentIndicator = document.getElementById('payment-indicator'); // Contenedor del indicador
 
-        if (selected.value === 'Efectivo') {
-            paymentIcon.setAttribute('name', 'cash-outline');
-            paymentText.textContent = 'Efectivo';
+        if (!paymentIcon || !paymentText || !paymentIndicator) return;
+
+        if (!selected) {
+            // Si no hay ningún método de pago seleccionado
+            paymentIcon.setAttribute('name', 'wallet-outline'); // Ícono genérico para "Pago"
+            paymentText.textContent = 'Pago';
+            paymentIndicator.classList.add('inactive'); // Aplica el estilo inactivo
         } else {
-            paymentIcon.setAttribute('name', 'card-outline');
-            paymentText.textContent = 'Transferencia';
+            if (selected.value === 'Efectivo') {
+                paymentIcon.setAttribute('name', 'cash-outline');
+                paymentText.textContent = 'Efectivo';
+            } else if (selected.value === 'Transferencia') {
+                paymentIcon.setAttribute('name', 'card-outline');
+                paymentText.textContent = 'Transferencia';
+            }
+            paymentIndicator.classList.remove('inactive'); // Quita el estilo inactivo
         }
     }
 
@@ -1373,7 +1383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', updatePaymentIndicator);
     });
 
-    // Inicializar el indicador de pago
+    // Inicializa el indicador al cargar la página
     updatePaymentIndicator();
 
     // Agregar eventos de clic a los indicadores para navegar a las secciones correspondientes

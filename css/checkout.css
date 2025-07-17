@@ -308,6 +308,10 @@
     color: #333; /* Color del texto */
 }
 
+.indicator.inactive {
+    color: #9ca3af; /* Gris claro */
+}
+
 
 
 /* Subsección de dirección de entrega */
