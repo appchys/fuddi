@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poetsen+One&display=swap');
+
 /* General styles */
 body {
     font-family: Arial, sans-serif;
@@ -7,11 +9,13 @@ body {
 }
 
 header {
-    background-color: #4CAF50;
-    color: white;
+    background-color: transparent;
+    color: #333;
     padding: 10px 20px;
     text-align: center;
 }
+
+
 
 main {
     padding: 20px;
@@ -53,3 +57,21 @@ h1, h2 {
 .btn:hover {
     background-color: #45a049;
 }
+
+.checkout-header {
+    background-color: transparent;
+    color: #333;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+.back-link {
+    font-size: 1rem;
+    color: #374151;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+

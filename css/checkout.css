@@ -1,16 +1,3 @@
-/* Variables de diseño */
-:root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --light-color: #ecf0f1;
-    --dark-color: #2c3e50;
-    --success-color: #27ae60;
-    --border-radius: 8px;
-    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --transition: all 0.3s ease;
-}
-
 /* Reset y estilos base */
 * {
     margin: 0;
@@ -29,6 +16,23 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+}
+
+/* Estilo para el encabezado fijo */
+.checkout-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: white; /* Fondo blanco para que sea visible */
+    transition: transform 0.3s ease-in-out; /* Transición para mostrar/ocultar */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
+}
+
+/* Espaciado para evitar que el contenido quede debajo del encabezado */
+.checkout-container {
+    padding-top: 80px; /* Ajusta según la altura del encabezado */
 }
 
 /* Encabezado */
@@ -243,7 +247,7 @@ body {
 
 .btn.primary {
     background-color: var(--secondary-color);
-    color: white;
+    color: rgb(46, 133, 111);
 }
 
 .btn.primary:hover {
@@ -262,14 +266,15 @@ body {
 
 .btn.confirm-btn {
     width: 100%;
-    background-color: var(--success-color);
+    background-color: #219653;
     color: white;
     font-size: 1.1rem;
     padding: 15px;
 }
 
 .btn.confirm-btn:hover {
-    background-color: #219653;
+    background-color: #1bcc68;
+    color: white;
 }
 
 .btn-disabled {
@@ -347,5 +352,104 @@ body {
     .delivery-time-options,
     .payment-options {
         grid-template-columns: 1fr;
+    }
+}
+
+
+.checkout-indicators {
+    display: flex; /* Alinea los íconos en una fila */
+    justify-content: space-around; /* Espaciado uniforme entre los íconos */
+    align-items: center; /* Centra los íconos verticalmente */
+    margin-top: 15px; /* Espaciado superior */
+    padding: 10px 0; /* Espaciado interno */
+}
+
+.indicator {
+    display: flex;
+    flex-direction: column; /* Ícono y texto en columna */
+    align-items: center; /* Centra el contenido horizontalmente */
+    font-size: 0.9rem; /* Tamaño del texto */
+    color: #666; /* Color del texto */
+}
+
+.indicator ion-icon {
+    font-size: 24px; /* Tamaño del ícono */
+    color: #333; /* Color del ícono */
+    margin-bottom: 5px; /* Espaciado entre el ícono y el texto */
+}
+
+.indicator span {
+    font-size: 0.85rem; /* Tamaño del texto */
+    color: #333; /* Color del texto */
+}
+
+.user-profile-pic {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%; /* Hace la imagen circular */
+    object-fit: cover; /* Ajusta la imagen dentro del contenedor */
+    margin-bottom: 10px;
+}
+
+/* Subsección de dirección de entrega */
+#delivery-address-section {
+    padding: 16px 12px;
+    background: #f9fafb; /* Fondo claro como pickup-location-section */
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+/* Estilo para la lista de direcciones */
+.address-list {
+    margin-bottom: 20px;
+}
+
+/* Estilo para cada ítem de dirección (como en el modal de otras direcciones) */
+.address-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: #fff;
+    transition: var(--transition);
+}
+
+.address-item:hover {
+    border-color: var(--secondary-color);
+    background: rgba(52, 152, 219, 0.05);
+}
+
+/* Estilo para la dirección seleccionada */
+.selected-address {
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    margin-bottom: 10px;
+}
+
+/* Ajustar el botón de agregar dirección */
+#delivery-address-section .btn.secondary {
+    width: 100%;
+    max-width: 300px;
+    margin-top: 10px;
+}
+
+/* Mantener estilos de pickup-location-section (sin cambios) */
+#pickup-location-section {
+    padding: 16px 12px;
+    background: #f9fafb;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+    #delivery-address-section,
+    #pickup-location-section {
+        padding: 12px 8px;
     }
 }

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finalizar Compra | Tienda</title>
+    <link rel="stylesheet" href="./css/styles.css">
     <link rel="stylesheet" href="./css/checkout.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Incluir Toastify CSS -->
@@ -15,19 +16,33 @@
             <a href="javascript:history.back()" class="back-link" style="font-size: 1rem; color: #374151; text-decoration: none; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
                 <i class="bi bi-arrow-left"></i> Volver atrás
             </a>
-            <h1><i class="bi bi-bag-check"></i> Finalizar Compra</h1>
+            <h1>Finalizar Compra</h1>
+            <div class="checkout-indicators">
+                <div class="indicator">
+                    <ion-icon name="person-outline"></ion-icon>
+                    <span>Perfil</span>
+                </div>
+                <div class="indicator" id="delivery-indicator">
+                    <ion-icon id="delivery-icon" name="bicycle-outline"></ion-icon>
+                    <span id="delivery-text">Entrega</span>
+                </div>
+                <div class="indicator" id="time-indicator">
+                    <ion-icon id="time-icon" name="calendar-outline"></ion-icon>
+                    <span id="time-text">Programada</span>
+                </div>
+                <div class="indicator" id="payment-indicator">
+                    <ion-icon id="payment-icon" name="cash-outline"></ion-icon>
+                    <span id="payment-text">Efectivo</span>
+                </div>
+            </div>
         </header>
 
         <main class="checkout-main">
             <!-- Información del Cliente (mover arriba del resumen del pedido) -->
             <section class="checkout-section customer-info">
                 <h2><i class="bi bi-person"></i> Información</h2>
-                <div id="user-info-container"></div>
-                <div class="google-login-section">
-                    <!-- Quita el onclick del botón -->
-                    <button class="btn btn-google" id="google-login-btn">
-                        <i class="bi bi-google"></i> Iniciar sesión con Google
-                    </button>
+                <div id="user-info-container">
+                    <!-- Aquí se cargará dinámicamente la información del usuario -->
                 </div>
             </section>
 
@@ -50,18 +65,15 @@
                         </div>
                     </label>
                 </div>
-                <!-- Nueva sección: Dirección de retiro (oculta por defecto) -->
+                <!-- Subsección: Dirección de entrega (mostrada para Delivery) -->
+                <div id="delivery-address-section" style="margin-top:18px;">
+                    <div id="saved-addresses" class="address-list"></div>
+                    <button id="add-address-btn" class="btn secondary">
+                        <i class="bi bi-plus-circle"></i> Agregar Dirección
+                    </button>
+                </div>
+                <!-- Subsección: Dirección de retiro (mostrada para Retiro en tienda) -->
                 <div id="pickup-location-section" style="display:none; margin-top:18px;"></div>
-            </section>
-
-            <!-- Dirección de Entrega (oculta por defecto) -->
-            <section class="checkout-section delivery-address hidden">
-                <h2><i class="bi bi-geo-alt"></i> Dirección de Entrega</h2>
-                <div id="saved-addresses" class="address-list"></div>
-                <button id="add-address-btn" class="btn secondary">
-                    <i class="bi bi-plus-circle"></i> Agregar Dirección
-                </button>
-                
             </section>
 
             <!-- Nueva sección: Tiempo de entrega -->
@@ -96,7 +108,6 @@
                     <div id="scheduled-warning" style="color:#b91c1c;font-size:0.97em;margin-top:6px;"></div>
                 </div>
             </section>
-
 
             <!-- Resumen del Pedido (debe ir después de Información) -->
             <section class="checkout-section cart-summary">
@@ -167,11 +178,13 @@
     <!-- Incluir Toastify JS -->
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script type="module" src="./js/checkout.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
     <!-- Modal de zonas de cobertura -->
     <div id="coverageZonesModal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
       <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:400px;width:95vw;box-shadow:0 2px 16px #0002;position:relative;">
-        <button id="closeCoverageZonesModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">&times;</button>
+        <button id="closeCoverageZonesModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">×</button>
         <h3 style="margin-bottom:12px;font-size:1.1em;">Zonas de cobertura de la tienda</h3>
         <div id="coverageZonesMap" style="width:100%;height:300px;border-radius:8px;"></div>
         <div id="coverageZonesList" style="margin-top:10px;font-size:0.98em;"></div>
@@ -181,7 +194,7 @@
     <!-- Modal para otras direcciones -->
     <div id="otherAddressesModal" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
       <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:400px;width:95vw;box-shadow:0 2px 16px #0002;position:relative;">
-        <button id="closeOtherAddressesModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">&times;</button>
+        <button id="closeOtherAddressesModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">×</button>
         <h3 style="margin-bottom:12px;font-size:1.1em;">Otras direcciones guardadas</h3>
         <div id="otherAddressesList"></div>
       </div>
@@ -190,7 +203,7 @@
     <!-- Modal para agregar nueva dirección -->
     <div id="newAddressModal" style="display:none;position:fixed;z-index:2100;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
       <div style="background:#fff;padding:24px 20px;border-radius:10px;max-width:400px;width:95vw;box-shadow:0 2px 16px #0002;position:relative;">
-        <button id="closeNewAddressModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">&times;</button>
+        <button id="closeNewAddressModal" style="position:absolute;top:8px;right:12px;font-size:1.3em;background:none;border:none;cursor:pointer;">×</button>
         <h3 style="margin-bottom:12px;font-size:1.1em;"><i class="bi bi-pencil-square"></i> Nueva Dirección</h3>
         <form id="addressForm">
             <div class="form-group">

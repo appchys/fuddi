@@ -54,8 +54,10 @@ async function updateView(user) {
             `;
         } else {
             const userData = userCheck.data;
+            const profileUrl = userData.profileUrl || 'https://via.placeholder.com/100'; // Imagen por defecto si no hay foto
             userContainer.innerHTML = `
                 <div class="user-data">
+                    <img src="${profileUrl}" alt="Foto de perfil" class="user-profile-pic" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:10px;">
                     <p><strong>Nombre:</strong> ${userData.name}</p>
                     <p><strong>Whatsapp:</strong> ${userData.phone}</p>
                 </div>
@@ -98,6 +100,7 @@ async function updateView(user) {
                     if (userContainer) {
                         userContainer.innerHTML = `
                             <div class="user-data">
+                                <img src="${profileUrl}" alt="Foto de perfil" class="user-profile-pic" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:10px;">
                                 <p><strong>Nombre:</strong> ${name}</p>
                                 <p><strong>Teléfono:</strong> ${phone}</p>
                                 <p><strong>Email:</strong> ${user.email}</p>
@@ -428,10 +431,8 @@ async function initialize() {
             }
         }
 
-        // <--- AGREGA AQUÍ
         await loadSavedAddresses();
 
-        
         function createAddressElement(address, index) {
             const addressElement = document.createElement('div');
             addressElement.classList.add('address-item');
@@ -919,10 +920,20 @@ Total a cobrar: $${total}${comprobanteLine}`
 
         function updateScheduledFields() {
             const selected = document.querySelector('input[name="deliveryTime"]:checked');
-            if (selected && selected.value === 'scheduled') {
+            const scheduledFields = document.getElementById('scheduled-delivery-fields');
+            const timeIcon = document.getElementById('time-icon');
+            const timeText = document.getElementById('time-text');
+
+            if (!selected || !scheduledFields || !timeIcon || !timeText) return;
+
+            if (selected.value === 'scheduled') {
                 scheduledFields.classList.remove('hidden');
+                timeIcon.setAttribute('name', 'calendar-outline');
+                timeText.textContent = 'Programada';
             } else {
                 scheduledFields.classList.add('hidden');
+                timeIcon.setAttribute('name', 'flash-outline');
+                timeText.textContent = 'Inmediato';
             }
         }
 
@@ -1251,60 +1262,6 @@ function isNowInOpeningHours(openingHours) {
     return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    initialize();
-
-    const deliveryTypeRadios = document.querySelectorAll('input[name="deliveryType"]');
-    const deliveryAddressSection = document.querySelector('.delivery-address');
-
-    function toggleAddressSection() {
-        const selected = document.querySelector('input[name="deliveryType"]:checked');
-        const deliveryAddressSection = document.querySelector('.delivery-address');
-        const pickupSection = document.getElementById('pickup-location-section');
-        const confirmBtn = document.getElementById('confirm-btn');
-        const shippingElement = document.getElementById('shipping');
-        const subtotalElement = document.getElementById('subtotal');
-        const serviceFeeElement = document.getElementById('service-fee');
-        const totalElement = document.getElementById('total');
-
-        if (!selected || !deliveryAddressSection || !pickupSection) return;
-
-        if (selected.value === 'delivery') {
-            deliveryAddressSection.classList.remove('hidden');
-            pickupSection.style.display = 'none';
-            // El envío se mantiene según zona
-        } else {
-            deliveryAddressSection.classList.add('hidden');
-            pickupSection.style.display = 'block';
-            renderPickupLocationSection();
-            // Envío es 0 para retiro en tienda
-            if (shippingElement) shippingElement.textContent = '$0.00';
-
-            // Recalcula el total sumando solo subtotal + cargo por servicio
-            if (subtotalElement && serviceFeeElement && totalElement) {
-                const subtotal = parseFloat(subtotalElement.textContent.replace('$', '')) || 0;
-                const serviceFee = parseFloat(serviceFeeElement.textContent.replace('$', '')) || 0.25;
-                const total = subtotal + serviceFee;
-                totalElement.textContent = `$${total.toFixed(2)}`;
-            }
-            if (confirmBtn) {
-                confirmBtn.disabled = false;
-            }
-        }
-    }
-
-    deliveryTypeRadios.forEach(radio => {
-        radio.addEventListener('change', toggleAddressSection);
-    });
-
-    toggleAddressSection();
-
-    const googleLoginBtn = document.getElementById('google-login-btn');
-    if (googleLoginBtn) {
-        googleLoginBtn.addEventListener('click', loginWithGoogle);
-    }
-});
-
 // NUEVA FUNCIÓN: Renderiza la sección de dirección de retiro
 function renderPickupLocationSection() {
     const section = document.getElementById('pickup-location-section');
@@ -1336,3 +1293,104 @@ function renderPickupLocationSection() {
         </div>
     `;
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    initialize();
+
+    const deliveryTypeRadios = document.querySelectorAll('input[name="deliveryType"]');
+    const deliveryAddressSection = document.querySelector('.delivery-address');
+
+    function toggleAddressSection() {
+        const selected = document.querySelector('input[name="deliveryType"]:checked');
+        const deliveryAddressSection = document.getElementById('delivery-address-section');
+        const pickupSection = document.getElementById('pickup-location-section');
+        const confirmBtn = document.getElementById('confirm-btn');
+        const shippingElement = document.getElementById('shipping');
+        const subtotalElement = document.getElementById('subtotal');
+        const serviceFeeElement = document.getElementById('service-fee');
+        const totalElement = document.getElementById('total');
+        const deliveryIcon = document.getElementById('delivery-icon');
+        const deliveryText = document.getElementById('delivery-text');
+
+        if (!selected || !deliveryAddressSection || !pickupSection || !deliveryIcon || !deliveryText) return;
+
+        if (selected.value === 'delivery') {
+            deliveryAddressSection.style.display = 'block';
+            pickupSection.style.display = 'none';
+            deliveryIcon.setAttribute('name', 'bicycle-outline');
+            deliveryText.textContent = 'Delivery';
+        } else {
+            deliveryAddressSection.style.display = 'none';
+            pickupSection.style.display = 'block';
+            renderPickupLocationSection();
+            deliveryIcon.setAttribute('name', 'storefront-outline');
+            deliveryText.textContent = 'Retiro';
+            if (shippingElement) shippingElement.textContent = '$0.00';
+
+            if (subtotalElement && serviceFeeElement && totalElement) {
+                const subtotal = parseFloat(subtotalElement.textContent.replace('$', '')) || 0;
+                const serviceFee = parseFloat(serviceFeeElement.textContent.replace('$', '')) || 0.25;
+                const total = subtotal + serviceFee;
+                totalElement.textContent = `$${total.toFixed(2)}`;
+            }
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+            }
+        }
+    }
+
+    deliveryTypeRadios.forEach(radio => {
+        radio.addEventListener('change', toggleAddressSection);
+    });
+
+    // Inicializar la sección al cargar
+    toggleAddressSection();
+
+    // Actualizar indicador de pago
+    const paymentRadios = document.querySelectorAll('input[name="payment"]');
+    const paymentIndicator = document.getElementById('payment-indicator');
+    const paymentIcon = document.getElementById('payment-icon');
+    const paymentText = document.getElementById('payment-text');
+
+    function updatePaymentIndicator() {
+        const selected = document.querySelector('input[name="payment"]:checked');
+        const paymentIcon = document.getElementById('payment-icon');
+        const paymentText = document.getElementById('payment-text');
+
+        if (!selected || !paymentIcon || !paymentText) return;
+
+        if (selected.value === 'Efectivo') {
+            paymentIcon.setAttribute('name', 'cash-outline');
+            paymentText.textContent = 'Efectivo';
+        } else if (selected.value === 'Transferencia') {
+            paymentIcon.setAttribute('name', 'card-outline'); // Cambia a un ícono válido
+            paymentText.textContent = 'Transferencia';
+        }
+    }
+
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', updatePaymentIndicator);
+    });
+
+    // Inicializar el indicador de pago
+    updatePaymentIndicator();
+
+    const googleLoginBtn = document.getElementById('google-login-btn');
+    if (googleLoginBtn) {
+        googleLoginBtn.addEventListener('click', loginWithGoogle);
+    }
+
+    const header = document.querySelector('.checkout-header');
+    let lastScrollY = window.scrollY;
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > lastScrollY) {
+            // Oculta el encabezado al hacer scroll hacia abajo
+            header.style.transform = 'translateY(-100%)';
+        } else {
+            // Muestra el encabezado al hacer scroll hacia arriba
+            header.style.transform = 'translateY(0)';
+        }
+        lastScrollY = window.scrollY;
+    });
+});
