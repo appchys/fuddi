@@ -1354,16 +1354,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updatePaymentIndicator() {
         const selected = document.querySelector('input[name="payment"]:checked');
-        const paymentIcon = document.getElementById('payment-icon');
-        const paymentText = document.getElementById('payment-text');
-
-        if (!selected || !paymentIcon || !paymentText) return;
+        if (!selected || !paymentIndicator || !paymentIcon || !paymentText) return;
 
         if (selected.value === 'Efectivo') {
             paymentIcon.setAttribute('name', 'cash-outline');
             paymentText.textContent = 'Efectivo';
-        } else if (selected.value === 'Transferencia') {
-            paymentIcon.setAttribute('name', 'card-outline'); // Cambia a un ícono válido
+        } else {
+            paymentIcon.setAttribute('name', 'card-outline');
             paymentText.textContent = 'Transferencia';
         }
     }
@@ -1374,6 +1371,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inicializar el indicador de pago
     updatePaymentIndicator();
+
+    // Agregar eventos de clic a los indicadores para navegar a las secciones correspondientes
+    const profileIndicator = document.querySelector('.indicator:nth-child(1)'); // Perfil
+    const deliveryIndicator = document.getElementById('delivery-indicator'); // Delivery/Retiro
+    const timeIndicator = document.getElementById('time-indicator'); // Inmediata/Programada
+    const paymentIndicatorElem = document.getElementById('payment-indicator'); // Efectivo/Transferencia
+
+    if (profileIndicator) {
+        profileIndicator.style.cursor = 'pointer';
+        profileIndicator.addEventListener('click', () => {
+            const customerInfoSection = document.querySelector('.customer-info');
+            if (customerInfoSection) {
+                customerInfoSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+
+    if (deliveryIndicator) {
+        deliveryIndicator.style.cursor = 'pointer';
+        deliveryIndicator.addEventListener('click', () => {
+            const deliveryTypeSection = document.querySelector('.delivery-type');
+            if (deliveryTypeSection) {
+                deliveryTypeSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+
+    if (timeIndicator) {
+        timeIndicator.style.cursor = 'pointer';
+        timeIndicator.addEventListener('click', () => {
+            const deliveryTimeSection = document.querySelector('.delivery-time');
+            if (deliveryTimeSection) {
+                deliveryTimeSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+
+    if (paymentIndicatorElem) {
+        paymentIndicatorElem.style.cursor = 'pointer';
+        paymentIndicatorElem.addEventListener('click', () => {
+            const paymentMethodSection = document.querySelector('.payment-method');
+            if (paymentMethodSection) {
+                paymentMethodSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
 
     const googleLoginBtn = document.getElementById('google-login-btn');
     if (googleLoginBtn) {
