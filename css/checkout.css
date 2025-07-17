@@ -453,3 +453,62 @@ body {
         padding: 12px 8px;
     }
 }
+
+.user-data {
+    display: flex; /* Alinea los elementos en una fila */
+    align-items: center; /* Centra verticalmente la imagen y los datos */
+    gap: 16px; /* Espaciado entre la imagen y los datos */
+}
+
+.user-data img {
+    width: 100px; /* Tamaño de la imagen */
+    height: 100px;
+    border-radius: 50%; /* Hace la imagen circular */
+    object-fit: cover; /* Ajusta la imagen dentro del contenedor */
+}
+
+.user-data p {
+    margin: 0; /* Elimina márgenes de los párrafos */
+    font-size: 1rem; /* Tamaño de fuente */
+    color: #333; /* Color del texto */
+}
+
+.user-data p strong {
+    font-weight: bold; /* Resalta los títulos */
+}
+
+.checkout-option-button {
+    display: flex; /* Alinea el contenido en una fila */
+    align-items: center; /* Centra verticalmente el contenido */
+    justify-content: center; /* Centra horizontalmente el contenido */
+    border: 1px solid #ddd; /* Borde gris claro */
+    border-radius: 8px; /* Bordes redondeados */
+    padding: 15px; /* Espaciado interno */
+    cursor: pointer; /* Cambia el cursor a "pointer" */
+    transition: all 0.3s ease; /* Transición suave para cambios de estilo */
+    background: #fff; /* Fondo blanco */
+    font-size: 1rem; /* Tamaño de fuente */
+    font-weight: 500; /* Peso de fuente medio */
+    gap: 10px; /* Espaciado entre los elementos internos */
+    flex: 1; /* Permite que los botones ocupen el mismo ancho */
+    text-align: center; /* Centra el texto */
+}
+
+.checkout-option-button:hover {
+    border-color: var(--secondary-color); /* Cambia el color del borde al pasar el mouse */
+    background: #f5f7fa; /* Fondo ligeramente gris */
+}
+
+.checkout-option-button input {
+    display: none; /* Oculta el input radio */
+}
+
+.checkout-option-button input:checked + .option-content {
+    color: var(--secondary-color); /* Cambia el color del texto al seleccionarse */
+    font-weight: bold; /* Hace el texto más grueso */
+}
+
+.checkout-option-buttons-container {
+    display: flex; /* Alinea los botones en una fila */
+    gap: 10px; /* Espaciado entre los botones */
+}

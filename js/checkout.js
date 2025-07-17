@@ -57,9 +57,11 @@ async function updateView(user) {
             const profileUrl = userData.profileUrl || 'https://via.placeholder.com/100'; // Imagen por defecto si no hay foto
             userContainer.innerHTML = `
                 <div class="user-data">
-                    <img src="${profileUrl}" alt="Foto de perfil" class="user-profile-pic" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:10px;">
-                    <p><strong>Nombre:</strong> ${userData.name}</p>
-                    <p><strong>Whatsapp:</strong> ${userData.phone}</p>
+                    <img src="${profileUrl}" alt="Foto de perfil">
+                    <div>
+                        <p><strong>Nombre:</strong> ${userData.name}</p>
+                        <p><strong>Whatsapp:</strong> ${userData.phone}</p>
+                    </div>
                 </div>
             `;
         }
