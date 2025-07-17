@@ -17,12 +17,24 @@ header {
 }
 
 
+/* Estilo para los encabezados h2 */
+h2 {
+    font-family: 'Dongle', sans-serif; /* Fuente Dongle */
+    font-weight: 500; /* Bold */
+    font-size: 1.8rem; /* Tamaño uniforme */
+    color: #333; /* Color del texto */
+    text-align: left; /* Alineación a la izquierda */
+    margin-bottom: 0.5rem; /* Espaciado inferior */
+    margin-left: 10px; /* Espaciado desde el borde izquierdo */
+    line-height: 0.9; /* Define un interlineado del 150% del tamaño de la fuente */
+
+}
 
 main {
     padding: 20px;
 }
 
-h1, h2 {
+h1 {
     color: #333;
 }
 

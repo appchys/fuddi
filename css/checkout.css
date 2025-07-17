@@ -51,18 +51,9 @@
     background: white;
     border-radius: var(--border-radius);
     padding: 25px;
-    box-shadow: var(--box-shadow);
     margin-bottom: 20px;
 }
 
-.checkout-section h2 {
-    font-size: 1.3rem;
-    margin-bottom: 20px;
-    color: var(--primary-color);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
 
 /* Resumen del carrito */
 .cart-summary .cart-items {

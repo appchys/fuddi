@@ -196,16 +196,7 @@ header nav ul li button:hover {
     overflow: hidden;
 }
 
-/* Estilo para los encabezados h2 */
-h2 {
-    font-family: 'Dongle', sans-serif; /* Aplica la fuente Dongle */
-    font-weight: 700; /* Aplica el peso Bold */
-    font-size: 1.8rem; /* Ajusta el tamaño según sea necesario */
-    color: #333; /* Color del texto */
-    text-align: left; /* Alinea el texto a la izquierda */
-    margin-bottom: 0.5rem; /* Espaciado inferior */
-    margin-top: 1rem; /* Espaciado superior */
-}
+
 
 /* Estilo global para los títulos de las secciones */
 .stores-section h2 {
