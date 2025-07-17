@@ -6,11 +6,6 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-body {
-    background-color: #f5f7fa;
-    color: var(--dark-color);
-    line-height: 1.6;
-}
 
 .checkout-container {
     max-width: 1200px;
@@ -22,35 +17,22 @@ body {
 /* Estilo para el encabezado fijo */
 .checkout-header {
     position: fixed;
+    background-color: #f9f9f9;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 1000;
-    background-color: white; /* Fondo blanco para que sea visible */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
-    padding: 10px 20px;
     text-align: center;
     transform: translateY(0); /* Asegúrate de que esté visible */
     transition: none; /* Elimina cualquier transición */
-}
-
-
-/* Encabezado */
-.checkout-header {
     text-align: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e0e0e0;
+    padding-top: 30px;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
-.checkout-header h1 {
-    color: var(--primary-color);
-    font-size: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
 
 /* Secciones principales */
 .checkout-main {
@@ -461,8 +443,8 @@ body {
 }
 
 .user-data img {
-    width: 100px; /* Tamaño de la imagen */
-    height: 100px;
+    width: 80px; /* Tamaño de la imagen */
+    height: 80px;
     border-radius: 50%; /* Hace la imagen circular */
     object-fit: cover; /* Ajusta la imagen dentro del contenedor */
 }
@@ -511,4 +493,29 @@ body {
 .checkout-option-buttons-container {
     display: flex; /* Alinea los botones en una fila */
     gap: 10px; /* Espaciado entre los botones */
+}
+
+.header-row {
+    display: flex; /* Alinea los elementos en una fila */
+    align-items: center; /* Centra verticalmente los elementos */
+    gap: 10px; /* Espaciado entre el botón y el título */
+}
+
+.back-link {
+    font-size: 1.5rem; /* Tamaño del ícono */
+    color: #374151; /* Color del ícono */
+    text-decoration: none; /* Elimina el subrayado */
+    display: flex; /* Asegura que el ícono esté alineado */
+    align-items: center; /* Centra verticalmente el ícono */
+    cursor: pointer; /* Cambia el cursor a "pointer" */
+    padding-left: 15px; /* Espaciado a la izquierda */
+    padding-right: 15px; /* Espaciado a la derecha */
+    padding-top: 10px;
+}
+
+.title {
+    font-size: 1.8rem; /* Tamaño del título */
+    color: #333; /* Color del texto */
+    font-family: 'Poetsen One', sans-serif; /* Fuente del título */
+    margin: 0; /* Elimina márgenes */
 }
