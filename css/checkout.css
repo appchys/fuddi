@@ -404,7 +404,8 @@
     flex: 1; /* Permite que los botones ocupen el mismo ancho */
     text-align: center; /* Centra el texto */
     color:#333; /* Color del texto */
-    
+    line-height: 0.9; /* Define un interlineado del 150% del tamaño de la fuente */
+
 }
 
 .checkout-option-button:hover {
