@@ -1309,38 +1309,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const selected = document.querySelector('input[name="deliveryType"]:checked');
         const deliveryAddressSection = document.getElementById('delivery-address-section');
         const pickupSection = document.getElementById('pickup-location-section');
-        const confirmBtn = document.getElementById('confirm-btn');
-        const shippingElement = document.getElementById('shipping');
-        const subtotalElement = document.getElementById('subtotal');
-        const serviceFeeElement = document.getElementById('service-fee');
-        const totalElement = document.getElementById('total');
         const deliveryIcon = document.getElementById('delivery-icon');
         const deliveryText = document.getElementById('delivery-text');
+        const deliveryIndicator = document.getElementById('delivery-indicator'); // Contenedor del indicador
 
-        if (!selected || !deliveryAddressSection || !pickupSection || !deliveryIcon || !deliveryText) return;
+        if (!selected || !deliveryAddressSection || !pickupSection || !deliveryIcon || !deliveryText || !deliveryIndicator) return;
 
         if (selected.value === 'delivery') {
             deliveryAddressSection.style.display = 'block';
             pickupSection.style.display = 'none';
             deliveryIcon.setAttribute('name', 'bicycle-outline');
             deliveryText.textContent = 'Delivery';
-        } else {
+            deliveryIndicator.classList.remove('inactive'); // Quita el estilo gris
+        } else if (selected.value === 'pickup') {
             deliveryAddressSection.style.display = 'none';
             pickupSection.style.display = 'block';
-            renderPickupLocationSection();
             deliveryIcon.setAttribute('name', 'storefront-outline');
             deliveryText.textContent = 'Retiro';
-            if (shippingElement) shippingElement.textContent = '$0.00';
-
-            if (subtotalElement && serviceFeeElement && totalElement) {
-                const subtotal = parseFloat(subtotalElement.textContent.replace('$', '')) || 0;
-                const serviceFee = parseFloat(serviceFeeElement.textContent.replace('$', '')) || 0.25;
-                const total = subtotal + serviceFee;
-                totalElement.textContent = `$${total.toFixed(2)}`;
-            }
-            if (confirmBtn) {
-                confirmBtn.disabled = false;
-            }
+            deliveryIndicator.classList.remove('inactive'); // Quita el estilo gris
+        } else {
+            // Si no hay nada seleccionado
+            deliveryIcon.setAttribute('name', 'help-outline'); // Ícono predeterminado
+            deliveryText.textContent = 'Entrega';
+            deliveryIndicator.classList.add('inactive'); // Aplica el estilo gris
         }
     }
 
