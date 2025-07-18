@@ -59,8 +59,8 @@ async function updateView(user) {
                 <div class="user-data">
                     <img src="${profileUrl}" alt="Foto de perfil">
                     <div>
-                        <p class="paragraph"><strong class="paragraph-strong">Nombre:</strong> ${userData.name}</p>
-                        <p class="paragraph"><strong class="paragraph-strong">Whatsapp:</strong> ${userData.phone}</p>
+                        <p><strong>Nombre:</strong> ${userData.name}</p>
+                        <p><strong>Whatsapp:</strong> ${userData.phone}</p>
                     </div>
                 </div>
             `;
@@ -394,6 +394,8 @@ async function initialize() {
                 totalElement.textContent = `$${total.toFixed(2)}`;
             }
         }
+
+        await displayCartProducts();
 
         const savedAddressesContainer = document.getElementById('saved-addresses');
         const addAddressBtn = document.getElementById('add-address-btn');
@@ -1356,18 +1358,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updatePaymentIndicator() {
         const selected = document.querySelector('input[name="payment"]:checked');
+        const paymentIndicator = document.getElementById('payment-indicator');
         const paymentIcon = document.getElementById('payment-icon');
         const paymentText = document.getElementById('payment-text');
-        const paymentIndicator = document.getElementById('payment-indicator'); // Contenedor del indicador
 
-        if (!paymentIcon || !paymentText || !paymentIndicator) return;
+        if (!paymentIndicator || !paymentIcon || !paymentText) return;
 
         if (!selected) {
-            // Si no hay ningún método de pago seleccionado
-            paymentIcon.setAttribute('name', 'wallet-outline'); // Ícono genérico para "Pago"
+            // Si no hay nada seleccionado, mostrar "Pago"
+            paymentIcon.setAttribute('name', 'wallet-outline');
             paymentText.textContent = 'Pago';
-            paymentIndicator.classList.add('inactive'); // Aplica el estilo inactivo
+            paymentIndicator.classList.add('inactive'); // Aplica el estilo gris
         } else {
+            // Cambiar según el método de pago seleccionado
             if (selected.value === 'Efectivo') {
                 paymentIcon.setAttribute('name', 'cash-outline');
                 paymentText.textContent = 'Efectivo';
@@ -1375,7 +1378,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 paymentIcon.setAttribute('name', 'card-outline');
                 paymentText.textContent = 'Transferencia';
             }
-            paymentIndicator.classList.remove('inactive'); // Quita el estilo inactivo
+            paymentIndicator.classList.remove('inactive'); // Quita el estilo gris
         }
     }
 
@@ -1383,7 +1386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', updatePaymentIndicator);
     });
 
-    // Inicializa el indicador al cargar la página
+    // Inicializar el indicador de pago al cargar la página
     updatePaymentIndicator();
 
     // Agregar eventos de clic a los indicadores para navegar a las secciones correspondientes

@@ -309,7 +309,15 @@
 }
 
 .indicator.inactive {
-    color: #9ca3af; /* Gris claro */
+    color: #9ca3af;
+}
+
+.indicator.inactive ion-icon {
+    color: #9ca3af;
+}
+
+.indicator.inactive span {
+    color: #9ca3af;
 }
 
 
