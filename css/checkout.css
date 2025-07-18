@@ -389,6 +389,10 @@
 }
 
 
+.checkout-option-buttons-container {
+    display: flex; /* Alinea los botones en una fila */
+    gap: 10px; /* Espaciado entre los botones */
+}
 
 .checkout-option-button {
     display: flex; /* Alinea el contenido en una fila */
@@ -412,7 +416,7 @@
 
 .checkout-option-button:hover {
     border-color: var(--secondary-color); /* Cambia el color del borde al pasar el mouse */
-    background: #f5f7fa; /* Fondo ligeramente gris */
+    background: #d9d9da; /* Fondo ligeramente gris */
 }
 
 .checkout-option-button input {
@@ -420,14 +424,11 @@
 }
 
 .checkout-option-button input:checked + .option-content {
-    color: var(--secondary-color); /* Cambia el color del texto al seleccionarse */
-    font-weight: bold; /* Hace el texto más grueso */
+    
+    color: #18cb5d;
 }
 
-.checkout-option-buttons-container {
-    display: flex; /* Alinea los botones en una fila */
-    gap: 10px; /* Espaciado entre los botones */
-}
+
 
 
 .option-content {
