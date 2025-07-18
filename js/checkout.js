@@ -1313,15 +1313,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const deliveryText = document.getElementById('delivery-text');
         const deliveryIndicator = document.getElementById('delivery-indicator'); // Contenedor del indicador
 
-        if (!selected || !deliveryAddressSection || !pickupSection || !deliveryIcon || !deliveryText || !deliveryIndicator) return;
+        if (!deliveryAddressSection || !pickupSection || !deliveryIcon || !deliveryText || !deliveryIndicator) return;
 
-        if (selected.value === 'delivery') {
+        if (!selected) {
+            // Si no hay nada seleccionado
+            deliveryAddressSection.style.display = 'none';
+            pickupSection.style.display = 'none';
+            deliveryIcon.setAttribute('name', 'bicycle-outline'); // Ícono predeterminado
+            deliveryText.textContent = 'Entrega';
+            deliveryIndicator.classList.add('inactive'); // Aplica el estilo gris
+        } else if (selected.value === 'delivery') {
+            // Si se selecciona "Delivery"
             deliveryAddressSection.style.display = 'block';
             pickupSection.style.display = 'none';
             deliveryIcon.setAttribute('name', 'bicycle-outline');
             deliveryText.textContent = 'Delivery';
             deliveryIndicator.classList.remove('inactive'); // Quita el estilo gris
         } else if (selected.value === 'pickup') {
+            // Si se selecciona "Retiro"
             deliveryAddressSection.style.display = 'none';
             pickupSection.style.display = 'block';
             deliveryIcon.setAttribute('name', 'storefront-outline');
@@ -1330,11 +1339,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Llama a la función para renderizar los datos de la tienda
             renderPickupLocationSection();
-        } else {
-            // Si no hay nada seleccionado
-            deliveryIcon.setAttribute('name', 'help-outline'); // Ícono predeterminado
-            deliveryText.textContent = 'Entrega';
-            deliveryIndicator.classList.add('inactive'); // Aplica el estilo gris
         }
     }
 
