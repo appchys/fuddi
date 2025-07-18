@@ -145,16 +145,7 @@
 
 
 
-.option-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-}
 
-.option-content i {
-    font-size: 1.5rem;
-}
 
 /* Botones */
 .btn {
@@ -171,8 +162,7 @@
 }
 
 .btn.primary {
-    background-color: var(--secondary-color);
-    color: rgb(46, 133, 111);
+    color: rgb(255, 255, 255);
 }
 
 .btn.primary:hover {
@@ -437,6 +427,18 @@
 .checkout-option-buttons-container {
     display: flex; /* Alinea los botones en una fila */
     gap: 10px; /* Espaciado entre los botones */
+}
+
+
+.option-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.option-content i {
+    font-size: 1.5rem;
 }
 
 .header-row {
