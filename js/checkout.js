@@ -1327,6 +1327,9 @@ document.addEventListener('DOMContentLoaded', () => {
             deliveryIcon.setAttribute('name', 'storefront-outline');
             deliveryText.textContent = 'Retiro';
             deliveryIndicator.classList.remove('inactive'); // Quita el estilo gris
+
+            // Llama a la función para renderizar los datos de la tienda
+            renderPickupLocationSection();
         } else {
             // Si no hay nada seleccionado
             deliveryIcon.setAttribute('name', 'help-outline'); // Ícono predeterminado
