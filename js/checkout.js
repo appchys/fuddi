@@ -926,66 +926,67 @@ Total a cobrar: $${total}${comprobanteLine}`
             const timeIcon = document.getElementById('time-icon');
             const timeText = document.getElementById('time-text');
 
-            if (!selected || !scheduledFields || !timeIcon || !timeText) return;
+            if (!scheduledFields || !timeIcon || !timeText) return;
 
-            if (selected.value === 'scheduled') {
-                scheduledFields.classList.remove('hidden');
-                timeIcon.setAttribute('name', 'calendar-outline');
-                timeText.textContent = 'Programada';
+            if (!selected) {
+                // Si no hay nada seleccionado, mostrar "Hora"
+                timeIcon.setAttribute('name', 'time-outline'); // Ícono predeterminado
+                timeText.textContent = 'Hora';
+                timeIcon.parentElement.classList.add('inactive'); // Aplica el estilo gris
             } else {
-                scheduledFields.classList.add('hidden');
-                timeIcon.setAttribute('name', 'flash-outline');
-                timeText.textContent = 'Inmediato';
+                // Cambiar según la selección
+                if (selected.value === 'scheduled') {
+                    scheduledFields.classList.remove('hidden');
+                    timeIcon.setAttribute('name', 'calendar-outline');
+                    timeText.textContent = 'Programada';
+                } else {
+                    scheduledFields.classList.add('hidden');
+                    timeIcon.setAttribute('name', 'flash-outline');
+                    timeText.textContent = 'Inmediato';
+                }
+                timeIcon.parentElement.classList.remove('inactive'); // Quita el estilo gris
             }
         }
 
         deliveryTimeRadios.forEach(radio => {
             radio.addEventListener('change', updateScheduledFields);
-            radio.addEventListener('change', updateEntregaInmediataTiempo);
         });
         updateScheduledFields();
 
-        const scheduledInput = document.querySelector('input[name="deliveryTime"][value="scheduled"]');
-        if (scheduledInput) {
-            scheduledInput.checked = true;
-        }
+        
 
         function updateEntregaInmediataTiempo() {
-            const entregaInmediataInput = document.querySelector('input[name="deliveryTime"][value="asap"]');
-            const entregaInmediataLabel = entregaInmediataInput?.closest('label');
-            const optionContent = entregaInmediataLabel?.querySelector('.option-content');
-            const tipoEntrega = document.querySelector('input[name="deliveryType"]:checked')?.value;
+    const entregaInmediataInput = document.querySelector('input[name="deliveryTime"][value="asap"]');
+    const entregaInmediataLabel = entregaInmediataInput?.closest('label');
+    const optionContent = entregaInmediataLabel?.querySelector('.option-content');
+    const tipoEntrega = document.querySelector('input[name="deliveryType"]:checked')?.value;
 
-            if (!entregaInmediataInput || !optionContent || !storeData || !storeData.openingHours) return;
+    if (!entregaInmediataInput || !optionContent || !storeData || !storeData.openingHours) return;
 
-            optionContent.querySelector('.entrega-tiempo')?.remove();
+    optionContent.querySelector('.entrega-tiempo')?.remove();
 
-            let texto = '';
-            const tiendaCerrada = !isNowInOpeningHours(storeData.openingHours);
+    let texto = '';
+    const tiendaCerrada = !isNowInOpeningHours(storeData.openingHours);
 
-            if (tiendaCerrada) {
-                texto = 'Tienda cerrada';
-                entregaInmediataInput.disabled = true;
-                entregaInmediataInput.checked = false;
-                if (scheduledInput && !scheduledInput.checked) {
-                    scheduledInput.checked = true;
-                    scheduledInput.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            } else {
-                entregaInmediataInput.disabled = false;
-                texto = tipoEntrega === 'delivery' ? 'Tiempo aproximado: 30 minutos' : tipoEntrega === 'pickup' ? 'Tiempo aproximado: 15 minutos' : '';
-            }
+    if (tiendaCerrada) {
+        texto = 'Tienda cerrada';
+        entregaInmediataInput.disabled = true;
+        entregaInmediataInput.checked = false;
+    } else {
+        entregaInmediataInput.disabled = false;
+        texto = tipoEntrega === 'delivery' ? 'Tiempo aproximado: 30 minutos' : tipoEntrega === 'pickup' ? 'Tiempo aproximado: 15 minutos' : '';
+    }
 
-            if (texto) {
-                const small = document.createElement('small');
-                small.className = 'entrega-tiempo';
-                small.style.display = 'block';
-                small.style.fontSize = '0.85em';
-                small.style.color = texto === 'Tienda cerrada' ? '#b91c1c' : '#666';
-                small.textContent = texto;
-                optionContent.appendChild(small);
-            }
-        }
+    if (texto) {
+        const small = document.createElement('small');
+        small.className = 'entrega-tiempo';
+        small.style.display = 'block';
+        small.style.fontSize = '0.85em';
+        small.style.color = texto === 'Tienda cerrada' ? '#b91c1c' : '#666';
+        small.textContent = texto;
+        optionContent.appendChild(small);
+    }
+}
 
         const deliveryTypeRadios = document.querySelectorAll('input[name="deliveryType"]');
         deliveryTypeRadios.forEach(radio => {
