@@ -42,11 +42,16 @@
         <main class="checkout-main">
             <!-- Información del Cliente (mover arriba del resumen del pedido) -->
             <section class="checkout-section user-info">
-                <h2><i class="bi bi-person"></i> Información</h2>
-                <div id="user-info-container">
-                    <!-- Aquí se cargará dinámicamente la información del usuario -->
-                </div>
-            </section>
+    <h2><i class="bi bi-person"></i> Información</h2>
+    <div id="user-info-container">
+        <!-- Aquí se cargará dinámicamente la información del usuario -->
+    </div>
+    <div class="google-login-section">
+        <button id="google-login-btn" class="btn primary">
+            <i class="bi bi-google"></i> Iniciar sesión con Google
+        </button>
+    </div>
+</section>
 
             <!-- Tipo de entrega -->
             <section class="checkout-section delivery-type">
@@ -175,6 +180,8 @@
                     <i class="bi bi-check-circle-fill"></i> Confirmar Pedido
                 </button>
             </section>
+
+            
         </main>
     </div>
     <!-- Incluir Toastify JS -->
