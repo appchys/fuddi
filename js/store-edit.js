@@ -681,7 +681,7 @@ async function loadDeliveryZonesFromStore(storeData) {
 // Función para cargar el script de Google Maps
 function loadGoogleMapsScript(callback) {
     // Si ya está cargado, solo llama al callback
-    if (window.google && window.google.maps && window.google.maps.drawing) {
+    if (window.google && window.google.maps && window.google.maps.marker) {
         callback();
         return;
     }
@@ -689,7 +689,7 @@ function loadGoogleMapsScript(callback) {
     if (document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]')) {
         // Espera hasta que google.maps esté disponible
         const waitForGoogleMaps = () => {
-            if (window.google && window.google.maps && window.google.maps.drawing) {
+            if (window.google && window.google.maps && window.google.maps.marker) {
                 callback();
             } else {
                 setTimeout(waitForGoogleMaps, 50);
@@ -700,11 +700,11 @@ function loadGoogleMapsScript(callback) {
     }
     // Si no existe, agrégalo
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=drawing&loading=async`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=drawing,marker&loading=async`;
     script.async = true;
     script.onload = () => {
         const waitForGoogleMaps = () => {
-            if (window.google && window.google.maps && window.google.maps.drawing) {
+            if (window.google && window.google.maps && window.google.maps.marker) {
                 callback();
             } else {
                 setTimeout(waitForGoogleMaps, 50);
@@ -751,6 +751,7 @@ let storeMarker = null;
 function initStoreLocationMap(center = { lat: -1.843254, lng: -79.990611 }) {
     const mapDiv = document.getElementById('storeLocationMap');
     if (!mapDiv) return;
+
     const latInput = document.getElementById('storeLat');
     const lngInput = document.getElementById('storeLng');
     let lat = parseFloat(latInput.value);
@@ -769,22 +770,24 @@ function initStoreLocationMap(center = { lat: -1.843254, lng: -79.990611 }) {
         fullscreenControl: false
     });
 
-    storeMarker = new google.maps.Marker({
+    // Usar AdvancedMarkerElement en lugar de Marker
+    storeMarker = new google.maps.marker.AdvancedMarkerElement({
         position: center,
         map,
-        draggable: true,
-        title: "Ubicación de la tienda"
+        title: "Ubicación de la tienda",
+        draggable: true
     });
 
     // Actualiza inputs al mover el marcador
-    storeMarker.addListener('dragend', function (e) {
-        latInput.value = e.latLng.lat().toFixed(6);
-        lngInput.value = e.latLng.lng().toFixed(6);
+    storeMarker.addListener('dragend', (e) => {
+        const position = storeMarker.position;
+        latInput.value = position.lat().toFixed(6);
+        lngInput.value = position.lng().toFixed(6);
     });
 
-    // Al hacer click en el mapa, mueve el marcador
-    map.addListener('click', function (e) {
-        storeMarker.setPosition(e.latLng);
+    // Al hacer clic en el mapa, mueve el marcador
+    map.addListener('click', (e) => {
+        storeMarker.position = e.latLng;
         latInput.value = e.latLng.lat().toFixed(6);
         lngInput.value = e.latLng.lng().toFixed(6);
     });
@@ -798,7 +801,7 @@ function initStoreLocationMap(center = { lat: -1.843254, lng: -79.990611 }) {
                     lng: position.coords.longitude
                 };
                 map.setCenter(pos);
-                storeMarker.setPosition(pos);
+                storeMarker.position = pos;
                 latInput.value = pos.lat.toFixed(6);
                 lngInput.value = pos.lng.toFixed(6);
             });
