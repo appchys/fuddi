@@ -29,11 +29,21 @@ async function checkUserExists(userId) {
 
 async function updateView(user) {
     const userContainer = document.getElementById('user-info-container');
-    if (!user || !userContainer) return;
+    const profileIndicator = document.querySelector('.indicator:nth-child(1)'); // Ícono de perfil en el header
+
+    if (!user || !userContainer) {
+        if (profileIndicator) {
+            profileIndicator.classList.add('inactive'); // Aplica el estilo inactivo si no hay usuario
+        }
+        return;
+    }
 
     try {
         const userCheck = await checkUserExists(user.uid);
         if (!userCheck.exists) {
+            if (profileIndicator) {
+                profileIndicator.classList.add('inactive'); // Aplica el estilo inactivo si no hay perfil
+            }
             userContainer.innerHTML = `
                 <form id="userForm" class="profile-form">
                     <div class="form-group">
@@ -53,6 +63,9 @@ async function updateView(user) {
                 </form>
             `;
         } else {
+            if (profileIndicator) {
+                profileIndicator.classList.remove('inactive'); // Quita el estilo inactivo si el perfil existe
+            }
             const userData = userCheck.data;
             const profileUrl = userData.profileUrl || 'https://via.placeholder.com/100'; // Imagen por defecto si no hay foto
             userContainer.innerHTML = `
@@ -66,6 +79,7 @@ async function updateView(user) {
             `;
         }
 
+        // Lógica para manejar el formulario de perfil (ya existente)
         const userForm = document.getElementById('userForm');
         if (userForm) {
             userForm.addEventListener('submit', async (e) => {
@@ -109,6 +123,9 @@ async function updateView(user) {
                             </div>
                         `;
                     }
+                    if (profileIndicator) {
+                        profileIndicator.classList.remove('inactive'); // Quita el estilo inactivo después de guardar el perfil
+                    }
                 } catch (error) {
                     console.error('Error al guardar el perfil de cliente:', error);
                     alert(`Error al guardar el perfil: ${error.message}`);
@@ -151,23 +168,33 @@ async function initialize() {
         }
 
         auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                updateView(user);
-                const googleLoginSection = document.querySelector('.google-login-section');
-                if (googleLoginSection) {
-                    googleLoginSection.classList.add('hidden');
-                }
-            } else {
-                const userContainer = document.getElementById('user-info-container');
-                if (userContainer) {
-                    userContainer.innerHTML = '';
-                }
-                const googleLoginSection = document.querySelector('.google-login-section');
-                if (googleLoginSection) {
-                    googleLoginSection.classList.remove('hidden');
-                }
-            }
-        });
+    const profileIndicator = document.querySelector('.indicator:nth-child(1)'); // Ícono de perfil en el header
+    const googleLoginBtn = document.getElementById('google-login-btn'); // Botón de iniciar sesión con Google
+
+    if (user) {
+        console.log('Usuario autenticado en onAuthStateChanged:', user.uid);
+        if (googleLoginBtn) {
+            googleLoginBtn.style.display = 'none'; // Oculta el botón
+        }
+        await updateView(user);
+    } else {
+        console.log('No hay un usuario autenticado.');
+        if (profileIndicator) {
+            profileIndicator.classList.add('inactive'); // Aplica el estilo inactivo si no hay usuario
+        }
+        const userContainer = document.getElementById('user-info-container');
+        if (userContainer) {
+            userContainer.innerHTML = '';
+        }
+        const googleLoginSection = document.querySelector('.google-login-section');
+        if (googleLoginSection) {
+            googleLoginSection.classList.remove('hidden');
+        }
+        if (googleLoginBtn) {
+            googleLoginBtn.style.display = 'block'; // Muestra el botón si no hay usuario autenticado
+        }
+    }
+});
 
         const cartKey = `cart_${storeId}`;
         const cart = JSON.parse(localStorage.getItem(cartKey)) || [];
