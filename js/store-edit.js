@@ -570,45 +570,125 @@ function initDeliveryZonesMap(center = { lat: -1.843254, lng: -79.990611 }) {
     drawingManager.setMap(map);
 
     // Al terminar de dibujar un polígono
-    google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
-        const path = polygon.getPath().getArray().map(latlng => ({
-            lat: latlng.lat(),
-            lng: latlng.lng()
-        }));
-
-        // Mostrar modal
+    google.maps.event.addListener(drawingManager, 'polygoncomplete', function (polygon) {
         const modal = document.getElementById('zoneModal');
-        const form = document.getElementById('zoneForm');
-        const nameInput = document.getElementById('zoneName');
-        const shippingInput = document.getElementById('zoneShipping');
-        const cancelBtn = document.getElementById('cancelZoneBtn');
+        if (!modal) {
+            console.error('El modal no se encontró en el DOM.');
+            return;
+        }
 
-        nameInput.value = '';
-        shippingInput.value = '';
-        modal.style.display = 'flex';
+        // Limpia el contenido del modal
+        modal.innerHTML = '';
 
-        // Cancelar
+        // Crea el contenedor del formulario
+        const container = document.createElement('div');
+        container.style.cssText = 'background:#fff;padding:24px 20px;border-radius:10px;max-width:350px;width:90%;box-shadow:0 2px 16px #0002;';
+
+        // Crea el título
+        const title = document.createElement('h3');
+        title.style.cssText = 'margin-bottom:12px;font-size:1.2em;';
+        title.textContent = 'Nueva zona de cobertura';
+        container.appendChild(title);
+
+        // Crea el formulario
+        const form = document.createElement('form');
+        form.id = 'zoneForm';
+
+        // Campo de nombre
+        const nameDiv = document.createElement('div');
+        nameDiv.style.marginBottom = '10px';
+        const nameLabel = document.createElement('label');
+        nameLabel.textContent = 'Nombre de la zona';
+        const nameInput = document.createElement('input');
+        nameInput.id = 'zoneName';
+        nameInput.type = 'text';
+        nameInput.required = true;
+        nameInput.style.cssText = 'width:100%;padding:6px;margin-top:4px;';
+        nameDiv.appendChild(nameLabel);
+        nameDiv.appendChild(nameInput);
+        form.appendChild(nameDiv);
+
+        // Campo de valor de envío
+        const shippingDiv = document.createElement('div');
+        shippingDiv.style.marginBottom = '10px';
+        const shippingLabel = document.createElement('label');
+        shippingLabel.textContent = 'Valor de envío ($)';
+        const shippingInput = document.createElement('input');
+        shippingInput.id = 'zoneShipping';
+        shippingInput.type = 'number';
+        shippingInput.min = '0';
+        shippingInput.step = '0.01';
+        shippingInput.required = true;
+        shippingInput.style.cssText = 'width:100%;padding:6px;margin-top:4px;';
+        shippingDiv.appendChild(shippingLabel);
+        shippingDiv.appendChild(shippingInput);
+        form.appendChild(shippingDiv);
+
+        // Botones
+        const buttonDiv = document.createElement('div');
+        buttonDiv.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;';
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.id = 'cancelZoneBtn';
+        cancelBtn.style.cssText = 'padding:6px 14px;';
+        cancelBtn.textContent = 'Cancelar';
+        const submitBtn = document.createElement('button');
+        submitBtn.type = 'submit';
+        submitBtn.style.cssText = 'background:#2563eb;color:#fff;padding:6px 14px;border-radius:5px;';
+        submitBtn.textContent = 'Guardar';
+        buttonDiv.appendChild(cancelBtn);
+        buttonDiv.appendChild(submitBtn);
+        form.appendChild(buttonDiv);
+
+        // Agrega el formulario al contenedor
+        container.appendChild(form);
+
+        // Agrega el contenedor al modal
+        modal.appendChild(container);
+
+        // Configura los eventos del formulario
         cancelBtn.onclick = () => {
             modal.style.display = 'none';
             polygon.setMap(null);
             drawingManager.setDrawingMode(null);
         };
 
-        // Guardar zona
-        form.onsubmit = (e) => {
+        form.onsubmit = async (e) => {
             e.preventDefault();
             const name = nameInput.value.trim();
             const shipping = parseFloat(shippingInput.value);
-            if (name && !isNaN(shipping)) {
+
+            if (name && !isNaN(shipping) && shipping >= 0) {
+                const path = polygon.getPath().getArray().map(coord => ({
+                    lat: coord.lat(),
+                    lng: coord.lng()
+                }));
                 deliveryZones.push({ name, shipping, polygon: path });
                 localStorage.setItem('deliveryZonesDraft', JSON.stringify(deliveryZones));
                 renderZonesList();
                 drawAllZones();
+
+                // Guarda las zonas en Firestore
+                try {
+                    const storeId = window.getStoreId();
+                    console.log('Guardando zonas en Firestore:', deliveryZones);
+                    await setDoc(doc(db, 'stores', storeId), { deliveryZones }, { merge: true });
+                    alert('Zona de cobertura agregada correctamente.');
+                } catch (error) {
+                    console.error('Error al guardar zonas en Firestore:', error);
+                    alert('Error al guardar la zona en Firestore.');
+                }
+
+                modal.style.display = 'none';
+                polygon.setMap(null);
+                drawingManager.setDrawingMode(null);
+            } else {
+                alert('Por favor, completa el nombre y un costo de envío válido (mayor o igual a 0).');
             }
-            modal.style.display = 'none';
-            polygon.setMap(null);
-            drawingManager.setDrawingMode(null);
         };
+
+        // Muestra el modal
+        modal.style.display = 'flex';
     });
 }
 
