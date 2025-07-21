@@ -106,6 +106,13 @@ async function loadProducts() {
     document.querySelector('main').appendChild(productsContainer);
 
     try {
+        // Obtener la imagen de perfil de la tienda
+        const storeDocSnap = await getDoc(doc(db, 'stores', storeId));
+        let storeImageUrl = '';
+        if (storeDocSnap.exists() && storeDocSnap.data().imageUrl) {
+            storeImageUrl = storeDocSnap.data().imageUrl;
+        }
+
         const productsSnapshot = await getDocs(collection(db, `stores/${storeId}/products`));
         let products = productsSnapshot.docs.map(doc => ({
             id: doc.id,
@@ -142,7 +149,6 @@ async function loadProducts() {
 
         // === NUEVO: Obtener y aplicar el orden de colecciones ===
         let collectionsOrder = [];
-        const storeDocSnap = await getDoc(doc(db, 'stores', storeId));
         if (storeDocSnap.exists() && storeDocSnap.data().collectionsOrder) {
             collectionsOrder = storeDocSnap.data().collectionsOrder;
         }
@@ -190,8 +196,8 @@ async function loadProducts() {
 
                 productElement.innerHTML = `
                     <div class="product-image-container">
-                        ${product.imageUrl ? `
-                            <img src="${product.imageUrl}" alt="${product.name}" class="product-image">
+                        ${product.imageUrl || storeImageUrl ? `
+                            <img src="${product.imageUrl || storeImageUrl}" alt="${product.name}" class="product-image">
                         ` : `
                             <div class="placeholder-image">
                                 <span>${product.name.charAt(0).toUpperCase()}</span>
