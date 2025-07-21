@@ -7,7 +7,8 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
+const { onRequest } = require("firebase-functions/v2/https");
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 admin.initializeApp();
@@ -77,7 +78,8 @@ exports.sendOrderEmail = onDocumentCreated("orders/{orderId}", async (event) => 
   let productosHtml = '<ul>';
   if (Array.isArray(order.products)) {
     order.products.forEach(item => {
-      productosHtml += `<li>${item.name} x${item.quantity} - $${item.price}</li>`;
+      const totalItemPrice = (item.price * item.quantity).toFixed(2); // Calcula el precio total por cantidad
+      productosHtml += `<li>${item.name} x${item.quantity} - $${totalItemPrice}</li>`;
     });
   }
   productosHtml += '</ul>';
@@ -95,33 +97,115 @@ exports.sendOrderEmail = onDocumentCreated("orders/{orderId}", async (event) => 
     </a>
   `;
 
+  const aceptarBtn = `
+  <a href="https://acceptorder-kqrddrvggq-uc.a.run.app?orderId=${event.params.orderId}" target="_blank" style="display:inline-block;padding:10px 18px;background:#28a745;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:12px;">
+    Aceptar
+  </a>
+`;
+
+  const rechazarBtn = `
+  <a href="https://rejectorder-kqrddrvggq-uc.a.run.app?orderId=${event.params.orderId}" target="_blank" style="display:inline-block;padding:10px 18px;background:#dc3545;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:12px;">
+    Rechazar
+  </a>
+`;
+
   const mailOptions = {
-    from: 'pedidos@fuddi.shop',
-    to: storeEmail,
-    subject: `¡Nuevo pedido de ${cliente}!`,
-    html: `
-      <h2>¡Nuevo pedido recibido!</h2>
-      <h3>Datos del cliente</h3>
-      <ul>
-        <li><strong>Nombre:</strong> ${cliente}</li>
-        <li><strong>Whatsapp:</strong> ${clienteWhatsapp}</li>
-        <li><strong>Dirección de entrega:</strong> ${direccion}</li>
-      </ul>
-      ${mapaHtml}
-      <h3>Productos</h3>
-      ${productosHtml}
-      <p><strong>Total:</strong> $${order.total}</p>
-      <p><strong>Método de pago:</strong> ${order.paymentMethod}</p>
-      ${comprobanteHtml}
-      ${detallesBtn}
-      <p style="margin-top:16px;"><strong>Revisa el panel de administración para más detalles.</strong></p>
-    `
-  };
+  from: 'pedidos@fuddi.shop',
+  to: storeEmail,
+  subject: `¡Nuevo pedido de ${cliente}!`,
+  html: `
+    <h2>¡Nuevo pedido recibido!</h2>
+    <h3>Datos del cliente</h3>
+    <ul>
+      <li><strong>Nombre:</strong> ${cliente}</li>
+      <li><strong>Whatsapp:</strong> ${clienteWhatsapp}</li>
+      <li><strong>Dirección de entrega:</strong> ${direccion}</li>
+    </ul>
+    ${mapaHtml}
+    <h3>Productos</h3>
+    ${productosHtml}
+    <p><strong>Total:</strong> $${order.total}</p>
+    <p><strong>Método de pago:</strong> ${order.paymentMethod}</p>
+    ${comprobanteHtml}
+    ${detallesBtn}
+    ${aceptarBtn} <!-- Botón para aceptar el pedido -->
+    ${rechazarBtn} <!-- Botón para rechazar el pedido -->
+    <p style="margin-top:16px;"><strong>Revisa el panel de administración para más detalles.</strong></p>
+  `
+};
 
   try {
     await transporter.sendMail(mailOptions);
     console.log('Correo enviado a la tienda:', storeEmail);
   } catch (error) {
     console.error('Error enviando correo:', error);
+  }
+});
+
+exports.acceptOrder = onRequest(async (req, res) => {
+  const { orderId } = req.query;
+
+  if (!orderId) {
+    return res.status(400).send('Falta el ID del pedido.');
+  }
+
+  try {
+    const orderRef = admin.firestore().collection('orders').doc(orderId);
+    const orderDoc = await orderRef.get();
+
+    if (!orderDoc.exists) {
+      return res.status(404).send('Pedido no encontrado.');
+    }
+
+    // Actualiza el estado del pedido a "En preparación"
+    await orderRef.update({ status: 'En preparación' });
+
+    // Obtén el storeId del pedido
+    const orderData = orderDoc.data();
+    const storeId = orderData.storeId;
+
+    if (!storeId) {
+      return res.status(400).send('El pedido no tiene un storeId asociado.');
+    }
+
+    // Redirige a la página de pedidos de la tienda
+    return res.redirect(`https://fuddi.shop/store-orders.html?storeId=${storeId}`);
+  } catch (error) {
+    console.error('Error al aceptar el pedido:', error);
+    return res.status(500).send('Error al aceptar el pedido.');
+  }
+});
+
+exports.rejectOrder = onRequest(async (req, res) => {
+  const { orderId } = req.query;
+
+  if (!orderId) {
+    return res.status(400).send('Falta el ID del pedido.');
+  }
+
+  try {
+    const orderRef = admin.firestore().collection('orders').doc(orderId);
+    const orderDoc = await orderRef.get();
+
+    if (!orderDoc.exists) {
+      return res.status(404).send('Pedido no encontrado.');
+    }
+
+    // Actualiza el estado del pedido a "Rechazado"
+    await orderRef.update({ status: 'Rechazado' });
+
+    // Obtén el storeId del pedido
+    const orderData = orderDoc.data();
+    const storeId = orderData.storeId;
+
+    if (!storeId) {
+      return res.status(400).send('El pedido no tiene un storeId asociado.');
+    }
+
+    // Redirige a la página de pedidos de la tienda
+    return res.redirect(`https://fuddi.shop/store-orders.html?storeId=${storeId}`);
+  } catch (error) {
+    console.error('Error al rechazar el pedido:', error);
+    return res.status(500).send('Error al rechazar el pedido.');
   }
 });
