@@ -434,7 +434,7 @@ setCollections(product.collection);
 
             closeModal();
             await loadProducts();
-            alert(`Producto ${isEditMode ? 'actualizado' : 'agregado'} correctamente`);
+            //alert(`Producto ${isEditMode ? 'actualizado' : 'agregado'} correctamente`);
         } catch (error) {
             console.error('Error al guardar el producto:', error);
             alert('Error al guardar el producto. Intente nuevamente.');

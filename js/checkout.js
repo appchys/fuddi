@@ -151,20 +151,38 @@ async function initialize() {
         }
 
         auth.onAuthStateChanged(async (user) => {
+            const profileIndicator = document.querySelector('.indicator:nth-child(1)'); // Indicador de Perfil
+            const userContainer = document.getElementById('user-info-container');
+            const googleLoginSection = document.querySelector('.google-login-section');
+
             if (user) {
-                updateView(user);
-                const googleLoginSection = document.querySelector('.google-login-section');
+                const userCheck = await checkUserExists(user.uid); // Verifica si el perfil existe
+                if (userCheck.exists && userCheck.data.name && userCheck.data.phone) {
+                    // Si el perfil está completo, quita el estilo gris
+                    if (profileIndicator) {
+                        profileIndicator.classList.remove('inactive');
+                    }
+                } else {
+                    // Si el perfil no está completo, aplica el estilo gris
+                    if (profileIndicator) {
+                        profileIndicator.classList.add('inactive');
+                    }
+                }
+
+                updateView(user); // Actualiza la vista del usuario
                 if (googleLoginSection) {
-                    googleLoginSection.classList.add('hidden');
+                    googleLoginSection.classList.add('hidden'); // Oculta el botón de inicio de sesión
                 }
             } else {
-                const userContainer = document.getElementById('user-info-container');
+                // Si no hay usuario, limpia la información y aplica el estilo gris
                 if (userContainer) {
-                    userContainer.innerHTML = '';
+                    userContainer.innerHTML = ''; // Limpia la información del usuario
                 }
-                const googleLoginSection = document.querySelector('.google-login-section');
                 if (googleLoginSection) {
-                    googleLoginSection.classList.remove('hidden');
+                    googleLoginSection.classList.remove('hidden'); // Muestra el botón de inicio de sesión
+                }
+                if (profileIndicator) {
+                    profileIndicator.classList.add('inactive'); // Aplica el estilo gris
                 }
             }
         });
@@ -394,8 +412,6 @@ async function initialize() {
                 totalElement.textContent = `$${total.toFixed(2)}`;
             }
         }
-
-        await displayCartProducts();
 
         const savedAddressesContainer = document.getElementById('saved-addresses');
         const addAddressBtn = document.getElementById('add-address-btn');
