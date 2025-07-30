@@ -1,3 +1,3 @@
 git add .
-git commit -m "Coreccion en valor de envío"
+git commit -m "Coreccion de mapa"
 git push origin main

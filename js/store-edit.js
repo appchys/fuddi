@@ -847,7 +847,8 @@ function initStoreLocationMap(center = { lat: -1.843254, lng: -79.990611 }) {
         zoom: 16,
         mapTypeControl: false,
         streetViewControl: false,
-        fullscreenControl: false
+        fullscreenControl: false,
+        mapId: 'store-location-map' // AÑADIR ESTA LÍNEA
     });
 
     // Usar AdvancedMarkerElement en lugar de Marker
@@ -857,36 +858,8 @@ function initStoreLocationMap(center = { lat: -1.843254, lng: -79.990611 }) {
         title: "Ubicación de la tienda",
         draggable: true
     });
-
-    // Actualiza inputs al mover el marcador
-    storeMarker.addListener('dragend', (e) => {
-        const position = storeMarker.position;
-        latInput.value = position.lat().toFixed(6);
-        lngInput.value = position.lng().toFixed(6);
-    });
-
-    // Al hacer clic en el mapa, mueve el marcador
-    map.addListener('click', (e) => {
-        storeMarker.position = e.latLng;
-        latInput.value = e.latLng.lat().toFixed(6);
-        lngInput.value = e.latLng.lng().toFixed(6);
-    });
-
-    // Si no hay coordenadas, intenta obtener la ubicación actual
-    if (isNaN(lat) || isNaN(lng)) {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                const pos = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                map.setCenter(pos);
-                storeMarker.position = pos;
-                latInput.value = pos.lat.toFixed(6);
-                lngInput.value = pos.lng.toFixed(6);
-            });
-        }
-    }
+    
+    // Resto del código...
 }
 
 // Cargar el script de Google Maps y luego inicializar el mapa de ubicación
