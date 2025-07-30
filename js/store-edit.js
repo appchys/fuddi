@@ -847,19 +847,44 @@ function initStoreLocationMap(center = { lat: -1.843254, lng: -79.990611 }) {
         zoom: 16,
         mapTypeControl: false,
         streetViewControl: false,
-        fullscreenControl: false,
-        mapId: 'store-location-map' // AÑADIR ESTA LÍNEA
+        fullscreenControl: false
     });
 
-    // Usar AdvancedMarkerElement en lugar de Marker
-    storeMarker = new google.maps.marker.AdvancedMarkerElement({
+    // Usar Marker estándar en lugar de AdvancedMarkerElement
+    storeMarker = new google.maps.Marker({
         position: center,
         map,
         title: "Ubicación de la tienda",
         draggable: true
     });
     
-    // Resto del código...
+    // Actualizar inputs cuando se arrastra el marcador
+    google.maps.event.addListener(storeMarker, 'dragend', function() {
+        const position = storeMarker.getPosition();
+        latInput.value = position.lat().toFixed(6);
+        lngInput.value = position.lng().toFixed(6);
+    });
+    
+    // Permitir hacer clic en el mapa para mover el marcador
+    google.maps.event.addListener(map, 'click', function(event) {
+        storeMarker.setPosition(event.latLng);
+        latInput.value = event.latLng.lat().toFixed(6);
+        lngInput.value = event.latLng.lng().toFixed(6);
+    });
+    
+    // También actualizar el mapa cuando se cambian los inputs manualmente
+    latInput.addEventListener('change', updateMarkerFromInputs);
+    lngInput.addEventListener('change', updateMarkerFromInputs);
+    
+    function updateMarkerFromInputs() {
+        const lat = parseFloat(latInput.value);
+        const lng = parseFloat(lngInput.value);
+        if (!isNaN(lat) && !isNaN(lng)) {
+            const newPos = new google.maps.LatLng(lat, lng);
+            storeMarker.setPosition(newPos);
+            map.setCenter(newPos);
+        }
+    }
 }
 
 // Cargar el script de Google Maps y luego inicializar el mapa de ubicación
