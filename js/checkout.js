@@ -1333,41 +1333,80 @@ document.addEventListener('DOMContentLoaded', () => {
     const deliveryAddressSection = document.querySelector('.delivery-address');
 
     function toggleAddressSection() {
-        const selected = document.querySelector('input[name="deliveryType"]:checked');
-        const deliveryAddressSection = document.getElementById('delivery-address-section');
-        const pickupSection = document.getElementById('pickup-location-section');
-        const deliveryIcon = document.getElementById('delivery-icon');
-        const deliveryText = document.getElementById('delivery-text');
-        const deliveryIndicator = document.getElementById('delivery-indicator'); // Contenedor del indicador
+    const selected = document.querySelector('input[name="deliveryType"]:checked');
+    const deliveryAddressSection = document.getElementById('delivery-address-section');
+    const pickupSection = document.getElementById('pickup-location-section');
+    const deliveryIcon = document.getElementById('delivery-icon');
+    const deliveryText = document.getElementById('delivery-text');
+    const deliveryIndicator = document.getElementById('delivery-indicator');
+    const shippingElement = document.getElementById('shipping');
+    const subtotalElement = document.getElementById('subtotal');
+    const totalElement = document.getElementById('total');
+    const serviceFeeElement = document.getElementById('service-fee');
 
-        if (!deliveryAddressSection || !pickupSection || !deliveryIcon || !deliveryText || !deliveryIndicator) return;
+    if (!deliveryAddressSection || !pickupSection || !deliveryIcon || !deliveryText || !deliveryIndicator) return;
 
-        if (!selected) {
-            // Si no hay nada seleccionado
-            deliveryAddressSection.style.display = 'none';
-            pickupSection.style.display = 'none';
-            deliveryIcon.setAttribute('name', 'bicycle-outline'); // Ícono predeterminado
-            deliveryText.textContent = 'Entrega';
-            deliveryIndicator.classList.add('inactive'); // Aplica el estilo gris
-        } else if (selected.value === 'delivery') {
-            // Si se selecciona "Delivery"
-            deliveryAddressSection.style.display = 'block';
-            pickupSection.style.display = 'none';
-            deliveryIcon.setAttribute('name', 'bicycle-outline');
-            deliveryText.textContent = 'Delivery';
-            deliveryIndicator.classList.remove('inactive'); // Quita el estilo gris
-        } else if (selected.value === 'pickup') {
-            // Si se selecciona "Retiro"
-            deliveryAddressSection.style.display = 'none';
-            pickupSection.style.display = 'block';
-            deliveryIcon.setAttribute('name', 'storefront-outline');
-            deliveryText.textContent = 'Retiro';
-            deliveryIndicator.classList.remove('inactive'); // Quita el estilo gris
+    // Inicializar valores por defecto
+    let shippingValue = 0;
 
-            // Llama a la función para renderizar los datos de la tienda
-            renderPickupLocationSection();
+    if (!selected) {
+        // Si no hay nada seleccionado
+        deliveryAddressSection.style.display = 'none';
+        pickupSection.style.display = 'none';
+        deliveryIcon.setAttribute('name', 'bicycle-outline');
+        deliveryText.textContent = 'Entrega';
+        deliveryIndicator.classList.add('inactive');
+    } else if (selected.value === 'delivery') {
+        // Si se selecciona "Delivery"
+        deliveryAddressSection.style.display = 'block';
+        pickupSection.style.display = 'none';
+        deliveryIcon.setAttribute('name', 'bicycle-outline');
+        deliveryText.textContent = 'Delivery';
+        deliveryIndicator.classList.remove('inactive');
+
+        // Si hay una dirección seleccionada, usar su valor de envío
+        if (selectedAddress && storeData && storeData.deliveryZones) {
+            loadGoogleMapsScript(() => {
+                const zone = getZoneForAddress(selectedAddress.latitude, selectedAddress.longitude, storeData.deliveryZones);
+                shippingValue = zone && typeof zone.shipping === 'number' ? zone.shipping : 1;
+                updateShippingAndTotal(shippingValue);
+            });
         }
+    } else if (selected.value === 'pickup') {
+        // Si se selecciona "Retiro"
+        deliveryAddressSection.style.display = 'none';
+        pickupSection.style.display = 'block';
+        deliveryIcon.setAttribute('name', 'storefront-outline');
+        deliveryText.textContent = 'Retiro';
+        deliveryIndicator.classList.remove('inactive');
+        shippingValue = 0; // Envío es 0 para retiro
+        updateShippingAndTotal(shippingValue);
+        renderPickupLocationSection();
     }
+
+    // Actualizar el valor de envío en el DOM
+    if (shippingElement) {
+        shippingElement.textContent = `$${shippingValue.toFixed(2)}`;
+    }
+}
+
+// Nueva función auxiliar para actualizar envío y total
+function updateShippingAndTotal(shippingValue) {
+    const shippingElement = document.getElementById('shipping');
+    const subtotalElement = document.getElementById('subtotal');
+    const totalElement = document.getElementById('total');
+    const serviceFeeElement = document.getElementById('service-fee');
+
+    if (shippingElement && subtotalElement && totalElement) {
+        const subtotal = parseFloat(subtotalElement.textContent.replace('$', '')) || 0;
+        const serviceFee = serviceFeeElement ? parseFloat(serviceFeeElement.textContent.replace('$', '')) || 0.25 : 0.25;
+        const total = subtotal + shippingValue + serviceFee;
+
+        shippingElement.textContent = `$${shippingValue.toFixed(2)}`;
+        totalElement.textContent = `$${total.toFixed(2)}`;
+        console.log('Envío actualizado:', shippingValue, 'Total recalculado:', total);
+    }
+}
 
     deliveryTypeRadios.forEach(radio => {
         radio.addEventListener('change', toggleAddressSection);
