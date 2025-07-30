@@ -12,6 +12,37 @@ const googleProvider = new GoogleAuthProvider();
 
 // Guarda los datos de la tienda al cargar
 let storeData = null;
+// Variables globales compartidas entre initialize() y toggleAddressSection()
+let selectedAddress = null;
+let addresses = [];
+
+// Función para determinar en qué zona de entrega está una dirección
+function getZoneForAddress(lat, lng, deliveryZones) {
+    if (!window.google || !window.google.maps || !window.google.maps.geometry) return null;
+    const point = new google.maps.LatLng(lat, lng);
+    for (const zone of deliveryZones) {
+        const polygon = new google.maps.Polygon({ paths: zone.polygon });
+        if (google.maps.geometry.poly.containsLocation(point, polygon)) {
+            return zone;
+        }
+    }
+    return null;
+}
+
+// También necesitarás esta función
+function isPointInDeliveryZones(lat, lng, deliveryZones) {
+    if (!window.google || !window.google.maps || !window.google.maps.geometry) return false;
+    const point = new google.maps.LatLng(lat, lng);
+    for (const zone of deliveryZones) {
+        const polygon = new google.maps.Polygon({
+            paths: zone.polygon
+        });
+        if (google.maps.geometry.poly.containsLocation(point, polygon)) {
+            return true;
+        }
+    }
+    return false;
+}
 
 async function checkUserExists(userId) {
     const userDoc = doc(db, 'users', userId);
@@ -433,8 +464,6 @@ async function initialize() {
         const scheduledDateInput = document.getElementById('scheduled-date');
         const scheduledTimeInput = document.getElementById('scheduled-time');
         const scheduledWarning = document.getElementById('scheduled-warning');
-        let selectedAddress = null;
-        let addresses = [];
 
         async function loadSavedAddresses() {
             try {
@@ -1332,81 +1361,110 @@ document.addEventListener('DOMContentLoaded', () => {
     const deliveryTypeRadios = document.querySelectorAll('input[name="deliveryType"]');
     const deliveryAddressSection = document.querySelector('.delivery-address');
 
-    function toggleAddressSection() {
+    async function toggleAddressSection() {
+    console.log('toggleAddressSection: Iniciando función.');
+
     const selected = document.querySelector('input[name="deliveryType"]:checked');
+    console.log('toggleAddressSection: Tipo de entrega seleccionado:', selected ? selected.value : 'Ninguno');
+
     const deliveryAddressSection = document.getElementById('delivery-address-section');
     const pickupSection = document.getElementById('pickup-location-section');
     const deliveryIcon = document.getElementById('delivery-icon');
     const deliveryText = document.getElementById('delivery-text');
     const deliveryIndicator = document.getElementById('delivery-indicator');
     const shippingElement = document.getElementById('shipping');
-    const subtotalElement = document.getElementById('subtotal');
     const totalElement = document.getElementById('total');
+    const subtotalElement = document.getElementById('subtotal');
     const serviceFeeElement = document.getElementById('service-fee');
 
-    if (!deliveryAddressSection || !pickupSection || !deliveryIcon || !deliveryText || !deliveryIndicator) return;
+    if (!deliveryAddressSection || !pickupSection || !deliveryIcon || !deliveryText || !deliveryIndicator) {
+        console.log('toggleAddressSection: Elementos necesarios no encontrados. Saliendo de la función.');
+        return;
+    }
 
-    // Inicializar valores por defecto
-    let shippingValue = 0;
+    let shippingFee = 0;
+    console.log('toggleAddressSection: Inicializando shippingFee a 0.');
 
     if (!selected) {
-        // Si no hay nada seleccionado
+        console.log('toggleAddressSection: No se seleccionó ningún tipo de entrega. Ocultando secciones.');
         deliveryAddressSection.style.display = 'none';
         pickupSection.style.display = 'none';
         deliveryIcon.setAttribute('name', 'bicycle-outline');
         deliveryText.textContent = 'Entrega';
         deliveryIndicator.classList.add('inactive');
     } else if (selected.value === 'delivery') {
-        // Si se selecciona "Delivery"
+        console.log('toggleAddressSection: Se seleccionó "Delivery". Mostrando sección de dirección de entrega.');
         deliveryAddressSection.style.display = 'block';
         pickupSection.style.display = 'none';
         deliveryIcon.setAttribute('name', 'bicycle-outline');
         deliveryText.textContent = 'Delivery';
         deliveryIndicator.classList.remove('inactive');
 
-        // Si hay una dirección seleccionada, usar su valor de envío
-        if (selectedAddress && storeData && storeData.deliveryZones) {
-            loadGoogleMapsScript(() => {
-                const zone = getZoneForAddress(selectedAddress.latitude, selectedAddress.longitude, storeData.deliveryZones);
-                shippingValue = zone && typeof zone.shipping === 'number' ? zone.shipping : 1;
-                updateShippingAndTotal(shippingValue);
-            });
+        try {
+            if (!selectedAddress) {
+                console.log('toggleAddressSection: No hay dirección seleccionada. Cargando direcciones guardadas.');
+                await loadSavedAddresses(); // Asegúrate de que esta función esté definida
+                console.log('toggleAddressSection: Direcciones cargadas:', addresses);
+
+                if (!addresses || addresses.length === 0) {
+                    console.error('toggleAddressSection: No hay direcciones disponibles.');
+                    alert('No tienes direcciones guardadas. Por favor, agrega una dirección de entrega.');
+                    deliveryAddressSection.style.display = 'none';
+                    deliveryIndicator.classList.add('inactive');
+                    return;
+                }
+
+                selectedAddress = addresses[addresses.length - 1];
+                console.log('toggleAddressSection: Dirección seleccionada automáticamente:', selectedAddress);
+                updateSelectedAddressView(selectedAddress); // Asegúrate de que esta función esté definida
+            }
+
+            // Calcular el costo de envío basado en la dirección seleccionada
+            if (selectedAddress) {
+                const deliveryZones = storeData?.deliveryZones || [];
+                console.log('toggleAddressSection: Zonas de entrega cargadas:', deliveryZones);
+
+                const zone = getZoneForAddress(selectedAddress.latitude, selectedAddress.longitude, deliveryZones);
+                shippingFee = zone?.shipping || 0;
+                console.log('toggleAddressSection: Costo de envío calculado para la zona:', shippingFee);
+            } else {
+                console.error('toggleAddressSection: No se pudo calcular el costo de envío porque no hay dirección seleccionada.');
+            }
+        } catch (error) {
+            console.error('toggleAddressSection: Error al cargar direcciones o calcular el costo de envío:', error);
         }
     } else if (selected.value === 'pickup') {
-        // Si se selecciona "Retiro"
+        console.log('toggleAddressSection: Se seleccionó "Retiro". Mostrando sección de retiro en tienda.');
         deliveryAddressSection.style.display = 'none';
         pickupSection.style.display = 'block';
         deliveryIcon.setAttribute('name', 'storefront-outline');
         deliveryText.textContent = 'Retiro';
         deliveryIndicator.classList.remove('inactive');
-        shippingValue = 0; // Envío es 0 para retiro
-        updateShippingAndTotal(shippingValue);
-        renderPickupLocationSection();
+        shippingFee = 0;
+        console.log('toggleAddressSection: Costo de envío para retiro en tienda:', shippingFee);
+
+        renderPickupLocationSection(); // Asegúrate de que esta función esté definida
     }
 
-    // Actualizar el valor de envío en el DOM
+    // Actualizar el costo de envío en la interfaz
     if (shippingElement) {
-        shippingElement.textContent = `$${shippingValue.toFixed(2)}`;
+        console.log('toggleAddressSection: Actualizando elemento de costo de envío en la interfaz:', shippingFee);
+        shippingElement.textContent = `$${shippingFee.toFixed(2)}`;
     }
-}
 
-// Nueva función auxiliar para actualizar envío y total
-function updateShippingAndTotal(shippingValue) {
-    const shippingElement = document.getElementById('shipping');
-    const subtotalElement = document.getElementById('subtotal');
-    const totalElement = document.getElementById('total');
-    const serviceFeeElement = document.getElementById('service-fee');
-
-    if (shippingElement && subtotalElement && totalElement) {
+    // Recalcular el total
+    if (subtotalElement && totalElement && serviceFeeElement) {
         const subtotal = parseFloat(subtotalElement.textContent.replace('$', '')) || 0;
-        const serviceFee = serviceFeeElement ? parseFloat(serviceFeeElement.textContent.replace('$', '')) || 0.25 : 0.25;
-        const total = subtotal + shippingValue + serviceFee;
-
-        shippingElement.textContent = `$${shippingValue.toFixed(2)}`;
+        const serviceFee = parseFloat(serviceFeeElement.textContent.replace('$', '')) || 0.25;
+        const total = subtotal + shippingFee + serviceFee;
+        console.log('toggleAddressSection: Recalculando total:', { subtotal, shippingFee, serviceFee, total });
         totalElement.textContent = `$${total.toFixed(2)}`;
-        console.log('Envío actualizado:', shippingValue, 'Total recalculado:', total);
     }
+
+    console.log('toggleAddressSection: Finalizando función.');
 }
+
+
 
     deliveryTypeRadios.forEach(radio => {
         radio.addEventListener('change', toggleAddressSection);
